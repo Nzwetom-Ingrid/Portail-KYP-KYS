@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_kycchecklist.
+id: 1507082f-ab92-c390-efb7-c1a5c3dd6d92
+name: Webapi/afb_kycchecklist/enabled
+value: 'true'

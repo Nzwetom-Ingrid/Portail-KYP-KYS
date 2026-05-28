@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_tiers (comma-separated, * for all).
+id: 68be3544-3ccf-cc49-7705-b20aa38a7126
+name: Webapi/afb_tiers/fields
+value: '*'

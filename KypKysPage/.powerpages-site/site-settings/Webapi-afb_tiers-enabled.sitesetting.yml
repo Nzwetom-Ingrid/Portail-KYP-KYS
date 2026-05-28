@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_tiers.
+id: 1559c681-7826-588d-dd3a-905577548752
+name: Webapi/afb_tiers/enabled
+value: 'true'

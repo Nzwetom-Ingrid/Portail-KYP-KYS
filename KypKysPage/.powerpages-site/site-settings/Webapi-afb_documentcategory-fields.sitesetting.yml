@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_documentcategory (comma-separated, * for all).
+id: 18dc903b-c8de-199d-8ac4-d3c7827a2f3a
+name: Webapi/afb_documentcategory/fields
+value: '*'

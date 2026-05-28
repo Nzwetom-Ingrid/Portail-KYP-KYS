@@ -1,0 +1,483 @@
+{
+  "name": "afb_documentdeconformite",
+  "title": "Document de conformité",
+  "schema": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "x-ms-dataverse-entity": true,
+      "x-ms-dataverse-entityset": "afb_documentdeconformites",
+      "x-ms-dataverse-primary-id": "afb_documentdeconformiteid",
+      "x-ms-dataverse-primary-name": "afb_intituleduposte",
+      "properties": {
+        "afb_authentificationrequise": {
+          "type": "string",
+          "title": "Authentification requise",
+          "x-ms-dataverse-attribute": "afb_authentificationrequise",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "afb_authentificationrequise",
+          "required": true,
+          "enum": [
+            "Aucune",
+            "Notaire",
+            "Avocat"
+          ],
+          "x-ms-enum-values": [
+            747010000,
+            747010001,
+            747010002
+          ],
+          "Color": [
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "372515d3-6954-f111-bec6-6045bd6c319a",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Authentification requise",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "afb_authentificationrequisename": {
+          "type": "string",
+          "title": "afb_authentificationrequisename",
+          "x-ms-dataverse-attribute": "afb_authentificationrequisename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "afb_authentificationrequiseName",
+          "x-ms-read-only": true
+        },
+        "afb_caractereobligatoire": {
+          "type": "string",
+          "title": "Caractère",
+          "x-ms-dataverse-attribute": "afb_caractereobligatoire",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "afb_caractereobligatoire",
+          "required": true,
+          "enum": [
+            "Obligatoire",
+            "Conditionnel",
+            "Optionnel"
+          ],
+          "x-ms-enum-values": [
+            0,
+            747010001,
+            747010002
+          ],
+          "Color": [
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "342515d3-6954-f111-bec6-6045bd6c319a",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Caractère",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "afb_caractereobligatoirename": {
+          "type": "string",
+          "title": "afb_caractereobligatoirename",
+          "x-ms-dataverse-attribute": "afb_caractereobligatoirename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "afb_caractereobligatoireName",
+          "x-ms-read-only": true
+        },
+        "afb_categoriedepiece": {
+          "type": "string",
+          "title": "Catégorie pièce",
+          "x-ms-dataverse-attribute": "afb_categoriedepiece",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "afb_categoriedepiece",
+          "required": true
+        },
+        "afb_categoriedepiecename": {
+          "type": "string",
+          "title": "afb_categoriedepiecename",
+          "x-ms-dataverse-attribute": "afb_categoriedepiecename",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_categoriedepieceName",
+          "x-ms-read-only": true,
+          "maxLength": 850
+        },
+        "afb_checklistparente": {
+          "type": "string",
+          "title": "Checklist parente",
+          "x-ms-dataverse-attribute": "afb_checklistparente",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "afb_checklistparente",
+          "required": true
+        },
+        "afb_checklistparentename": {
+          "type": "string",
+          "title": "afb_checklistparentename",
+          "x-ms-dataverse-attribute": "afb_checklistparentename",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_checklistparenteName",
+          "x-ms-read-only": true,
+          "maxLength": 850
+        },
+        "afb_conditiondapplication": {
+          "type": "string",
+          "title": "Condition d'application",
+          "x-ms-dataverse-attribute": "afb_conditiondapplication",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "afb_conditiondapplication",
+          "maxLength": 2000
+        },
+        "afb_documentdeconformiteid": {
+          "type": "string",
+          "title": "Document de conformité",
+          "x-ms-dataverse-attribute": "afb_documentdeconformiteid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "afb_documentdeconformiteId",
+          "x-ms-dataverse-primary-id": true,
+          "required": true,
+          "x-ms-keyType": "primary"
+        },
+        "afb_dureedevaliditemois": {
+          "type": "string",
+          "title": "Durée de validité (mois)",
+          "x-ms-dataverse-attribute": "afb_dureedevaliditemois",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "afb_dureedevaliditemois"
+        },
+        "afb_intituleduposte": {
+          "type": "string",
+          "title": "Intitulé du poste",
+          "x-ms-dataverse-attribute": "afb_intituleduposte",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_intituleduposte",
+          "x-ms-dataverse-primary-name": true,
+          "required": true,
+          "maxLength": 850
+        },
+        "afb_numerodordre": {
+          "type": "string",
+          "title": "Numéro d'ordre",
+          "x-ms-dataverse-attribute": "afb_numerodordre",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "afb_numerodordre",
+          "required": true
+        },
+        "afb_referencereglementaire": {
+          "type": "string",
+          "title": "Référence réglementaire",
+          "x-ms-dataverse-attribute": "afb_referencereglementaire",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_referencereglementaire",
+          "maxLength": 100
+        },
+        "createdby": {
+          "type": "string",
+          "title": "Créé par",
+          "x-ms-dataverse-attribute": "createdby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "CreatedBy",
+          "x-ms-read-only": true
+        },
+        "createdbyname": {
+          "type": "string",
+          "title": "createdbyname",
+          "x-ms-dataverse-attribute": "createdbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "createdbyyominame": {
+          "type": "string",
+          "title": "createdbyyominame",
+          "x-ms-dataverse-attribute": "createdbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedByYomiName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "createdon": {
+          "type": "string",
+          "title": "Créé le",
+          "x-ms-dataverse-attribute": "createdon",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "CreatedOn",
+          "x-ms-read-only": true
+        },
+        "createdonbehalfby": {
+          "type": "string",
+          "title": "Créé par (délégué)",
+          "x-ms-dataverse-attribute": "createdonbehalfby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "CreatedOnBehalfBy",
+          "x-ms-read-only": true
+        },
+        "createdonbehalfbyname": {
+          "type": "string",
+          "title": "createdonbehalfbyname",
+          "x-ms-dataverse-attribute": "createdonbehalfbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedOnBehalfByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "createdonbehalfbyyominame": {
+          "type": "string",
+          "title": "createdonbehalfbyyominame",
+          "x-ms-dataverse-attribute": "createdonbehalfbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedOnBehalfByYomiName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "importsequencenumber": {
+          "type": "string",
+          "title": "Numéro séquentiel d’importation",
+          "x-ms-dataverse-attribute": "importsequencenumber",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "ImportSequenceNumber"
+        },
+        "modifiedby": {
+          "type": "string",
+          "title": "Modifié par",
+          "x-ms-dataverse-attribute": "modifiedby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "ModifiedBy",
+          "x-ms-read-only": true
+        },
+        "modifiedbyname": {
+          "type": "string",
+          "title": "modifiedbyname",
+          "x-ms-dataverse-attribute": "modifiedbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "modifiedbyyominame": {
+          "type": "string",
+          "title": "modifiedbyyominame",
+          "x-ms-dataverse-attribute": "modifiedbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedByYomiName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "modifiedon": {
+          "type": "string",
+          "title": "Modifié le",
+          "x-ms-dataverse-attribute": "modifiedon",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "ModifiedOn",
+          "x-ms-read-only": true
+        },
+        "modifiedonbehalfby": {
+          "type": "string",
+          "title": "Modifié par (délégué)",
+          "x-ms-dataverse-attribute": "modifiedonbehalfby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "ModifiedOnBehalfBy",
+          "x-ms-read-only": true
+        },
+        "modifiedonbehalfbyname": {
+          "type": "string",
+          "title": "modifiedonbehalfbyname",
+          "x-ms-dataverse-attribute": "modifiedonbehalfbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedOnBehalfByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "modifiedonbehalfbyyominame": {
+          "type": "string",
+          "title": "modifiedonbehalfbyyominame",
+          "x-ms-dataverse-attribute": "modifiedonbehalfbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedOnBehalfByYomiName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "overriddencreatedon": {
+          "type": "string",
+          "title": "Enregistrement créé le",
+          "x-ms-dataverse-attribute": "overriddencreatedon",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "OverriddenCreatedOn"
+        },
+        "ownerid": {
+          "type": "string",
+          "title": "Propriétaire",
+          "x-ms-dataverse-attribute": "ownerid",
+          "x-ms-dataverse-type": "OwnerType",
+          "x-ms-schema-name": "OwnerId",
+          "required": true
+        },
+        "owneridname": {
+          "type": "string",
+          "title": "owneridname",
+          "x-ms-dataverse-attribute": "owneridname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "OwnerIdName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "owneridtype": {
+          "type": "string",
+          "title": "owneridtype",
+          "x-ms-dataverse-attribute": "owneridtype",
+          "x-ms-dataverse-type": "EntityNameType",
+          "x-ms-schema-name": "OwnerIdType",
+          "required": true
+        },
+        "owneridyominame": {
+          "type": "string",
+          "title": "owneridyominame",
+          "x-ms-dataverse-attribute": "owneridyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "OwnerIdYomiName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "owningbusinessunit": {
+          "type": "string",
+          "title": "Division propriétaire",
+          "x-ms-dataverse-attribute": "owningbusinessunit",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "OwningBusinessUnit",
+          "x-ms-read-only": true
+        },
+        "owningbusinessunitname": {
+          "type": "string",
+          "title": "owningbusinessunitname",
+          "x-ms-dataverse-attribute": "owningbusinessunitname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "OwningBusinessUnitName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "owningteam": {
+          "type": "string",
+          "title": "Équipe propriétaire",
+          "x-ms-dataverse-attribute": "owningteam",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "OwningTeam",
+          "x-ms-read-only": true
+        },
+        "owninguser": {
+          "type": "string",
+          "title": "Utilisateur propriétaire",
+          "x-ms-dataverse-attribute": "owninguser",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "OwningUser",
+          "x-ms-read-only": true
+        },
+        "statecode": {
+          "type": "string",
+          "title": "Statut",
+          "x-ms-dataverse-attribute": "statecode",
+          "x-ms-dataverse-type": "StateType",
+          "x-ms-schema-name": "statecode",
+          "required": true,
+          "enum": [
+            "Actif",
+            "Inactif"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "e786ff22-6854-f111-bec6-00224839b9ef",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Statut",
+          "x-ms-optionSetType": "State"
+        },
+        "statecodename": {
+          "type": "string",
+          "title": "statecodename",
+          "x-ms-dataverse-attribute": "statecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "statecodeName",
+          "x-ms-read-only": true
+        },
+        "statuscode": {
+          "type": "string",
+          "title": "Raison du statut",
+          "x-ms-dataverse-attribute": "statuscode",
+          "x-ms-dataverse-type": "StatusType",
+          "x-ms-schema-name": "statuscode",
+          "enum": [
+            "Actif",
+            "Inactif"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "f186ff22-6854-f111-bec6-00224839b9ef",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Raison du statut",
+          "x-ms-optionSetType": "Status"
+        },
+        "statuscodename": {
+          "type": "string",
+          "title": "statuscodename",
+          "x-ms-dataverse-attribute": "statuscodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "statuscodeName",
+          "x-ms-read-only": true
+        },
+        "timezoneruleversionnumber": {
+          "type": "string",
+          "title": "Numéro de version de la règle du fuseau horaire",
+          "x-ms-dataverse-attribute": "timezoneruleversionnumber",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "TimeZoneRuleVersionNumber"
+        },
+        "utcconversiontimezonecode": {
+          "type": "string",
+          "title": "Code de fuseau horaire pour la conversion UTC",
+          "x-ms-dataverse-attribute": "utcconversiontimezonecode",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "UTCConversionTimeZoneCode"
+        },
+        "versionnumber": {
+          "type": "string",
+          "title": "Numéro de version",
+          "x-ms-dataverse-attribute": "versionnumber",
+          "x-ms-dataverse-type": "BigIntType",
+          "x-ms-schema-name": "VersionNumber",
+          "x-ms-read-only": true
+        }
+      },
+      "required": [
+        "afb_authentificationrequise",
+        "afb_caractereobligatoire",
+        "afb_categoriedepiece",
+        "afb_checklistparente",
+        "afb_documentdeconformiteid",
+        "afb_intituleduposte",
+        "afb_numerodordre",
+        "createdbyyominame",
+        "createdonbehalfbyyominame",
+        "modifiedbyyominame",
+        "modifiedonbehalfbyyominame",
+        "ownerid",
+        "owneridname",
+        "owneridtype",
+        "owneridyominame",
+        "owningbusinessunitname",
+        "statecode"
+      ]
+    }
+  }
+}

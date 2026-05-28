@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_partnertype.
+id: 8ed59f65-4ab3-4e97-cc03-b8ec4667db6b
+name: Webapi/afb_partnertype/enabled
+value: 'true'

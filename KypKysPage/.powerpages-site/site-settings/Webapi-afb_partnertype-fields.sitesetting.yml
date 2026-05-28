@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_partnertype (comma-separated, * for all).
+id: e66d9f21-45f4-ded6-7a0a-ab1c632653fb
+name: Webapi/afb_partnertype/fields
+value: '*'

@@ -1,0 +1,143 @@
+import { makeStyles, mergeClasses } from '@fluentui/react-components';
+
+type Risque = 'Low' | 'Medium' | 'High';
+type Statut = 'Brouillon' | 'En revue' | 'Validé' | 'Expiré' | 'Rejeté' | 'Actif' | 'Inactif';
+
+const useBadgeStyles = makeStyles({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '4px 11px',
+    fontSize: '11px',
+    fontWeight: 600,
+    borderRadius: '999px',
+    letterSpacing: '0.01em',
+    lineHeight: 1.3,
+    whiteSpace: 'nowrap',
+    border: '1px solid transparent',
+  },
+  dot: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    flexShrink: 0,
+  },
+  // Risque
+  riskLow: {
+    backgroundColor: '#E8F5EC',
+    color: '#0F5E2D',
+    borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
+  },
+  riskMedium: {
+    backgroundColor: '#FDF6E3',
+    color: '#854020',
+    borderTopColor: '#FAEDC5', borderRightColor: '#FAEDC5', borderBottomColor: '#FAEDC5', borderLeftColor: '#FAEDC5',
+  },
+  riskHigh: {
+    backgroundColor: '#FDF0F1',
+    color: '#8C040D',
+    borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
+  },
+  // Statut
+  statBrouillon: {
+    backgroundColor: '#F4F4F4',
+    color: '#404040',
+    borderTopColor: '#E5E7EB', borderRightColor: '#E5E7EB', borderBottomColor: '#E5E7EB', borderLeftColor: '#E5E7EB',
+  },
+  statRevue: {
+    backgroundColor: '#FDF6E3',
+    color: '#854020',
+    borderTopColor: '#FAEDC5', borderRightColor: '#FAEDC5', borderBottomColor: '#FAEDC5', borderLeftColor: '#FAEDC5',
+  },
+  statValide: {
+    backgroundColor: '#E8F5EC',
+    color: '#0F5E2D',
+    borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
+  },
+  statExpire: {
+    backgroundColor: '#FDF0F1',
+    color: '#8C040D',
+    borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
+  },
+  statRejete: {
+    backgroundColor: '#FDF0F1',
+    color: '#8C040D',
+    borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
+  },
+  statActif: {
+    backgroundColor: '#E8F5EC',
+    color: '#0F5E2D',
+    borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
+  },
+  statInactif: {
+    backgroundColor: '#F4F2EC',
+    color: '#525252',
+    borderTopColor: '#ECEAE4', borderRightColor: '#ECEAE4', borderBottomColor: '#ECEAE4', borderLeftColor: '#ECEAE4',
+  },
+});
+
+export function RisqueBadge({ risque }: { risque: Risque }) {
+  const styles = useBadgeStyles();
+  const variant =
+    risque === 'Low' ? styles.riskLow
+    : risque === 'Medium' ? styles.riskMedium
+    : styles.riskHigh;
+  const dotColor =
+    risque === 'Low' ? '#15803D'
+    : risque === 'Medium' ? '#B45309'
+    : '#C20012';
+  return (
+    <span className={mergeClasses(styles.base, variant)}>
+      <span className={styles.dot} style={{ backgroundColor: dotColor }} />
+      Risque {risque}
+    </span>
+  );
+}
+
+export function StatutBadge({ statut }: { statut: Statut }) {
+  const styles = useBadgeStyles();
+  const variantMap = {
+    Brouillon: styles.statBrouillon,
+    'En revue': styles.statRevue,
+    Validé: styles.statValide,
+    Expiré: styles.statExpire,
+    Rejeté: styles.statRejete,
+    Actif: styles.statActif,
+    Inactif: styles.statInactif,
+  } as const;
+  return <span className={mergeClasses(styles.base, variantMap[statut])}>{statut}</span>;
+}
+
+export function SLABadge({ value }: { value: string }) {
+  if (value === '—' || !value) {
+    return <span style={{ color: '#C8C8C8' }}>—</span>;
+  }
+  const isOverdue = value === 'Dépassé' || value.startsWith('-');
+  const isClose = /^J-?[1-3]$/.test(value);
+  const color = isOverdue ? '#C20012' : isClose ? '#B45309' : '#404040';
+  const bg = isOverdue ? '#FDF0F1' : isClose ? '#FDF6E3' : 'transparent';
+  const border = isOverdue ? '#FDE0E3' : isClose ? '#FAEDC5' : 'transparent';
+  const weight = isOverdue ? 700 : isClose ? 600 : 500;
+  if (isOverdue || isClose) {
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '3px 9px',
+          fontSize: '11px',
+          fontWeight: weight,
+          color,
+          backgroundColor: bg,
+          border: `1px solid ${border}`,
+          borderRadius: '999px',
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {value}
+      </span>
+    );
+  }
+  return <span style={{ color, fontWeight: weight, fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>{value}</span>;
+}

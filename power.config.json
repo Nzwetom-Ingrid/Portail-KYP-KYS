@@ -1,0 +1,138 @@
+{
+  "version": "1.0",
+  "appId": "09bb04dc-2cf6-4650-afa7-4bb7d29f82ed",
+  "appDisplayName": "AFB_KYP_KYS",
+  "region": "prod",
+  "environmentId": "4283f926-de81-e59f-8be5-52cb50bca1fd",
+  "description": " ",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "Default",
+  "connectionReferences": {
+    "d458b77a-5f7d-4e0a-a32c-28ce5ed2f15a": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+      "displayName": "Microsoft Dataverse",
+      "dataSources": [
+        "commondataserviceforapps"
+      ],
+      "authenticationType": "Oauth",
+      "dataSets": {}
+    }
+  },
+  "databaseReferences": {
+    "default.cds": {
+      "dataSources": {
+        "tiers": {
+          "entitySetName": "afb_tierses",
+          "logicalName": "afb_tiers"
+        },
+        "dossierskypkys": {
+          "entitySetName": "afb_dossierkypkyses",
+          "logicalName": "afb_dossierkypkys"
+        },
+        "decisions": {
+          "entitySetName": "afb_decisions",
+          "logicalName": "afb_decision"
+        },
+        "documents": {
+          "entitySetName": "afb_documents",
+          "logicalName": "afb_document"
+        },
+        "documentcategories": {
+          "entitySetName": "afb_documentcategories",
+          "logicalName": "afb_documentcategory"
+        },
+        "documentdeconformit_": {
+          "entitySetName": "afb_documentdeconformites",
+          "logicalName": "afb_documentdeconformite"
+        },
+        "documentversions": {
+          "entitySetName": "afb_documentversions",
+          "logicalName": "afb_documentversion"
+        },
+        "journauxaudit": {
+          "entitySetName": "afb_journalaudits",
+          "logicalName": "afb_journalaudit"
+        },
+        "kycchecklists": {
+          "entitySetName": "afb_kycchecklists",
+          "logicalName": "afb_kycchecklist"
+        },
+        "partnertypes": {
+          "entitySetName": "afb_partnertypes",
+          "logicalName": "afb_partnertype"
+        },
+        "questions": {
+          "entitySetName": "afb_questions",
+          "logicalName": "afb_question"
+        },
+        "questionlogics": {
+          "entitySetName": "afb_questionlogics",
+          "logicalName": "afb_questionlogic"
+        },
+        "questionoptions": {
+          "entitySetName": "afb_questionoptions",
+          "logicalName": "afb_questionoption"
+        },
+        "questionresponses": {
+          "entitySetName": "afb_questionresponses",
+          "logicalName": "afb_questionresponse"
+        },
+        "questionnaires": {
+          "entitySetName": "afb_questionnaires",
+          "logicalName": "afb_questionnaire"
+        },
+        "questionnaireassignments": {
+          "entitySetName": "afb_questionnaireassignments",
+          "logicalName": "afb_questionnaireassignment"
+        },
+        "questionnaireclarifications": {
+          "entitySetName": "afb_questionnaireclarifications",
+          "logicalName": "afb_questionnaireclarification"
+        },
+        "questionnaireresponses": {
+          "entitySetName": "afb_questionnaireresponses",
+          "logicalName": "afb_questionnaireresponse"
+        },
+        "questionnairesections": {
+          "entitySetName": "afb_questionnairesections",
+          "logicalName": "afb_questionnairesection"
+        },
+        "resultatsscreening": {
+          "entitySetName": "afb_resultatscreenings",
+          "logicalName": "afb_resultatscreening"
+        },
+        "tiersexternesb2c": {
+          "entitySetName": "afb_tiersexterneb2cs",
+          "logicalName": "afb_tiersexterneb2c"
+        },
+        "ubo": {
+          "entitySetName": "afb_ubos",
+          "logicalName": "afb_ubo"
+        },
+        "utilisateursinternes": {
+          "entitySetName": "afb_utilisateurinternes",
+          "logicalName": "afb_utilisateurinterne"
+        },
+        "evaluationspartenaire": {
+          "entitySetName": "afb_evaluationpartenaires",
+          "logicalName": "afb_evaluationpartenaire"
+        },
+        "grilleevaluation": {
+          "entitySetName": "afb_grilleevaluations",
+          "logicalName": "afb_grilleevaluation"
+        },
+        "notescritere": {
+          "entitySetName": "afb_notecriteres",
+          "logicalName": "afb_notecritere"
+        },
+        "criteresevaluation": {
+          "entitySetName": "afb_critereevaluations",
+          "logicalName": "afb_critereevaluation"
+        }
+      },
+      "environmentVariableName": ""
+    }
+  }
+}

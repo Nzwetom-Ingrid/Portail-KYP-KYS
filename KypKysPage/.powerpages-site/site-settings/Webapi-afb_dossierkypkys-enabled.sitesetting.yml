@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_dossierkypkys.
+id: c68f8c05-c2ab-3e66-9f3d-7d7f9d2c30c1
+name: Webapi/afb_dossierkypkys/enabled
+value: 'true'

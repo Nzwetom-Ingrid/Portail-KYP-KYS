@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_question (comma-separated, * for all).
+id: 839204d2-a099-011d-dc35-52bb9835cdf5
+name: Webapi/afb_question/fields
+value: '*'

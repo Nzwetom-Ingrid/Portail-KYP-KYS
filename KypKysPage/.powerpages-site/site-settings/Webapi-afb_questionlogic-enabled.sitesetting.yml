@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_questionlogic.
+id: f01cf4b4-877b-8dea-62a3-e86be2fa8075
+name: Webapi/afb_questionlogic/enabled
+value: 'true'

@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_dossierkypkys (comma-separated, * for all).
+id: f202819a-3f40-045f-5536-bd3ac123d3a1
+name: Webapi/afb_dossierkypkys/fields
+value: '*'

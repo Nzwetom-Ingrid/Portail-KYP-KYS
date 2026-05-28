@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_questionoption.
+id: 27115270-8715-f958-2b81-6b9e185739f5
+name: Webapi/afb_questionoption/enabled
+value: 'true'

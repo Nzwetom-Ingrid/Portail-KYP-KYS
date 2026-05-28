@@ -1,0 +1,14 @@
+# Réponses individuelles aux questions (enfants de QuestionnaireResponse).
+id: 4afb1001-1001-4001-8001-100100100107
+name: Question Response - sa propre
+entityname: afb_questionresponse
+scope: 4
+parentrelationship: afb_questionnaireresponse_questionresponse   # ajuster
+parentpermission: 4afb1001-1001-4001-8001-100100100106
+read: true
+write: true
+create: true
+delete: false
+append: true
+appendto: true
+webrole: 4afb0001-0001-4001-8001-000000000001

@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table annotation.
+id: 112f7be1-629a-e1b4-3fec-d25e39133f5f
+name: Webapi/annotation/enabled
+value: 'true'

@@ -1,0 +1,5 @@
+anonymoususersrole: false
+authenticatedusersrole: false
+description: Rôle accordé aux partenaires (KYP) et fournisseurs (KYS) externes accédant à leur espace personnel du portail. Donne accès en lecture/écriture à leurs propres dossiers, documents, questionnaires et bibliothèque.
+id: 4afb0001-0001-4001-8001-000000000001
+name: Tiers externe (KYP/KYS)

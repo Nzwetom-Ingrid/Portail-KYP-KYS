@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table contact (comma-separated, * for all).
+id: 2948efb6-4486-0506-01ae-f64b9456f793
+name: Webapi/contact/fields
+value: 'firstname,lastname,emailaddress1,telephone1,afb_tiers'

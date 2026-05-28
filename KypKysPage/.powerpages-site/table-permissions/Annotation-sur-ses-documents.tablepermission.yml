@@ -1,0 +1,15 @@
+# Les pièces jointes (binaires) sont stockées en annotations rattachées
+# aux afb_document. Scope Parent sur "Document - son propre".
+id: 4afb1001-1001-4001-8001-100100100104
+name: Annotation - sur ses documents
+entityname: annotation
+scope: 4
+parentrelationship: afb_document_Annotations       # nom standard généré par Dataverse
+parentpermission: 4afb1001-1001-4001-8001-100100100103
+read: true
+write: true
+create: true
+delete: true
+append: true
+appendto: true
+webrole: 4afb0001-0001-4001-8001-000000000001

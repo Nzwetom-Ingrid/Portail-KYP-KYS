@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_questionnaire (comma-separated, * for all).
+id: bb8d2da9-ed92-df17-aefc-db542ed41324
+name: Webapi/afb_questionnaire/fields
+value: '*'

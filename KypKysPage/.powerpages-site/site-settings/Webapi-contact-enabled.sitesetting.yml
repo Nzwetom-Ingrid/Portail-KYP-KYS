@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table contact.
+id: 27edd599-cccd-2b3d-83d9-45740ff16afb
+name: Webapi/contact/enabled
+value: 'true'

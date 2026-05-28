@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_kycchecklist (comma-separated, * for all).
+id: 68b42d40-981b-8cf0-6210-a8f08bb1cc59
+name: Webapi/afb_kycchecklist/fields
+value: '*'

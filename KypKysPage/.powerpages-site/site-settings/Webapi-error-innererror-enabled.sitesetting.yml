@@ -1,0 +1,4 @@
+description: Returns detailed innererror in Web API error responses (DEV only).
+id: d8052595-d58d-62c0-e5d1-fe9e8646c1b3
+name: Webapi/error/innererror/enabled
+value: 'true'

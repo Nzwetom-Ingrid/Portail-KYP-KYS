@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_questionnaireassignment.
+id: 67c59511-03fa-8de7-043f-71a6a615c1f2
+name: Webapi/afb_questionnaireassignment/enabled
+value: 'true'

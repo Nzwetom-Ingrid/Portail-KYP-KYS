@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_questionlogic (comma-separated, * for all).
+id: e7c4566a-01db-f7bb-0f2b-7109f10d3f56
+name: Webapi/afb_questionlogic/fields
+value: '*'

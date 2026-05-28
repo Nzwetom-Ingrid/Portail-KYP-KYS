@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_documentversion.
+id: cfb4ab7e-8dd1-7e3d-5aff-856314ee2ded
+name: Webapi/afb_documentversion/enabled
+value: 'true'

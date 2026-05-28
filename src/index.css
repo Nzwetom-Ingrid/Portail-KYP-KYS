@@ -1,0 +1,316 @@
+/* ========================================================================
+   Portail KYP/KYS AFB — Design system "Glassmorphism" dark-first
+   Canvas sombre, panneaux de verre dépoli flottants, accent rouge confiant.
+   Thème piloté par l'attribut [data-theme] sur :root, variables CSS partout.
+   ======================================================================== */
+
+/* ===================== Soft Premium clair (par défaut) =====================
+   Canvas blanc cassé chaud, cartes blanches flottantes à ombres douces,
+   accent rouge Afriland discret, rayons généreux. Le mode sombre reste
+   disponible via [data-theme="dark"]. ====================================== */
+:root {
+  color-scheme: light;
+
+  /* Canvas gris froid très clair — détache les cartes blanches (réf. design) */
+  --bg:            #F4F5F7;
+  --bg-image:
+    radial-gradient(1200px 620px at 50% -10%, rgba(227, 6, 19, 0.04), transparent 70%),
+    radial-gradient(1000px 640px at 100% 0%, rgba(30, 35, 55, 0.035), transparent 65%);
+
+  /* Accent rouge Afriland */
+  --accent:        #E30613;
+  --accent-dark:   #A50410;
+  --accent-light:  #F23645;
+  --accent-glow:   rgba(227, 6, 19, 0.18);
+  --accent-ring:   rgba(227, 6, 19, 0.28);
+
+  /* Texte */
+  --text:           #1A1A1A;
+  --text-secondary: #525252;
+  --text-muted:     #8A8A8A;
+
+  /* Statuts sémantiques */
+  --success: #15803D;
+  --warning: #B45309;
+  --info:    #404040;
+  --danger:  #C20012;
+
+  /* Surfaces — cartes blanches flottantes à ombre douce diffuse */
+  --glass-bg:           rgba(255, 255, 255, 0.78);
+  --glass-border:       rgba(20, 20, 20, 0.07);
+  --glass-hover-bg:     rgba(255, 255, 255, 0.95);
+  --glass-hover-border: rgba(20, 20, 20, 0.12);
+  --glass-shadow:       0 1px 3px rgba(20, 20, 20, 0.04), 0 16px 40px -20px rgba(20, 20, 20, 0.14);
+  --glass-blur:         blur(14px);
+  --glass-red-bg:       rgba(227, 6, 19, 0.06);
+  --glass-red-border:   rgba(227, 6, 19, 0.18);
+
+  /* Ombres douces réutilisables */
+  --shadow-soft:        0 1px 3px rgba(20, 20, 20, 0.04), 0 10px 28px -16px rgba(20, 20, 20, 0.12);
+  --shadow-lift:        0 4px 14px rgba(20, 20, 20, 0.06), 0 24px 56px -24px rgba(20, 20, 20, 0.20);
+
+  /* Sidebar — rail charbon sombre permanent (réf. design), accent rouge */
+  --sidebar-bg:     #1B1C22;
+  --sidebar-width:  266px;
+  --header-height:  68px;
+
+  /* Rayons généreux */
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+
+  /* Scrollbar */
+  --scrollbar-thumb:       rgba(20, 20, 20, 0.16);
+  --scrollbar-thumb-hover: rgba(20, 20, 20, 0.28);
+
+  --overlay: rgba(20, 20, 20, 0.42);
+}
+
+/* ----------------- Tokens — mode sombre ([data-theme="dark"]) ----------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg:            #0a0a0a;
+  --bg-image:
+    radial-gradient(ellipse at 20% 50%, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(100, 100, 100, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(220, 38, 38, 0.04) 0%, transparent 50%);
+
+  --accent:        #dc2626;
+  --accent-dark:   #b91c1c;
+  --accent-light:  #ef4444;
+  --accent-glow:   rgba(220, 38, 38, 0.30);
+  --accent-ring:   rgba(220, 38, 38, 0.30);
+
+  --text:           #ffffff;
+  --text-secondary: #999999;
+  --text-muted:     #666666;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info:    #3b82f6;
+  --danger:  #ef4444;
+
+  --glass-bg:           rgba(255, 255, 255, 0.06);
+  --glass-border:       rgba(255, 255, 255, 0.10);
+  --glass-hover-bg:     rgba(255, 255, 255, 0.10);
+  --glass-hover-border: rgba(255, 255, 255, 0.20);
+  --glass-shadow:       0 8px 32px rgba(0, 0, 0, 0.30);
+  --glass-blur:         blur(16px);
+  --glass-red-bg:       rgba(220, 38, 38, 0.08);
+  --glass-red-border:   rgba(220, 38, 38, 0.20);
+
+  --shadow-soft:        0 8px 32px rgba(0, 0, 0, 0.30);
+  --shadow-lift:        0 20px 56px rgba(0, 0, 0, 0.45);
+
+  --sidebar-bg:     rgba(15, 15, 15, 0.95);
+
+  --scrollbar-thumb:       rgba(255, 255, 255, 0.18);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.30);
+
+  --overlay: rgba(0, 0, 0, 0.70);
+}
+
+/* ----------------- Rail latéral charbon : contexte sombre local -----------------
+   Le rail reste sombre même en thème clair. On redéfinit les variables de texte
+   et de surface UNIQUEMENT dans le rail pour que tout son contenu (libellés,
+   chips, séparateurs) reste lisible sur le fond charbon. ------------------------ */
+.afb-rail {
+  --text:               #F4F4F5;
+  --text-secondary:     rgba(255, 255, 255, 0.66);
+  --text-muted:         rgba(255, 255, 255, 0.42);
+  --glass-bg:           rgba(255, 255, 255, 0.05);
+  --glass-border:       rgba(255, 255, 255, 0.08);
+  --glass-hover-bg:     rgba(255, 255, 255, 0.08);
+  --glass-hover-border: rgba(255, 255, 255, 0.16);
+  --glass-shadow:       none;
+  --glass-red-bg:       rgba(227, 6, 19, 0.16);
+  --glass-red-border:   rgba(227, 6, 19, 0.42);
+  --accent-light:       #F87171;
+}
+/* Pastille active : rouge plein, ombre rouge nette sur fond sombre */
+.afb-rail a[aria-current="page"] {
+  box-shadow: 0 6px 18px -6px rgba(227, 6, 19, 0.55), 0 2px 6px -2px rgba(227, 6, 19, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
+  font-feature-settings: 'ss01' 1, 'cv01' 1, 'cv03' 1, 'liga' 1, 'calt' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  color: var(--text);
+  background-color: var(--bg);
+}
+
+body {
+  background-image: var(--bg-image);
+  background-attachment: fixed;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ----------------- Scrollbar fine ----------------- */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-normal);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* ----------------- Sélection / focus ----------------- */
+::selection {
+  background-color: var(--accent-glow);
+  color: var(--text);
+}
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  border-radius: var(--radius-md);
+}
+
+/* ----------------- Typographie ----------------- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+h1 { font-size: 24px; font-weight: 700; }
+h2 { font-size: 16px; font-weight: 600; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover { color: var(--accent-light); }
+
+/* ----------------- Surfaces de verre (utilitaires) ----------------- */
+.afb-glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: background var(--transition-normal), border-color var(--transition-normal);
+}
+.afb-glass:hover {
+  background: var(--glass-hover-bg);
+  border-color: var(--glass-hover-border);
+}
+.afb-glass-red {
+  background: var(--glass-red-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-red-border);
+}
+
+/* ----------------- Badges / labels ----------------- */
+.afb-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+/* ----------------- Animations ----------------- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes spinReverse {
+  to { transform: rotate(-360deg); }
+}
+
+.fade-in  { animation: fadeIn 250ms ease both; }
+.slide-up { animation: slideUp 250ms ease both; }
+.pulse    { animation: pulse 1500ms ease-in-out infinite; }
+
+/* ----------------- Loader : deux anneaux concentriques ----------------- */
+.afb-loader {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+.afb-loader::before,
+.afb-loader::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+/* Anneau externe — rouge, sens horaire */
+.afb-loader::before {
+  inset: 0;
+  border-top-color: var(--accent);
+  border-right-color: var(--accent);
+  animation: spin 900ms linear infinite;
+}
+/* Anneau interne — ambre, sens anti-horaire */
+.afb-loader::after {
+  inset: 8px;
+  border-top-color: var(--warning);
+  border-left-color: var(--warning);
+  animation: spinReverse 700ms linear infinite;
+}
+
+/* ----------------- Interactivité globale ----------------- */
+[role="button"],
+button:not(:disabled),
+a,
+[data-clickable="true"] {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}

@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table annotation (comma-separated, * for all).
+id: 3b925ef9-64a7-9473-67d1-c38861cc819e
+name: Webapi/annotation/fields
+value: 'subject,filename,mimetype,documentbody,notetext,objectid,objecttypecode'

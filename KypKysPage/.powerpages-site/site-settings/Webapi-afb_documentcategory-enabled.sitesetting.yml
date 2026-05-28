@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_documentcategory.
+id: 39fc59e9-81e9-3d0e-4074-4285c11b5f01
+name: Webapi/afb_documentcategory/enabled
+value: 'true'

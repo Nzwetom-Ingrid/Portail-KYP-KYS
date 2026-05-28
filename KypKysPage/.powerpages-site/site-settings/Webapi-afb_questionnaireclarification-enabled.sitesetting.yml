@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_questionnaireclarification.
+id: 36f5619b-134c-9878-b829-dbaaa2b4397e
+name: Webapi/afb_questionnaireclarification/enabled
+value: 'true'

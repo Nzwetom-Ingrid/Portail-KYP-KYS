@@ -1,0 +1,14 @@
+# Réponses soumises par le tiers, rattachées à son Assignment.
+id: 4afb1001-1001-4001-8001-100100100106
+name: Questionnaire Response - sa propre
+entityname: afb_questionnaireresponse
+scope: 4
+parentrelationship: afb_questionnaireassignment_response   # ajuster
+parentpermission: 4afb1001-1001-4001-8001-100100100105
+read: true
+write: true
+create: true
+delete: false
+append: true
+appendto: true
+webrole: 4afb0001-0001-4001-8001-000000000001

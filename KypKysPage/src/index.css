@@ -1,0 +1,137 @@
+/* =========================================================
+   KYP / KYS — Design System
+   Polices : Plus Jakarta Sans (soft, moderne) + Sora (titres)
+   ========================================================= */
+
+:root {
+  /* Marque — Afriland First Bank : rouge en ACCENT, noir/gris dominants */
+  --brand-900: #5c0a14;
+  --brand-800: #7c0c1b;
+  --brand-700: #a30f24;
+  --brand-600: #c8102e; /* rouge principal, plus profond/raffiné */
+  --brand-500: #d8324a;
+  --brand-100: #f3d2d7;
+  --brand-50: #fbeef0;
+
+  /* Anthracite / graphite (sidebar, bannières & boutons secondaires) */
+  --ink-950: #0f1013;
+  --ink-900: #16181c;
+  --ink-800: #20232a;
+  --ink-700: #2c3038;
+
+  /* "gold" remappé en graphite pour rester sur l'identité rouge/noir/gris */
+  --gold-600: #2c3038;
+  --gold-500: #3b3f49;
+  --gold-100: #eef0f2;
+
+  /* Neutres doux & raffinés */
+  --ink: #181a1e;
+  --ink-soft: #525660;
+  --muted: #8b9099;
+  --line: #eaecef;
+  --line-soft: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --canvas: #f4f5f7;
+
+  /* États */
+  --info: #2f6fd6;
+  --info-bg: #e8f0fc;
+  --success: #1d9d6f;
+  --success-bg: #e3f6ee;
+  --warning: #c98a16;
+  --warning-bg: #fbf1da;
+  --danger: #d24545;
+  --danger-bg: #fbe7e7;
+
+  /* Rayons & ombres douces */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  --shadow-xs: 0 1px 2px rgba(16, 40, 34, 0.06);
+  --shadow-sm: 0 4px 14px rgba(16, 40, 34, 0.06);
+  --shadow-md: 0 14px 34px rgba(16, 40, 34, 0.1);
+  --shadow-lg: 0 24px 60px rgba(16, 40, 34, 0.14);
+
+  --sans: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Sora', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  color-scheme: light;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink-soft);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--display);
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4ddd9;
+  border-radius: 999px;
+  border: 3px solid var(--canvas);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c2cec9;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

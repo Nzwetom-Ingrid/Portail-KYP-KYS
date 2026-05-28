@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_documentversion (comma-separated, * for all).
+id: aeb2002f-41f9-fcd1-89e8-231cda58e5c5
+name: Webapi/afb_documentversion/fields
+value: '*'
