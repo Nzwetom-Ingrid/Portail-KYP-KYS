@@ -22,6 +22,25 @@ export const entityTypeValidityMonths: Record<EntityType, number> = {
   intragroupe: 12, // revue annuelle obligatoire (parties liées)
 };
 
+/**
+ * Dérive un EntityType (utilisé pour la checklist, la validité par défaut et le
+ * préfixe de référence) à partir de la famille Dataverse `afb_familledinstitution`
+ * d'un type de partenaire. Sert lorsque le type est choisi dynamiquement depuis
+ * le référentiel « Types de partenaires » plutôt que via les 4 cartes figées.
+ */
+export function entityTypeFromFamille(famille?: number): EntityType {
+  switch (famille) {
+    case 747010000: // Banque correspondante
+      return "correspondant";
+    case 747010002: // Entreprise individuelle
+    case 747010004: // Personne physique
+    case 747010007: // Profession libérale
+      return "fournisseur";
+    default: // EMF, Société commerciale, Établissement public, Coopérative/GIC…
+      return "partenaire";
+  }
+}
+
 export function computeValidityDate(type: EntityType, from: Date = new Date()): Date {
   const d = new Date(from);
   d.setMonth(d.getMonth() + entityTypeValidityMonths[type]);

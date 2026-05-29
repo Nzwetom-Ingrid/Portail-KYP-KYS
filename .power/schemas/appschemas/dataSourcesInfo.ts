@@ -31,6 +31,26 @@ export const dataSourcesInfo = {
           }
         }
       },
+      "GetOrganizationsTest": {
+        "path": "/{connectionId}/v1.0/$metadata.json/organizationsTest",
+        "method": "GET",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responseInfo": {
+          "200": {
+            "type": "object"
+          },
+          "default": {
+            "type": "void"
+          }
+        }
+      },
       "GetMetadataForGetEntity": {
         "path": "/{connectionId}/$metadata.json/entities/{entityName}",
         "method": "GET",

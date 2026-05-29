@@ -12,7 +12,7 @@ import type { EntityItemList } from '../models/MicrosoftDataverseModel';
 import type { EntityMetadata } from '../models/MicrosoftDataverseModel';
 import type { EntityRelationshipsDynamicValuesList } from '../models/MicrosoftDataverseModel';
 import type { FlowStepMetadata } from '../models/MicrosoftDataverseModel';
-import type { IOperationResult } from '@pa-client/power-code-sdk/lib/Data/powerDataRuntime/powerDataRuntime.Types';
+import type { IOperationResult } from '@microsoft/power-apps/data';
 import type { MCPQueryRequest } from '../models/MicrosoftDataverseModel';
 import type { MCPQueryResponse } from '../models/MicrosoftDataverseModel';
 import type { Object } from '../models/MicrosoftDataverseModel';
@@ -24,12 +24,12 @@ import type { SearchOutput } from '../models/MicrosoftDataverseModel';
 import type { SearchRequestBody } from '../models/MicrosoftDataverseModel';
 import type { WhenAnActionIsPerformedSubscriptionRequest } from '../models/MicrosoftDataverseModel';
 import { dataSourcesInfo } from '../../../.power/schemas/appschemas/dataSourcesInfo';
-import { getPowerSdkInstance } from '@pa-client/power-code-sdk';
+import { getClient } from '@microsoft/power-apps/data';
 
 export class MicrosoftDataverseService {
   private static readonly dataSourceName = 'commondataserviceforapps';
 
-  private static readonly client = getPowerSdkInstance(dataSourcesInfo).Data;
+  private static readonly client = getClient(dataSourcesInfo);
 
   /**
    * Get organizations
@@ -41,6 +41,21 @@ export class MicrosoftDataverseService {
         connectorOperation: {
           tableName: MicrosoftDataverseService.dataSourceName,
           operationName: 'GetOrganizations',
+        },
+      });
+    return result;
+  }
+
+  /**
+   * Get organizations test
+   * Get all organizations (test variant).
+   */
+  public static async GetOrganizationsTest(): Promise<IOperationResult<OrganizationsDynamicValuesList>> {
+    const result = await MicrosoftDataverseService.client.executeAsync<void, OrganizationsDynamicValuesList>(
+      {
+        connectorOperation: {
+          tableName: MicrosoftDataverseService.dataSourceName,
+          operationName: 'GetOrganizationsTest',
         },
       });
     return result;

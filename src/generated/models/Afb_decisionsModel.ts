@@ -27,6 +27,9 @@ export type Afb_decisionsstatuscode = keyof typeof Afb_decisionsstatuscode;
 
 export interface Afb_decisionsBase {
   "afb_auteurdeladecision@odata.bind": string;
+  // Lookup ajouté manuellement (colonne « Dossier » → afb_dossierkypkys).
+  // pac 2.7.4 add-data-source ne régénère pas ce modèle typé ; champ optionnel.
+  "afb_dossier@odata.bind"?: string;
   afb_decisionid: string;
   afb_elementsacorriger?: string;
   afb_horodatagedeladecision: string;
@@ -46,6 +49,9 @@ export interface Afb_decisionsBase {
 
 export interface Afb_decisions extends Afb_decisionsBase {
   afb_auteurdeladecisionname?: string;
+  afb_dossiername?: string;
+  afb_dossier?: object;
+  _afb_dossier_value?: string;
   afb_niveaudevalidationname?: string;
   afb_typededecisionname?: string;
   createdbyname?: string;

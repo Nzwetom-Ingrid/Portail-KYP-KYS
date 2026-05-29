@@ -10,6 +10,7 @@
  */
 import type { Afb_dossierkypkyses } from '@/generated/models/Afb_dossierkypkysesModel';
 import type { Afb_tierses } from '@/generated/models/Afb_tiersesModel';
+import type { Afb_utilisateurinternes } from '@/generated/models/Afb_utilisateurinternesModel';
 import type { Dossier, DossierStatut, PartnerKind, Risque, Direction } from '@/lib/mockData';
 
 const STATUT_LABEL_TO_DISPLAY: Record<string, DossierStatut> = {
@@ -63,6 +64,7 @@ function typeFromRef(ref: string): PartnerKind {
 export function toDossier(
   d: Afb_dossierkypkyses,
   tiersByGuid?: Map<string, Afb_tierses>,
+  usersByGuid?: Map<string, Afb_utilisateurinternes>,
 ): Dossier {
   const tiersGuid = d._afb_nomdutiers_value;
   const tiers = tiersGuid ? tiersByGuid?.get(tiersGuid) : undefined;
@@ -73,7 +75,14 @@ export function toDossier(
   const pays = tiers?.afb_pays || undefined;
   const risque = RISK_LABEL_TO_DISPLAY[tiers?.afb_niveauderisquename ?? ''] ?? 'Medium';
   const direction = DIRECTION_LABEL_TO_DISPLAY[tiers?.afb_directionporteusename ?? ''] ?? 'DCONF';
-  const charge = tiers?.afb_chargederelationname ?? d.owneridname ?? undefined;
+  // Chargé de relation : on résout le lookup via la map utilisateurs (le nom formaté
+  // du lookup n'est pas garanti par retrieveMultiple). Fallbacks : nom formaté, propriétaire.
+  const chargeGuid = tiers?._afb_chargederelation_value;
+  const charge =
+    (chargeGuid ? usersByGuid?.get(chargeGuid)?.afb_nomcomplet : undefined) ??
+    tiers?.afb_chargederelationname ??
+    d.owneridname ??
+    undefined;
   // Cible si le tiers est marqué Cible, sinon déduit du préfixe de référence.
   const type: PartnerKind =
     tiers?.afb_statutdutiersname === 'Cible' ? 'Cible' : typeFromRef(ref);

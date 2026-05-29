@@ -1,0 +1,5 @@
+{
+  "siteName": "kypkyspage",
+  "defaultLandingPage": "index.html",
+  "compiledPath": "./dist"
+}

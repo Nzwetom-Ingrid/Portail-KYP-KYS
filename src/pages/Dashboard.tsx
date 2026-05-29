@@ -141,13 +141,6 @@ const DIRECTIONS = [
   { value: 'COMEX', label: 'COMEX — Commerce Extérieur' },
 ];
 
-const TYPES = [
-  { value: 'BANK_CORR', label: 'Banque correspondante (KYP)' },
-  { value: 'EMF', label: 'Établissement de monnaie électronique (KYP)' },
-  { value: 'SUPP_NAT', label: 'Fournisseur national (KYS)' },
-  { value: 'SUPP_INT', label: 'Fournisseur international (KYS)' },
-];
-
 export default function Dashboard() {
   const styles = useStyles();
   const navigate = useNavigate();
@@ -161,9 +154,15 @@ export default function Dashboard() {
     () => new Map((tiersData ?? []).map((t) => [t.afb_tiersid, t])),
     [tiersData],
   );
+  // Utilisateurs internes : alimentent le sélecteur « chargé » et résolvent son nom (lookup).
+  const { data: userData } = utilisateursInternes.useList({ top: 500 });
+  const usersByGuid = useMemo(
+    () => new Map((userData ?? []).map((u) => [u.afb_utilisateurinterneid, u])),
+    [userData],
+  );
   const dossiers = useMemo(
-    () => (rawDossiers ?? []).map((d) => toDossier(d, tiersByGuid)),
-    [rawDossiers, tiersByGuid],
+    () => (rawDossiers ?? []).map((d) => toDossier(d, tiersByGuid, usersByGuid)),
+    [rawDossiers, tiersByGuid, usersByGuid],
   );
   const recents = useMemo(() => dossiers.slice(0, 8), [dossiers]);
   const dossiersEnCours = dossiers.filter((d) => d.statut === 'En revue' || d.statut === 'Brouillon').length;
@@ -173,7 +172,6 @@ export default function Dashboard() {
   const createDossier = dossiersKypKys.useCreate();
   const createTiers = tiersHooks.useCreate();
   const { data: ptData } = partnerTypes.useList({ top: 200 });
-  const { data: userData } = utilisateursInternes.useList({ top: 200 });
 
   // Documents (expirations) et alertes de screening, pour les KPI temps réel.
   const { data: rawDocs } = documentsHooks.useList({ top: 500 });
@@ -209,7 +207,8 @@ export default function Dashboard() {
 
   // form state for new dossier
   const [direction, setDirection] = useState('DCONF');
-  const [typeTiers, setTypeTiers] = useState('BANK_CORR');
+  // Type de partenaire choisi dans le référentiel Dataverse (GUID afb_partnertype).
+  const [typeId, setTypeId] = useState<string>('');
   const [chargeId, setChargeId] = useState('');
   const [nom, setNom] = useState('');
   const [pays, setPays] = useState('Cameroun');
@@ -219,7 +218,7 @@ export default function Dashboard() {
 
   const reset = () => {
     setDirection('DCONF');
-    setTypeTiers('BANK_CORR');
+    setTypeId('');
     setChargeId('');
     setNom('');
     setPays('Cameroun');
@@ -228,27 +227,22 @@ export default function Dashboard() {
     setNote('');
   };
 
-  /** Famille (forme) → choix Dataverse afb_familledinstitution, pour trouver le type juridique. */
-  const FAMILLE_BY_FORM: Record<string, number> = { BANK_CORR: 747010000, EMF: 747010001 };
   const DIRECTION_FORM_TO_DV: Record<string, number> = { TRESO: 0, DCONF: 1, DMG: 2, COMEX: 747010001 };
   const RISQUE_FORM_TO_DV: Record<string, number> = { Standard: 2, 'Élevé': 1, Critique: 0 };
 
   const submitNouveau = async () => {
-    const ref = `KYC-${typeTiers === 'BANK_CORR' ? 'B' : typeTiers === 'EMF' ? 'E' : 'F'}-2026-${String(
-      Math.floor(Math.random() * 9000) + 1000,
-    )}`;
-    // Type juridique : on cherche un afb_partnertype dont la famille correspond au type sélectionné,
-    // sinon on prend le premier disponible.
-    const wantedFamille = FAMILLE_BY_FORM[typeTiers] ?? 747010003;
-    const ptGuid =
-      ptData?.find((p) => p.afb_familledinstitution === wantedFamille)?.afb_partnertypeid ??
-      ptData?.[0]?.afb_partnertypeid;
+    // Type juridique : GUID du type de partenaire sélectionné dans le référentiel.
+    const ptGuid = typeId;
     if (!ptGuid) {
       notifyInfo('Création impossible', {
-        description: 'Aucun type de partenaire disponible — créez-en un dans Administration → Types de partenaires.',
+        description: 'Sélectionnez un type de partenaire — gérez-les dans Administration → Types de partenaires.',
       });
       return;
     }
+    // Préfixe de référence selon la famille du type choisi (BC → B, EMF → E, sinon F).
+    const famille = ptData?.find((p) => p.afb_partnertypeid === typeId)?.afb_familledinstitution;
+    const refType = famille === 747010000 ? 'B' : famille === 747010001 ? 'E' : 'F';
+    const ref = `KYC-${refType}-2026-${String(Math.floor(Math.random() * 9000) + 1000)}`;
     try {
       // 1) Création du tiers (porte raison sociale, pays, risque, direction, lookups).
       const newTiers = await createTiers.mutateAsync({
@@ -333,6 +327,7 @@ export default function Dashboard() {
   };
 
   const stepValid =
+    typeId !== '' &&
     nom.trim().length >= 3 &&
     pays.trim().length > 0 &&
     chargeId !== '' &&
@@ -564,11 +559,17 @@ export default function Dashboard() {
                 ))}
               </Dropdown>
             </Field>
-            <Field label="Type de tiers" required>
-              <Dropdown value={TYPES.find((t) => t.value === typeTiers)?.label} selectedOptions={[typeTiers]} onOptionSelect={(_, d) => setTypeTiers(d.optionValue ?? 'BANK_CORR')}>
-                {TYPES.map((t) => (
-                  <Option key={t.value} value={t.value}>
-                    {t.label}
+            <Field label="Type de partenaire" required hint="Référentiel « Types de partenaires » (Dataverse)">
+              <Dropdown
+                placeholder="Sélectionner un type de partenaire"
+                value={ptData?.find((p) => p.afb_partnertypeid === typeId)?.afb_libellefrancais ?? ''}
+                selectedOptions={typeId ? [typeId] : []}
+                onOptionSelect={(_, d) => d.optionValue && setTypeId(d.optionValue)}
+              >
+                {(ptData ?? []).map((p) => (
+                  <Option key={p.afb_partnertypeid} value={p.afb_partnertypeid} text={p.afb_libellefrancais}>
+                    {p.afb_libellefrancais}
+                    {p.afb_codeinstitution ? ` · ${p.afb_codeinstitution}` : ''}
                   </Option>
                 ))}
               </Dropdown>

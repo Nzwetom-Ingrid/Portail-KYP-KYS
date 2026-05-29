@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Badge,
   Button,
@@ -15,7 +15,6 @@ import {
 import {
   Add20Regular,
   ArrowDownload20Regular,
-  Building20Regular,
   Calendar20Regular,
   CheckmarkCircle16Filled,
   CheckmarkCircle20Filled,
@@ -26,18 +25,14 @@ import {
   DocumentText20Regular,
   ErrorCircle16Filled,
   Eye20Regular,
-  Flash20Regular,
-  Handshake20Regular,
   Mail20Regular,
-  PeopleTeam20Regular,
   ShieldCheckmark20Regular,
-  VehicleTruck20Regular,
 } from '@fluentui/react-icons';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
-import { RisqueBadge, SLABadge, StatutBadge } from '@/components/common/StatusBadge';
+import { RisqueBadge, StatutBadge } from '@/components/common/StatusBadge';
 import {
   DetailDrawer,
   DrawerSection,
@@ -49,16 +44,17 @@ import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialo
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { type Dossier } from '@/lib/mockData';
-import { dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes } from '@/lib/dataverse/entityHooks';
+import { decisions, dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes } from '@/lib/dataverse/entityHooks';
 import { toDossier } from '@/lib/dataverse/dossierMappers';
 import { exportToCsv } from '@/lib/exportCsv';
+import { useRole } from '@/lib/role-context';
 
 /** Statut du dossier (affichage) → choix Dataverse afb_statutdudossier. */
 const STATUT_DOSSIER_TO_DV = { valider: 0, enRevue: 1, completer: 2, suspendre: 747010001, rejeter: 747010002 } as const;
 import {
   entityTypeLabels,
-  entityTypeDescriptions,
   entityTypeValidityMonths,
+  entityTypeFromFamille,
   requiredDocsByType,
   type EntityType,
 } from '@/lib/entity-types';
@@ -87,6 +83,10 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: '6px',
+    cursor: 'pointer',
+    textAlign: 'left',
+    width: '100%',
+    fontFamily: 'inherit',
     transition: 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 280ms, border-color 280ms',
     ':hover': {
       transform: 'translateY(-2px)',
@@ -103,6 +103,10 @@ const useStyles = makeStyles({
       backgroundColor: 'currentColor',
       opacity: 0.85,
     },
+  },
+  queueCardActive: {
+    borderTopColor: 'currentColor', borderRightColor: 'currentColor', borderBottomColor: 'currentColor', borderLeftColor: 'currentColor',
+    boxShadow: '0 0 0 1px currentColor, 0 12px 24px -6px rgba(15, 15, 15, 0.10)',
   },
   queueLabel: {
     fontSize: '11.5px',
@@ -410,13 +414,6 @@ const DIRECTION_OPTIONS = [
   { label: 'COMEX', value: 'COMEX' },
 ];
 
-const ENTITY_TYPES: Array<{ key: EntityType; icon: React.ReactNode }> = [
-  { key: 'correspondant', icon: <Building20Regular /> },
-  { key: 'partenaire', icon: <Handshake20Regular /> },
-  { key: 'fournisseur', icon: <VehicleTruck20Regular /> },
-  { key: 'intragroupe', icon: <PeopleTeam20Regular /> },
-];
-
 function getInitials(name: string) {
   const parts = name.split(' ').filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -427,6 +424,11 @@ function inferEntityType(d: Dossier): EntityType {
   if (d.type === 'Fournisseur') return 'fournisseur';
   if (d.type === 'Partenaire') return 'partenaire';
   return 'partenaire';
+}
+
+/** Date du jour au format fr-FR (pour horodater les réponses au tiers). */
+function frToday(): string {
+  return new Date().toLocaleDateString('fr-FR');
 }
 
 /* =====================================================================
@@ -445,10 +447,38 @@ export default function DossiersValidation() {
     () => new Map((rawTiersForMap ?? []).map((t) => [t.afb_tiersid, t])),
     [rawTiersForMap],
   );
-  const dossiers = useMemo(
-    () => (rawDossiers ?? []).map((d) => toDossier(d, tiersByGuid)),
-    [rawDossiers, tiersByGuid],
+  // Utilisateurs internes pour résoudre le nom du chargé de relation (lookup).
+  const { data: usersForMap } = utilisateursInternes.useList({ top: 500 });
+  const usersByGuid = useMemo(
+    () => new Map((usersForMap ?? []).map((u) => [u.afb_utilisateurinterneid, u])),
+    [usersForMap],
   );
+  const dossiers = useMemo(
+    () => (rawDossiers ?? []).map((d) => toDossier(d, tiersByGuid, usersByGuid)),
+    [rawDossiers, tiersByGuid, usersByGuid],
+  );
+
+  // DIAGNOSTIC TEMPORAIRE — à retirer. Explique pourquoi entité/type/risque sont vides.
+  useEffect(() => {
+    if (!rawDossiers) return;
+    const avecLienTiers = rawDossiers.filter((d) => d._afb_nomdutiers_value).length;
+    console.log('[DIAG dossiers]', {
+      dossiers: rawDossiers.length,
+      avecLienTiers,
+      tiersCharges: rawTiersForMap?.length ?? 0,
+      utilisateursCharges: usersForMap?.length ?? 0,
+      exemples: rawDossiers.slice(0, 5).map((d) => ({
+        ref: d.afb_referencedudossier,
+        lienTiers: d._afb_nomdutiers_value ?? '(aucun)',
+        statutNum: d.afb_statutdudossier,
+        statutName: d.afb_statutdudossiername,
+        tiersResolu: d._afb_nomdutiers_value
+          ? tiersByGuid.get(d._afb_nomdutiers_value)?.afb_nomdupartenaire ?? '(GUID non trouvé dans la liste tiers)'
+          : '(pas de lien tiers)',
+      })),
+    });
+  }, [rawDossiers, rawTiersForMap, usersForMap, tiersByGuid]);
+
   const updateDossier = dossiersKypKys.useUpdate();
   // Résout le GUID Dataverse à partir de l'id affiché (référence du dossier).
   const guidByRef = useMemo(
@@ -459,10 +489,67 @@ export default function DossiersValidation() {
     [rawDossiers],
   );
 
+  // Registre des décisions (afb_decision) — auteur = utilisateur interne courant.
+  const createDecision = decisions.useCreate();
+  const { user } = useRole();
+  const authorGuid = useMemo(() => {
+    const list = usersForMap ?? [];
+    const byEmail = user?.email
+      ? list.find((u) => (u.afb_adresseemail ?? '').toLowerCase() === user.email.toLowerCase())
+      : undefined;
+    return byEmail?.afb_utilisateurinterneid ?? list[0]?.afb_utilisateurinterneid;
+  }, [usersForMap, user]);
+
+  /**
+   * Enregistre une décision formelle liée au dossier (best-effort : un échec ici
+   * ne bloque jamais l'action principale, déjà persistée sur le dossier).
+   */
+  const recordDecision = async (
+    kind: 'validate' | 'reject' | 'complement',
+    dossier: Dossier,
+    motif: string,
+    elements?: string,
+  ) => {
+    if (!authorGuid) return; // aucun auteur résoluble → on saute le registre
+    const dossierGuid = guidByRef.get(dossier.id);
+    const typeDecision = kind === 'validate' ? 0 : kind === 'reject' ? 747010001 : 1;
+    try {
+      await createDecision.mutateAsync({
+        'afb_auteurdeladecision@odata.bind': `/afb_utilisateurinternes(${authorGuid})`,
+        ...(dossierGuid ? { 'afb_dossier@odata.bind': `/afb_dossierkypkyses(${dossierGuid})` } : {}),
+        afb_typededecision: typeDecision,
+        afb_niveaudevalidation: 747010000, // Chargé de conformité
+        afb_horodatagedeladecision: new Date().toISOString(),
+        afb_identifiantdeladecision: `DEC-${dossier.id}-${Date.now()}`,
+        afb_notesoumotif: motif || '—',
+        ...(elements ? { afb_elementsacorriger: elements } : {}),
+      } as unknown as Parameters<typeof createDecision.mutateAsync>[0]);
+    } catch (e) {
+      // Diagnostic : on remonte le message Dataverse réel pour identifier le champ rejeté.
+      console.error('recordDecision failed', e);
+      notifyInfo('Décision non journalisée', {
+        description: e instanceof Error ? e.message : "Erreur Dataverse lors de l'écriture du registre.",
+      });
+    }
+  };
+
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
   const [risqueFilter, setRisqueFilter] = useState('');
   const [directionFilter, setDirectionFilter] = useState('');
+
+  // Bascule un filtre : re-cliquer sur la même valeur le réinitialise.
+  const toggleStatut = (v: string) => setStatutFilter((cur) => (cur === v ? '' : v));
+  const toggleRisque = (v: string) => setRisqueFilter((cur) => (cur === v ? '' : v));
+
+  const anyFilterActive =
+    !!search || !!statutFilter || !!risqueFilter || !!directionFilter;
+  const resetFilters = () => {
+    setSearch('');
+    setStatutFilter('');
+    setRisqueFilter('');
+    setDirectionFilter('');
+  };
 
   /* Drawer & dialogs */
   const [openDossier, setOpenDossier] = useState<Dossier | null>(null);
@@ -485,6 +572,7 @@ export default function DossiersValidation() {
     });
   }, [dossiers, search, statutFilter, risqueFilter, directionFilter]);
 
+  // Cartes KPI dynamiques + cliquables : chaque carte applique/retire son filtre.
   const queue = [
     {
       label: 'En attente de revue',
@@ -492,13 +580,8 @@ export default function DossiersValidation() {
       color: '#B45309',
       meta: 'priorité hiérarchique',
       icon: <ClipboardTaskListLtr20Regular />,
-    },
-    {
-      label: 'Critiques (J-1 / Dépassé)',
-      count: dossiers.filter((d) => d.sla === 'J-1' || d.sla === 'Dépassé').length,
-      color: '#C20012',
-      meta: 'escalade automatique',
-      icon: <Flash20Regular />,
+      active: statutFilter === 'En revue',
+      onClick: () => toggleStatut('En revue'),
     },
     {
       label: 'Risque élevé',
@@ -506,6 +589,8 @@ export default function DossiersValidation() {
       color: '#8C040D',
       meta: 'double validation',
       icon: <ShieldCheckmark20Regular />,
+      active: risqueFilter === 'High',
+      onClick: () => toggleRisque('High'),
     },
     {
       label: 'Validés ce mois',
@@ -513,6 +598,17 @@ export default function DossiersValidation() {
       color: '#15803D',
       meta: 'archivés',
       icon: <CheckmarkCircle20Filled />,
+      active: statutFilter === 'Validé',
+      onClick: () => toggleStatut('Validé'),
+    },
+    {
+      label: 'Rejetés',
+      count: dossiers.filter((d) => d.statut === 'Rejeté').length,
+      color: '#B91C1C',
+      meta: "renvoyés à l'émetteur",
+      icon: <DismissCircle20Regular />,
+      active: statutFilter === 'Rejeté',
+      onClick: () => toggleStatut('Rejeté'),
     },
   ];
 
@@ -542,7 +638,6 @@ export default function DossiersValidation() {
     { key: 'pays', header: 'Pays', render: (d) => d.pays ?? '—' },
     { key: 'risque', header: 'Risque', render: (d) => <RisqueBadge risque={d.risque} /> },
     { key: 'statut', header: 'Statut', render: (d) => <StatutBadge statut={d.statut} /> },
-    { key: 'sla', header: 'SLA', render: (d) => <SLABadge value={d.sla} /> },
     { key: 'charge', header: 'Chargé', render: (d) => d.charge ?? '—' },
     {
       key: 'actions',
@@ -594,7 +689,6 @@ export default function DossiersValidation() {
         Type: d.type,
         Risque: d.risque,
         Statut: d.statut,
-        SLA: d.sla,
         Direction: d.direction,
         Date: d.dateCreation,
         Chargé: d.charge ?? '',
@@ -625,7 +719,14 @@ export default function DossiersValidation() {
 
       <div className={styles.queueRow}>
         {queue.map((q) => (
-          <div key={q.label} className={styles.queueCard} style={{ color: q.color }}>
+          <button
+            type="button"
+            key={q.label}
+            className={mergeClasses(styles.queueCard, q.active && styles.queueCardActive)}
+            style={{ color: q.color }}
+            onClick={q.onClick}
+            aria-pressed={q.active}
+          >
             <div className={styles.queueBubble} style={{ color: q.color }}>
               {q.icon}
             </div>
@@ -634,7 +735,7 @@ export default function DossiersValidation() {
               {q.count}
             </div>
             <div className={styles.queueMeta}>{q.meta}</div>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -653,6 +754,13 @@ export default function DossiersValidation() {
             onChange: setDirectionFilter,
           },
         ]}
+        trailing={
+          anyFilterActive ? (
+            <Button appearance="subtle" icon={<DismissCircle20Regular />} onClick={resetFilters}>
+              Réinitialiser
+            </Button>
+          ) : undefined
+        }
       />
 
       <Card
@@ -662,7 +770,7 @@ export default function DossiersValidation() {
             <ClipboardTaskListLtr20Regular style={{ color: '#737373' }} /> Dossiers à traiter
           </span>
         }
-        subtitle={`${filtered.length} dossiers — triés par priorité SLA`}
+        subtitle={`${filtered.length} dossiers — file de validation`}
       >
         {error ? (
           <div style={{ padding: '24px', color: '#C20012', fontSize: '13px' }}>
@@ -711,26 +819,45 @@ export default function DossiersValidation() {
           open={complementOpen}
           onOpenChange={setComplementOpen}
           dossier={openDossier}
-          onSent={async (email, count, deadline) => {
+          onSent={async ({ email, deadline, elements, message }) => {
             const guid = openDossier ? guidByRef.get(openDossier.id) : undefined;
-            if (guid) {
-              try {
-                await updateDossier.mutateAsync({
-                  id: guid,
-                  changes: {
-                    afb_statutdudossier: STATUT_DOSSIER_TO_DV.completer,
-                    ...(deadline ? { afb_prochainecheancier: new Date(deadline).toISOString() } : {}),
-                  },
-                });
-              } catch (e) {
-                notifyError('Échec de la mise à jour', {
-                  description: e instanceof Error ? e.message : 'Erreur Dataverse.',
-                });
-                return;
-              }
+            if (!guid) {
+              notifyError('Action impossible', { description: 'Dossier introuvable dans Dataverse.' });
+              throw new Error('GUID introuvable');
+            }
+            // Réponse consignée sur le dossier (lue par le tiers dans son espace).
+            const elementsText = elements.map((e) => `• ${e}`).join('\n');
+            const reponse = [
+              `Décision DCONF : Complément demandé (${frToday()})`,
+              message.trim(),
+              elements.length ? `Éléments à compléter :\n${elementsText}` : '',
+              deadline ? `Échéance : ${deadline}` : '',
+            ]
+              .filter(Boolean)
+              .join('\n\n');
+            try {
+              await updateDossier.mutateAsync({
+                id: guid,
+                changes: {
+                  afb_statutdudossier: STATUT_DOSSIER_TO_DV.completer,
+                  afb_commentairedconf: reponse,
+                  ...(deadline ? { afb_prochainecheancier: new Date(deadline).toISOString() } : {}),
+                },
+              });
+              await recordDecision(
+                'complement',
+                openDossier,
+                [message.trim(), deadline ? `Échéance : ${deadline}` : ''].filter(Boolean).join('\n\n'),
+                elements.length ? elementsText : undefined,
+              );
+            } catch (e) {
+              notifyError('Échec de la mise à jour', {
+                description: e instanceof Error ? e.message : 'Erreur Dataverse.',
+              });
+              throw e;
             }
             notifySuccess('Demande envoyée', {
-              description: `${count} élément(s) attendu(s) · ${email}${
+              description: `${elements.length} élément(s) attendu(s) · ${email}${
                 deadline ? ` · échéance ${deadline}` : ''
               }`,
             });
@@ -765,22 +892,28 @@ export default function DossiersValidation() {
             }
             try {
               if (validateAction.intent === 'reject') {
+                // La réponse adressée au tiers est consignée dans le commentaire du dossier.
+                const reponse = `Décision DCONF : Rejeté (${frToday()})${motif ? `\nMotif : ${motif}` : ''}`;
                 await updateDossier.mutateAsync({
                   id: guid,
                   changes: {
                     afb_statutdudossier: STATUT_DOSSIER_TO_DV.rejeter,
-                    ...(motif ? { afb_commentairedconf: motif } : {}),
+                    afb_commentairedconf: reponse,
                   },
                 });
-                notifyInfo('Dossier rejeté', { description: `${validateAction.dossier.entite} · motif consigné.` });
+                await recordDecision('reject', validateAction.dossier, motif);
+                notifyInfo('Dossier rejeté', { description: `${validateAction.dossier.entite} · réponse transmise au tiers.` });
               } else {
+                const reponse = `Décision DCONF : Validé (${frToday()})${motif ? `\nNote : ${motif}` : ''}`;
                 await updateDossier.mutateAsync({
                   id: guid,
                   changes: {
                     afb_statutdudossier: STATUT_DOSSIER_TO_DV.valider,
                     afb_datededernierevalidation: new Date().toISOString(),
+                    afb_commentairedconf: reponse,
                   },
                 });
+                await recordDecision('validate', validateAction.dossier, motif);
                 notifySuccess('Dossier validé', {
                   description: `${validateAction.dossier.entite} archivé${motif ? ' avec commentaire' : ''}.`,
                 });
@@ -857,7 +990,6 @@ function DossierDrawer({
             { label: 'Direction porteuse', value: dossier.direction },
             { label: 'Pays', value: dossier.pays ?? '—' },
             { label: 'Date de création', value: dossier.dateCreation },
-            { label: 'SLA', value: <SLABadge value={dossier.sla} /> },
           ]}
         />
       </DrawerSection>
@@ -1007,15 +1139,22 @@ function NewDossierDialog({
   const createTiers = tiersHooks.useCreate();
   const { data: ptData } = partnerTypes.useList({ top: 200 });
   const { data: userData } = utilisateursInternes.useList({ top: 200 });
-  const [type, setType] = useState<EntityType | null>(null);
+  // Type de partenaire choisi dans le référentiel Dataverse (GUID afb_partnertype).
+  const [typeId, setTypeId] = useState<string>('');
   const [nom, setNom] = useState('');
   const [contact, setContact] = useState('');
   const [pays, setPays] = useState('Cameroun');
   const [chargeId, setChargeId] = useState('');
   const [email, setEmail] = useState('');
 
+  // Type de partenaire sélectionné + EntityType dérivé (checklist / validité / préfixe).
+  const selectedPt = (ptData ?? []).find((p) => p.afb_partnertypeid === typeId);
+  const type: EntityType | null = selectedPt
+    ? entityTypeFromFamille(selectedPt.afb_familledinstitution)
+    : null;
+
   const reset = () => {
-    setType(null);
+    setTypeId('');
     setNom('');
     setContact('');
     setPays('Cameroun');
@@ -1024,44 +1163,20 @@ function NewDossierDialog({
   };
 
   const valid =
-    !!type &&
+    !!typeId &&
     nom.trim().length >= 3 &&
     pays.trim().length > 0 &&
     chargeId !== '' &&
     /^\S+@\S+\.\S+$/.test(email);
 
-  /** Trouve un type juridique adapté au type d'entité choisi. */
-  const pickPartnerTypeGuid = (kind: EntityType): string | undefined => {
-    const list = ptData ?? [];
-    // Famille Dataverse afb_familledinstitution : 747010000=BC, 747010003=Société commerciale, 747010002=Entreprise individuelle, etc.
-    const wantedFamille =
-      kind === 'correspondant' ? 747010000
-      : kind === 'fournisseur' ? 747010002
-      : kind === 'intragroupe' ? undefined
-      : 747010003; // partenaire par défaut
-    if (wantedFamille != null) {
-      const match = list.find((p) => p.afb_familledinstitution === wantedFamille);
-      if (match) return match.afb_partnertypeid;
-    }
-    // Fallback : premier type disponible.
-    return list[0]?.afb_partnertypeid;
-  };
-
   const submit = async () => {
-    if (!type) return;
+    if (!type || !typeId) return;
     const prefix =
       type === 'correspondant' ? 'KYC-B'
       : type === 'partenaire' ? 'KYP'
       : type === 'fournisseur' ? 'KYS'
       : 'KYI';
     const ref = `${prefix}-2026-${String(Math.floor(Math.random() * 9000) + 1000)}`;
-    const ptGuid = pickPartnerTypeGuid(type);
-    if (!ptGuid) {
-      notifyError('Création impossible', {
-        description: "Aucun type de partenaire n'est disponible — créez-en un au moins dans Administration → Types de partenaires.",
-      });
-      throw new Error('partnertype manquant');
-    }
     try {
       // 1) Création du tiers porteur de l'identité.
       const newTiers = await createTiers.mutateAsync({
@@ -1072,7 +1187,7 @@ function NewDossierDialog({
         afb_statutdutiers: 0, // Partenaireactif
         afb_datedecreationsysteme: new Date().toISOString(),
         ...(email ? { afb_emailcontactprincipal: email } : {}),
-        'afb_typejuridique@odata.bind': `/afb_partnertypes(${ptGuid})`,
+        'afb_typejuridique@odata.bind': `/afb_partnertypes(${typeId})`,
         'afb_chargederelation@odata.bind': `/afb_utilisateurinternes(${chargeId})`,
       } as unknown as Parameters<typeof createTiers.mutateAsync>[0]);
 
@@ -1111,35 +1226,30 @@ function NewDossierDialog({
       submitDisabled={!valid}
       onSubmit={submit}
     >
-      <FormSection title="Type de cible" description="Choisissez la catégorie qui correspond à votre tiers — chaque type embarque sa propre checklist KYC.">
-        <div className={styles.typeGrid}>
-          {ENTITY_TYPES.map(({ key, icon }) => {
-            const active = type === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setType(key)}
-                className={mergeClasses(styles.typeCard, active && styles.typeCardActive)}
-              >
-                {active && (
-                  <span className={styles.selectedRing} aria-hidden="true">
-                    <CheckmarkCircle16Filled />
-                  </span>
-                )}
-                <div className={mergeClasses(styles.typeIconBubble, active && styles.typeIconActive)}>
-                  {icon}
-                </div>
-                <span className={styles.typeTitle}>{entityTypeLabels[key]}</span>
-                <span className={styles.typeDescription}>{entityTypeDescriptions[key]}</span>
-                <span className={styles.typeValidity}>
-                  <Calendar20Regular style={{ width: 12, height: 12 }} />
-                  Validité {entityTypeValidityMonths[key]} mois
-                </span>
-              </button>
-            );
-          })}
-        </div>
+      <FormSection title="Type de cible" description="Choisissez le type de partenaire issu du référentiel — chaque type embarque sa propre checklist KYC et sa durée de validité.">
+        <Field
+          label="Type de partenaire"
+          required
+          hint={
+            type
+              ? `Validité par défaut ${entityTypeValidityMonths[type]} mois.`
+              : 'Référentiel « Types de partenaires » (Dataverse).'
+          }
+        >
+          <Dropdown
+            placeholder="Sélectionner un type de partenaire"
+            value={selectedPt?.afb_libellefrancais ?? ''}
+            selectedOptions={typeId ? [typeId] : []}
+            onOptionSelect={(_, d) => d.optionValue && setTypeId(d.optionValue)}
+          >
+            {(ptData ?? []).map((p) => (
+              <Option key={p.afb_partnertypeid} value={p.afb_partnertypeid} text={p.afb_libellefrancais}>
+                {p.afb_libellefrancais}
+                {p.afb_codeinstitution ? ` · ${p.afb_codeinstitution}` : ''}
+              </Option>
+            ))}
+          </Dropdown>
+        </Field>
       </FormSection>
 
       <FormSection title="Identité du tiers" description="Renseignez la raison sociale, le pays et le contact principal qui recevra l'invitation sécurisée.">
@@ -1236,7 +1346,7 @@ function ComplementDialog({
   open: boolean;
   onOpenChange: (o: boolean) => void;
   dossier: Dossier;
-  onSent: (email: string, count: number, deadline: string) => void;
+  onSent: (payload: { email: string; deadline: string; elements: string[]; message: string }) => void | Promise<void>;
 }) {
   const styles = useStyles();
   const entityType = inferEntityType(dossier);
@@ -1261,8 +1371,9 @@ function ComplementDialog({
   const valid = /^\S+@\S+\.\S+$/.test(email) && selected.length > 0;
 
   const submit = async () => {
-    await new Promise((r) => setTimeout(r, 500));
-    onSent(email, selected.length, deadline);
+    // Libellés des pièces demandées, pour les consigner dans la réponse au tiers.
+    const elements = docs.filter((d) => selected.includes(d.key)).map((d) => d.name);
+    await onSent({ email, deadline, elements, message });
     reset();
   };
 
