@@ -30,7 +30,7 @@ export const afbThemeDark: Theme = {
   colorNeutralForeground3:        '#666666',
 };
 
-// Mode clair Soft Premium — accent rouge Afriland #E30613, contrôles arrondis
+// Mode clair Soft Premium — accent rouge Afriland #c8102e, contrôles arrondis
 export const afbThemeLight: Theme = {
   ...webLightTheme,
   fontFamilyBase:        afbFontFamily,
@@ -41,15 +41,15 @@ export const afbThemeLight: Theme = {
   borderRadiusMedium:    '11px',
   borderRadiusLarge:     '14px',
   borderRadiusXLarge:    '18px',
-  colorBrandBackground:           '#E30613',
-  colorBrandBackgroundHover:      '#C20012',
-  colorBrandBackgroundPressed:    '#A50410',
-  colorBrandBackgroundSelected:   '#C20012',
-  colorBrandForeground1:          '#E30613',
-  colorBrandForeground2:          '#C20012',
-  colorBrandForegroundLink:       '#E30613',
-  colorBrandForegroundLinkHover:  '#C20012',
-  colorBrandStroke1:              '#E30613',
+  colorBrandBackground:           '#c8102e',
+  colorBrandBackgroundHover:      '#c8102e',
+  colorBrandBackgroundPressed:    '#a30f24',
+  colorBrandBackgroundSelected:   '#c8102e',
+  colorBrandForeground1:          '#c8102e',
+  colorBrandForeground2:          '#c8102e',
+  colorBrandForegroundLink:       '#c8102e',
+  colorBrandForegroundLinkHover:  '#c8102e',
+  colorBrandStroke1:              '#c8102e',
   colorBrandStroke2:              '#FDA3AA',
   colorNeutralForeground1:        '#1A1A1A',
   colorNeutralForeground2:        '#525252',

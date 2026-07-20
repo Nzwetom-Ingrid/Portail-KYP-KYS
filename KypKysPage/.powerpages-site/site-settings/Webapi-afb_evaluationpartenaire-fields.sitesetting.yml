@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_evaluationpartenaire (comma-separated, * for all).
+id: 4afb2001-2001-4001-8001-200100100302
+name: Webapi/afb_evaluationpartenaire/fields
+value: '*'

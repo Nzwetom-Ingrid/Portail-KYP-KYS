@@ -1,4 +1,5 @@
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
+import { useT } from '@/i18n/i18n';
 
 type Risque = 'Low' | 'Medium' | 'High';
 type Statut = 'Brouillon' | 'En revue' | 'Validé' | 'Expiré' | 'Rejeté' | 'Actif' | 'Inactif';
@@ -79,6 +80,7 @@ const useBadgeStyles = makeStyles({
 
 export function RisqueBadge({ risque }: { risque: Risque }) {
   const styles = useBadgeStyles();
+  const { t } = useT();
   const variant =
     risque === 'Low' ? styles.riskLow
     : risque === 'Medium' ? styles.riskMedium
@@ -86,17 +88,18 @@ export function RisqueBadge({ risque }: { risque: Risque }) {
   const dotColor =
     risque === 'Low' ? '#15803D'
     : risque === 'Medium' ? '#B45309'
-    : '#C20012';
+    : '#c8102e';
   return (
     <span className={mergeClasses(styles.base, variant)}>
       <span className={styles.dot} style={{ backgroundColor: dotColor }} />
-      Risque {risque}
+      {t('Risque')} {risque}
     </span>
   );
 }
 
 export function StatutBadge({ statut }: { statut: Statut }) {
   const styles = useBadgeStyles();
+  const { t } = useT();
   const variantMap = {
     Brouillon: styles.statBrouillon,
     'En revue': styles.statRevue,
@@ -106,16 +109,17 @@ export function StatutBadge({ statut }: { statut: Statut }) {
     Actif: styles.statActif,
     Inactif: styles.statInactif,
   } as const;
-  return <span className={mergeClasses(styles.base, variantMap[statut])}>{statut}</span>;
+  return <span className={mergeClasses(styles.base, variantMap[statut])}>{t(statut)}</span>;
 }
 
 export function SLABadge({ value }: { value: string }) {
+  const { t } = useT();
   if (value === '—' || !value) {
     return <span style={{ color: '#C8C8C8' }}>—</span>;
   }
   const isOverdue = value === 'Dépassé' || value.startsWith('-');
   const isClose = /^J-?[1-3]$/.test(value);
-  const color = isOverdue ? '#C20012' : isClose ? '#B45309' : '#404040';
+  const color = isOverdue ? '#c8102e' : isClose ? '#B45309' : '#404040';
   const bg = isOverdue ? '#FDF0F1' : isClose ? '#FDF6E3' : 'transparent';
   const border = isOverdue ? '#FDE0E3' : isClose ? '#FAEDC5' : 'transparent';
   const weight = isOverdue ? 700 : isClose ? 600 : 500;
@@ -135,9 +139,9 @@ export function SLABadge({ value }: { value: string }) {
           fontVariantNumeric: 'tabular-nums',
         }}
       >
-        {value}
+        {t(value)}
       </span>
     );
   }
-  return <span style={{ color, fontWeight: weight, fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>{value}</span>;
+  return <span style={{ color, fontWeight: weight, fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>{t(value)}</span>;
 }

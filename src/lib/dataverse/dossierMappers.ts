@@ -36,6 +36,30 @@ const DIRECTION_LABEL_TO_DISPLAY: Record<string, Direction> = {
   DRISQUE: 'DCONF',
 };
 
+// retrieveMultiple ne renvoie PAS les libellés de choix (`*name`) avec ce SDK ;
+// seules les valeurs numériques le sont. On mappe donc en priorité depuis le nombre.
+const STATUT_NUM_TO_DISPLAY: Record<number, DossierStatut> = {
+  0: 'Validé',
+  1: 'En revue',
+  2: 'Brouillon',
+  747010001: 'Expiré',
+  747010002: 'Rejeté',
+};
+
+const RISK_NUM_TO_DISPLAY: Record<number, Risque> = {
+  0: 'High', // Critique
+  1: 'Medium', // Élevé
+  2: 'Low', // Standard
+};
+
+const DIRECTION_NUM_TO_DISPLAY: Record<number, Direction> = {
+  0: 'TRESO',
+  1: 'DCONF',
+  2: 'DMG',
+  747010001: 'COMEX',
+  747010002: 'DCONF', // DRISQUE
+};
+
 function frDate(value?: string): string {
   if (!value) return '—';
   const d = new Date(value);
@@ -73,8 +97,14 @@ export function toDossier(
   // Tiers lié → on prend ses infos ; sinon fallback sur le name expansé du lookup.
   const entite = tiers?.afb_nomdupartenaire ?? d.afb_nomdutiersname ?? '—';
   const pays = tiers?.afb_pays || undefined;
-  const risque = RISK_LABEL_TO_DISPLAY[tiers?.afb_niveauderisquename ?? ''] ?? 'Medium';
-  const direction = DIRECTION_LABEL_TO_DISPLAY[tiers?.afb_directionporteusename ?? ''] ?? 'DCONF';
+  const risque =
+    (tiers?.afb_niveauderisque != null ? RISK_NUM_TO_DISPLAY[tiers.afb_niveauderisque] : undefined) ??
+    RISK_LABEL_TO_DISPLAY[tiers?.afb_niveauderisquename ?? ''] ??
+    'Medium';
+  const direction =
+    (tiers?.afb_directionporteuse != null ? DIRECTION_NUM_TO_DISPLAY[tiers.afb_directionporteuse] : undefined) ??
+    DIRECTION_LABEL_TO_DISPLAY[tiers?.afb_directionporteusename ?? ''] ??
+    'DCONF';
   // Chargé de relation : on résout le lookup via la map utilisateurs (le nom formaté
   // du lookup n'est pas garanti par retrieveMultiple). Fallbacks : nom formaté, propriétaire.
   const chargeGuid = tiers?._afb_chargederelation_value;
@@ -83,20 +113,42 @@ export function toDossier(
     tiers?.afb_chargederelationname ??
     d.owneridname ??
     undefined;
-  // Cible si le tiers est marqué Cible, sinon déduit du préfixe de référence.
+  // Cible si le tiers est marqué Cible (valeur 1), sinon déduit du préfixe de référence.
   const type: PartnerKind =
-    tiers?.afb_statutdutiersname === 'Cible' ? 'Cible' : typeFromRef(ref);
+    tiers?.afb_statutdutiers === 1 || tiers?.afb_statutdutiersname === 'Cible'
+      ? 'Cible'
+      : typeFromRef(ref);
 
   return {
     id: ref,
     entite,
     type,
     risque,
-    statut: STATUT_LABEL_TO_DISPLAY[d.afb_statutdudossiername ?? ''] ?? 'Brouillon',
+    statut:
+      (d.afb_statutdudossier != null ? STATUT_NUM_TO_DISPLAY[d.afb_statutdudossier] : undefined) ??
+      STATUT_LABEL_TO_DISPLAY[d.afb_statutdudossiername ?? ''] ??
+      'Brouillon',
     sla: slaFromDeadline(d.afb_prochainecheancier),
     direction,
     dateCreation: frDate(d.afb_datedesoumission ?? d.createdon),
     pays,
     charge,
+    commentaire: d.afb_commentairedconf || undefined,
+    email: tiers?.afb_emailcontactprincipal || undefined,
+    tiersId: tiersGuid || undefined,
+    onboarding: tiers
+      ? {
+          formeJuridique: tiers.afb_typejuridiquename || undefined,
+          rccm: tiers.afb_numerorccmimmatriculation || undefined,
+          ville: tiers.afb_ville || undefined,
+          adresse: tiers.afb_adressecomplete || undefined,
+          telephone: tiers.afb_telephone || undefined,
+          swift: tiers.afb_codeswiftbic || undefined,
+          // Colonnes ajoutées hors modèle généré → accès via cast.
+          secteur: (tiers as { afb_secteurdactivite?: string }).afb_secteurdactivite || undefined,
+        }
+      : undefined,
+    requiredDocsJson:
+      (tiers as { afb_documentsrequis?: string } | undefined)?.afb_documentsrequis || undefined,
   };
 }

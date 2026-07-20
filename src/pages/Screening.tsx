@@ -36,6 +36,7 @@ import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialo
 import { ConfirmActionDialog, type ConfirmIntent } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { exportToCsv } from '@/lib/exportCsv';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -124,7 +125,7 @@ const STATUT_OPTIONS = [
 ];
 
 function scoreColor(score: number) {
-  if (score >= 80) return '#E30613';
+  if (score >= 80) return '#c8102e';
   if (score >= 60) return '#B45309';
   return '#404040';
 }
@@ -144,10 +145,12 @@ function statutColor(s: ScreeningAlert['statut']) {
 
 export default function Screening() {
   const styles = useStyles();
+  const { t } = useT();
   const { notifySuccess, notifyWarning, notifyInfo } = useNotifications();
 
   // Résultats de screening réels depuis Dataverse (afb_resultatscreening).
   const { data: rawAlerts, isLoading, error } = resultatsScreening.useList({ top: 200 });
+  const updateResult = resultatsScreening.useUpdate();
   const alerts = useMemo(() => (rawAlerts ?? []).map(toScreeningAlert), [rawAlerts]);
   const sources = useMemo(() => {
     const counts = new Map<ScreeningAlert['source'], number>();
@@ -180,7 +183,15 @@ export default function Screening() {
     return alerts.filter((a) => {
       if (sourceFilter && a.source !== sourceFilter) return false;
       if (statutFilter && a.statut !== statutFilter) return false;
-      if (search && !a.cible.toLowerCase().includes(search.toLowerCase())) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        if (
+          !a.cible.toLowerCase().includes(q) &&
+          !a.source.toLowerCase().includes(q) &&
+          !a.charge.toLowerCase().includes(q)
+        )
+          return false;
+      }
       return true;
     });
   }, [alerts, search, sourceFilter, statutFilter]);
@@ -198,17 +209,37 @@ export default function Screening() {
   };
 
   const onConfirm = async (motif?: string) => {
-    await new Promise((r) => setTimeout(r, 600));
     if (!openAlert) return;
-    if (confirmIntent === 'validate') {
-      notifyInfo('Match classé en faux positif', {
-        description: `${openAlert.id} · ${openAlert.cible} — justification archivée.`,
+    if (!openAlert.recordId) {
+      notifyWarning(t('Action impossible'), { description: t('Identifiant du résultat de screening introuvable.') });
+      return;
+    }
+    try {
+      if (confirmIntent === 'validate') {
+        // Faux positif → on passe le résultat à « Négatif » (0)
+        await updateResult.mutateAsync({
+          id: openAlert.recordId,
+          changes: { afb_resultatducontrole: 0 },
+        });
+        notifyInfo(t('Match classé en faux positif'), {
+          description: `${openAlert.id} · ${openAlert.cible} — ${t('résultat passé à « Négatif », justification archivée.')}`,
+        });
+      } else if (confirmIntent === 'reject') {
+        // Confirmation du match → « Match positif » (747010001) + escalade RCSI
+        await updateResult.mutateAsync({
+          id: openAlert.recordId,
+          changes: { afb_resultatducontrole: 747010001 },
+        });
+        notifyWarning(t('Match confirmé — escalade'), {
+          description: `${openAlert.id} — ${t('alerte transmise au RCSI.')}${motif ? ` ${t('Motif :')} ${motif}.` : ''}`,
+          timeout: 7000,
+        });
+      }
+    } catch (e) {
+      notifyWarning(t('Action impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse lors de l’enregistrement de la décision.'),
       });
-    } else if (confirmIntent === 'reject') {
-      notifyWarning('Match confirmé — escalade', {
-        description: `${openAlert.id} — alerte transmise au RCSI. Motif : ${motif}.`,
-        timeout: 7000,
-      });
+      return;
     }
     setConfirmIntent(null);
     setOpenAlert(null);
@@ -223,8 +254,8 @@ export default function Screening() {
       sourceInterpol && 'Interpol',
       sourcePPE && 'PPE',
     ].filter(Boolean).join(', ');
-    notifySuccess('Screening relancé', {
-      description: `${perimetre === 'all' ? 'Portefeuille complet' : 'Périmètre filtré'} · Sources : ${sources}.${fullRefresh ? ' Réinitialisation des décisions précédentes.' : ''}`,
+    notifySuccess(t('Screening relancé'), {
+      description: `${perimetre === 'all' ? t('Portefeuille complet') : t('Périmètre filtré')} · ${t('Sources :')} ${sources}.${fullRefresh ? ` ${t('Réinitialisation des décisions précédentes.')}` : ''}`,
       timeout: 7000,
     });
     setRelaunchOpen(false);
@@ -257,10 +288,10 @@ export default function Screening() {
       align: 'right',
       render: (a) => (
         <div className={styles.rowActions} onClick={(e) => e.stopPropagation()}>
-          <Tooltip content="Voir l'alerte" relationship="label">
+          <Tooltip content={t("Voir l'alerte")} relationship="label">
             <Button size="small" appearance="subtle" icon={<Eye20Regular />} onClick={() => open(a)} />
           </Tooltip>
-          <Tooltip content="Faux positif" relationship="label">
+          <Tooltip content={t('Faux positif')} relationship="label">
             <Button
               size="small"
               appearance="subtle"
@@ -269,11 +300,11 @@ export default function Screening() {
               onClick={() => { setOpenAlert(a); setConfirmIntent('validate'); }}
             />
           </Tooltip>
-          <Tooltip content="Confirmer le match" relationship="label">
+          <Tooltip content={t('Confirmer le match')} relationship="label">
             <Button
               size="small"
               appearance="subtle"
-              icon={<DismissCircle20Regular style={{ color: '#E30613' }} />}
+              icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
               disabled={a.statut === 'Faux positif' || a.statut === 'Confirmé'}
               onClick={() => { setOpenAlert(a); setConfirmIntent('reject'); }}
             />
@@ -309,15 +340,15 @@ export default function Screening() {
                     Chargé: a.charge,
                   })),
                 );
-                notifySuccess(ok ? 'Export généré' : 'Aucune donnée', {
-                  description: ok ? `${filtered.length} alertes exportées (CSV).` : 'Aucune alerte à exporter.',
+                notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+                  description: ok ? `${filtered.length} ${t('alertes exportées (CSV).')}` : t('Aucune alerte à exporter.'),
                 });
               }}
             >
-              Export
+              {t('Export')}
             </Button>
             <Button icon={<PlayCircle20Regular />} appearance="primary" onClick={() => setRelaunchOpen(true)}>
-              Relancer screening
+              {t('Relancer screening')}
             </Button>
           </>
         }
@@ -325,24 +356,24 @@ export default function Screening() {
 
       <div className={styles.kpiRow}>
         <div className={styles.kpi} onClick={() => { setSourceFilter(''); setStatutFilter(''); }}>
-          <div className={styles.kpiLabel}>Alertes totales</div>
+          <div className={styles.kpiLabel}>{t('Alertes totales')}</div>
           <div className={styles.kpiValue}>{kpis.total}</div>
-          <div className={styles.kpiMeta}>7 derniers jours</div>
+          <div className={styles.kpiMeta}>{t('7 derniers jours')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Nouveau')}>
-          <div className={styles.kpiLabel}>À traiter</div>
+          <div className={styles.kpiLabel}>{t('À traiter')}</div>
           <div className={styles.kpiValue} style={{ color: '#B45309' }}>{kpis.aRevoir}</div>
-          <div className={styles.kpiMeta}>nouveau · en revue</div>
+          <div className={styles.kpiMeta}>{t('nouveau · en revue')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Confirmé')}>
-          <div className={styles.kpiLabel}>Confirmés</div>
-          <div className={styles.kpiValue} style={{ color: '#E30613' }}>{kpis.confirmes}</div>
-          <div className={styles.kpiMeta}>escalade DCONF</div>
+          <div className={styles.kpiLabel}>{t('Confirmés')}</div>
+          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{kpis.confirmes}</div>
+          <div className={styles.kpiMeta}>{t('escalade DCONF')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Faux positif')}>
-          <div className={styles.kpiLabel}>Faux positifs</div>
+          <div className={styles.kpiLabel}>{t('Faux positifs')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.fauxPositifs}</div>
-          <div className={styles.kpiMeta}>justifiés</div>
+          <div className={styles.kpiMeta}>{t('justifiés')}</div>
         </div>
       </div>
 
@@ -351,7 +382,7 @@ export default function Screening() {
           flush
           title={
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <ShieldCheckmark20Regular /> Alertes de screening
+              <ShieldCheckmark20Regular /> {t('Alertes de screening')}
             </span>
           }
           subtitle={`${filtered.length} alertes filtrées`}
@@ -368,11 +399,11 @@ export default function Screening() {
             />
           </div>
           {error ? (
-            <div style={{ padding: '24px', color: '#C20012', fontSize: '13px' }}>
-              Erreur de chargement depuis Dataverse : {error.message}
+            <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+              {t('Erreur de chargement depuis Dataverse :')} {error.message}
             </div>
           ) : isLoading ? (
-            <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>Chargement des alertes…</div>
+            <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des alertes…')}</div>
           ) : (
             <DataTable
               columns={columns}
@@ -393,7 +424,7 @@ export default function Screening() {
             </div>
           ))}
           <div style={{ marginTop: '14px', fontSize: '12px', color: '#767676', lineHeight: 1.5 }}>
-            Toutes les sources sont interrogées quotidiennement à 03h00 (heure de Douala) via API externe.
+            {t('Toutes les sources sont interrogées quotidiennement à 03h00 (heure de Douala) via API externe.')}
           </div>
         </Card>
       </div>
@@ -402,7 +433,7 @@ export default function Screening() {
       <DetailDrawer
         open={openAlert !== null && confirmIntent === null}
         onOpenChange={(o) => !o && setOpenAlert(null)}
-        eyebrow={`Alerte · ${openAlert?.source ?? ''}`}
+        eyebrow={`${t('Alerte')} · ${openAlert?.source ?? ''}`}
         title={openAlert?.cible ?? ''}
         subtitle={openAlert?.id}
         size="large"
@@ -410,21 +441,21 @@ export default function Screening() {
           openAlert ? (
             <>
               <Badge appearance="filled" color={matchColor(openAlert.match)} size="small">
-                Match {openAlert.match}
+                {t('Match')} {openAlert.match}
               </Badge>
               <Badge appearance="tint" color={statutColor(openAlert.statut)} size="small">
                 {openAlert.statut}
               </Badge>
               <Badge appearance="tint" color="brand" size="small">
-                Score {openAlert.score}
+                {t('Score')} {openAlert.score}
               </Badge>
             </>
           ) : null
         }
         tabs={[
-          { id: 'match', label: 'Détails du match' },
-          { id: 'cible', label: 'Cible AFB' },
-          { id: 'historique', label: 'Historique' },
+          { id: 'match', label: t('Détails du match') },
+          { id: 'cible', label: t('Cible AFB') },
+          { id: 'historique', label: t('Historique') },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -432,10 +463,10 @@ export default function Screening() {
           openAlert && (openAlert.statut === 'Nouveau' || openAlert.statut === 'En revue') ? (
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
               <Button appearance="outline" onClick={() => setConfirmIntent('reject')}>
-                Confirmer le match
+                {t('Confirmer le match')}
               </Button>
               <Button appearance="primary" onClick={() => setConfirmIntent('validate')}>
-                Classer en faux positif
+                {t('Classer en faux positif')}
               </Button>
             </div>
           ) : null
@@ -446,84 +477,83 @@ export default function Screening() {
             {activeTab === 'match' && (
               <>
                 <div className={styles.matchBanner}>
-                  <Warning20Filled style={{ color: '#E30613', flexShrink: 0, marginTop: '2px' }} />
+                  <Warning20Filled style={{ color: '#c8102e', flexShrink: 0, marginTop: '2px' }} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#A50410', marginBottom: '4px' }}>
-                      Match {openAlert.match} détecté sur {openAlert.source}
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#a30f24', marginBottom: '4px' }}>
+                      {t('Match')} {openAlert.match} {t('détecté sur')} {openAlert.source}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#A50410', marginBottom: '12px' }}>
-                      Score de similarité {openAlert.score} — vérification requise par {openAlert.charge}.
+                    <div style={{ fontSize: '12px', color: '#a30f24', marginBottom: '12px' }}>
+                      {t('Score de similarité')} {openAlert.score} — {t('vérification requise par')} {openAlert.charge}.
                     </div>
                     <div className={styles.matchFields}>
                       <div>
-                        <div className={styles.matchLabel}>Nom dans la liste</div>
+                        <div className={styles.matchLabel}>{t('Nom dans la liste')}</div>
                         <div className={styles.matchValue}>{openAlert.cible}</div>
                       </div>
                       <div>
-                        <div className={styles.matchLabel}>Liste source</div>
+                        <div className={styles.matchLabel}>{t('Liste source')}</div>
                         <div className={styles.matchValue}>{openAlert.source}</div>
                       </div>
                       <div>
-                        <div className={styles.matchLabel}>Date d'inscription</div>
+                        <div className={styles.matchLabel}>{t("Date d'inscription")}</div>
                         <div className={styles.matchValue}>04/02/2024</div>
                       </div>
                       <div>
-                        <div className={styles.matchLabel}>Motif d’inscription</div>
-                        <div className={styles.matchValue}>Sanctions financières internationales</div>
+                        <div className={styles.matchLabel}>{t('Motif d’inscription')}</div>
+                        <div className={styles.matchValue}>{t('Sanctions financières internationales')}</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <DrawerSection title="Critères de matching">
+                <DrawerSection title={t('Critères de matching')}>
                   <FieldGrid
                     items={[
-                      { label: 'Type de cible', value: openAlert.typeCible },
-                      { label: 'Algorithme', value: 'Levenshtein + phonétique', mono: true },
-                      { label: 'Score', value: <strong style={{ color: scoreColor(openAlert.score) }}>{openAlert.score} / 100</strong> },
-                      { label: 'Seuil de déclenchement', value: '60', mono: true },
+                      { label: t('Type de cible'), value: openAlert.typeCible },
+                      { label: t('Algorithme'), value: t('Levenshtein + phonétique'), mono: true },
+                      { label: t('Score'), value: <strong style={{ color: scoreColor(openAlert.score) }}>{openAlert.score} / 100</strong> },
+                      { label: t('Seuil de déclenchement'), value: '60', mono: true },
                     ]}
                   />
                 </DrawerSection>
 
-                <DrawerSection title="Note du chargé">
+                <DrawerSection title={t('Note du chargé')}>
                   <p style={{ fontSize: '13px', color: '#404040', lineHeight: 1.6, margin: 0 }}>
-                    Homonymie possible avec un dirigeant d'une banque correspondante. Date de naissance différente
-                    (1972 vs 1968 dans la liste). Lieu de résidence ne correspond pas. <strong>À classer en faux positif</strong>
-                    après vérification supplémentaire de la pièce d’identité.
+                    {t("Homonymie possible avec un dirigeant d'une banque correspondante. Date de naissance différente (1972 vs 1968 dans la liste). Lieu de résidence ne correspond pas.")} <strong>{t('À classer en faux positif')}</strong>
+                    {' '}{t('après vérification supplémentaire de la pièce d’identité.')}
                   </p>
                 </DrawerSection>
               </>
             )}
 
             {activeTab === 'cible' && (
-              <DrawerSection title="Identification de la cible chez AFB">
+              <DrawerSection title={t('Identification de la cible chez AFB')}>
                 <FieldGrid
                   items={[
-                    { label: 'Référence interne', value: openAlert.id, mono: true },
-                    { label: 'Cible', value: openAlert.cible },
-                    { label: 'Type', value: openAlert.typeCible },
-                    { label: 'Chargé', value: openAlert.charge },
-                    { label: 'Pays', value: 'Cameroun' },
-                    { label: 'Statut relation', value: 'Active' },
+                    { label: t('Référence interne'), value: openAlert.id, mono: true },
+                    { label: t('Cible'), value: openAlert.cible },
+                    { label: t('Type'), value: openAlert.typeCible },
+                    { label: t('Chargé'), value: openAlert.charge },
+                    { label: t('Pays'), value: t('Cameroun') },
+                    { label: t('Statut relation'), value: t('Active') },
                   ]}
                 />
               </DrawerSection>
             )}
 
             {activeTab === 'historique' && (
-              <DrawerSection title="Historique de l'alerte">
+              <DrawerSection title={t("Historique de l'alerte")}>
                 <DrawerTimeline
                   events={[
                     {
                       when: openAlert.detecteLe,
-                      title: `Match détecté sur ${openAlert.source}`,
-                      detail: `Score ${openAlert.score} — alerte créée automatiquement`,
+                      title: `${t('Match détecté sur')} ${openAlert.source}`,
+                      detail: `${t('Score')} ${openAlert.score} — ${t('alerte créée automatiquement')}`,
                     },
                     {
                       when: openAlert.detecteLe,
-                      title: 'Notification au chargé',
-                      detail: `${openAlert.charge} a été notifié par e-mail`,
+                      title: t('Notification au chargé'),
+                      detail: `${openAlert.charge} ${t('a été notifié par e-mail')}`,
                     },
                   ]}
                 />
@@ -538,12 +568,12 @@ export default function Screening() {
         open={confirmIntent === 'validate' && openAlert !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="validate"
-        title="Classer ce match en faux positif ?"
-        description="Le faux positif est archivé avec justification. Le tiers reste actif mais reste screené lors des batches suivants."
-        confirmLabel="Confirmer le faux positif"
+        title={t('Classer ce match en faux positif ?')}
+        description={t('Le faux positif est archivé avec justification. Le tiers reste actif mais reste screené lors des batches suivants.')}
+        confirmLabel={t('Confirmer le faux positif')}
         requireMotif
-        motifLabel="Justification"
-        motifPlaceholder="Date de naissance différente, lieu de résidence non correspondant, vérification de la pièce d’identité…"
+        motifLabel={t('Justification')}
+        motifPlaceholder={t('Date de naissance différente, lieu de résidence non correspondant, vérification de la pièce d’identité…')}
         entityRef={openAlert?.id}
         onConfirm={onConfirm}
       />
@@ -551,14 +581,14 @@ export default function Screening() {
         open={confirmIntent === 'reject' && openAlert !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="reject"
-        title="Confirmer le match comme positif ?"
-        description="Le match confirmé déclenche une escalade automatique au RCSI et bloque les opérations avec ce tiers."
-        confirmLabel="Confirmer le match"
+        title={t('Confirmer le match comme positif ?')}
+        description={t('Le match confirmé déclenche une escalade automatique au RCSI et bloque les opérations avec ce tiers.')}
+        confirmLabel={t('Confirmer le match')}
         requireMotif
-        motifLabel="Justification du match"
-        motifPlaceholder="Concordance des identifiants, confirmation par la pièce d’identité, recoupement avec d’autres sources…"
+        motifLabel={t('Justification du match')}
+        motifPlaceholder={t('Concordance des identifiants, confirmation par la pièce d’identité, recoupement avec d’autres sources…')}
         entityRef={openAlert?.id}
-        helperNote="L'escalade est irréversible. Le tiers sera suspendu en attente de la décision du RCSI."
+        helperNote={t("L'escalade est irréversible. Le tiers sera suspendu en attente de la décision du RCSI.")}
         onConfirm={onConfirm}
       />
 
@@ -567,47 +597,46 @@ export default function Screening() {
         open={relaunchOpen}
         onOpenChange={setRelaunchOpen}
         eyebrow="Screening"
-        title="Relancer le screening"
-        subtitle="Exécute une interrogation immédiate des sources sélectionnées, en plus du batch nocturne automatique."
+        title={t('Relancer le screening')}
+        subtitle={t('Exécute une interrogation immédiate des sources sélectionnées, en plus du batch nocturne automatique.')}
         size="medium"
-        submitLabel="Lancer le screening"
+        submitLabel={t('Lancer le screening')}
         onSubmit={submitRelaunch}
       >
-        <FormSection title="Périmètre">
-          <Field label="Cibles à screener" required>
+        <FormSection title={t('Périmètre')}>
+          <Field label={t('Cibles à screener')} required>
             <Dropdown
-              value={perimetre === 'all' ? 'Portefeuille complet (1 247 tiers)' : 'Périmètre filtré (alertes en cours)'}
+              value={perimetre === 'all' ? t('Portefeuille complet (1 247 tiers)') : t('Périmètre filtré (alertes en cours)')}
               selectedOptions={[perimetre]}
               onOptionSelect={(_, d) => setPerimetre(d.optionValue ?? 'all')}
             >
-              <Option value="all">Portefeuille complet (1 247 tiers)</Option>
-              <Option value="filtered">Périmètre filtré (alertes en cours)</Option>
-              <Option value="new">Tiers entrants des 30 derniers jours</Option>
+              <Option value="all">{t('Portefeuille complet (1 247 tiers)')}</Option>
+              <Option value="filtered">{t('Périmètre filtré (alertes en cours)')}</Option>
+              <Option value="new">{t('Tiers entrants des 30 derniers jours')}</Option>
             </Dropdown>
           </Field>
         </FormSection>
 
-        <FormSection title="Sources à interroger">
+        <FormSection title={t('Sources à interroger')}>
           <FieldRow cols={2}>
-            <Checkbox checked={sourceONU} onChange={(_, d) => setSourceONU(!!d.checked)} label="ONU — Sanctions Council" />
-            <Checkbox checked={sourceOFAC} onChange={(_, d) => setSourceOFAC(!!d.checked)} label="OFAC — SDN List" />
-            <Checkbox checked={sourceUE} onChange={(_, d) => setSourceUE(!!d.checked)} label="Union européenne — CFSP" />
-            <Checkbox checked={sourceInterpol} onChange={(_, d) => setSourceInterpol(!!d.checked)} label="Interpol — Notices rouges" />
-            <Checkbox checked={sourcePPE} onChange={(_, d) => setSourcePPE(!!d.checked)} label="PPE — Dow Jones / WorldCheck" />
+            <Checkbox checked={sourceONU} onChange={(_, d) => setSourceONU(!!d.checked)} label={t('ONU — Sanctions Council')} />
+            <Checkbox checked={sourceOFAC} onChange={(_, d) => setSourceOFAC(!!d.checked)} label={t('OFAC — SDN List')} />
+            <Checkbox checked={sourceUE} onChange={(_, d) => setSourceUE(!!d.checked)} label={t('Union européenne — CFSP')} />
+            <Checkbox checked={sourceInterpol} onChange={(_, d) => setSourceInterpol(!!d.checked)} label={t('Interpol — Notices rouges')} />
+            <Checkbox checked={sourcePPE} onChange={(_, d) => setSourcePPE(!!d.checked)} label={t('PPE — Dow Jones / WorldCheck')} />
           </FieldRow>
         </FormSection>
 
-        <FormSection title="Options avancées">
+        <FormSection title={t('Options avancées')}>
           <Field>
             <Switch
               checked={fullRefresh}
               onChange={(_, d) => setFullRefresh(d.checked)}
-              label="Réinitialiser les décisions précédentes (faux positifs, confirmés)"
+              label={t('Réinitialiser les décisions précédentes (faux positifs, confirmés)')}
             />
           </Field>
           <div style={{ fontSize: '12px', color: '#767676', lineHeight: 1.5 }}>
-            <strong>Note :</strong> sans réinitialisation, les décisions historiques sont préservées. Avec
-            réinitialisation, chaque match est ré-instruit indépendamment des décisions passées.
+            <strong>{t('Note :')}</strong> {t('sans réinitialisation, les décisions historiques sont préservées. Avec réinitialisation, chaque match est ré-instruit indépendamment des décisions passées.')}
           </div>
         </FormSection>
       </FormDialog>

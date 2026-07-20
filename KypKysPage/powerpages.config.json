@@ -1,5 +1,15 @@
 {
   "siteName": "kypkyspage",
   "defaultLandingPage": "index.html",
-  "compiledPath": "./dist"
+  "compiledPath": "./dist",
+  "bundleFilePatterns": [
+    "index-*.js",
+    "index-*.css",
+    "vendor-*.js",
+    "vendor-*.css",
+    "rolldown-runtime-*.js",
+    "afriland-logo-*.jpg",
+    "chunk-*.js",
+    "chunk-*.css"
+  ]
 }

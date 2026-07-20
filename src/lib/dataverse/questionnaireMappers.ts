@@ -7,20 +7,22 @@
 import type { Afb_questionnaires } from '@/generated/models/Afb_questionnairesModel';
 import type { Questionnaire } from '@/lib/mockData';
 
-const TYPE_TO_FAMILLE: Record<string, Questionnaire['famille']> = {
-  AML: 'AML',
-  KYC: 'KYC',
-  EXT: 'EXT',
-  RISK: 'RISK',
-  SLA: 'RISK',
-  OPS: 'RISK',
-  LIBRE: 'RISK',
+// Le SDK (retrieveMultiple) ne renvoie PAS les champs *name formatés : on mappe
+// donc depuis les valeurs numériques (afb_typededocument / afb_statutdepublication).
+const TYPE_NUM_TO_FAMILLE: Record<number, Questionnaire['famille']> = {
+  0: 'AML',
+  1: 'RISK', // SLA
+  2: 'KYC',
+  3: 'EXT',
+  4: 'RISK',
+  747010001: 'RISK', // OPS
+  747010002: 'RISK', // LIBRE
 };
 
-const STATUT_TO_DISPLAY: Record<string, Questionnaire['statut']> = {
-  Publi_: 'Publié',
-  Brouillon: 'Brouillon',
-  Archiv_: 'Archivé',
+const STATUT_NUM_TO_DISPLAY: Record<number, Questionnaire['statut']> = {
+  0: 'Publié',
+  1: 'Brouillon',
+  747010001: 'Archivé',
 };
 
 function frDate(value?: string): string {
@@ -29,15 +31,19 @@ function frDate(value?: string): string {
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('fr-FR');
 }
 
-export function toQuestionnaire(q: Afb_questionnaires): Questionnaire {
+export function toQuestionnaire(
+  q: Afb_questionnaires,
+  nbQuestions = 0,
+  affectations = 0,
+): Questionnaire {
   return {
     id: q.afb_codedudocument || q.afb_questionnaireid,
     nom: q.afb_titreenfrancais ?? '',
-    famille: TYPE_TO_FAMILLE[q.afb_typededocumentname ?? ''] ?? 'RISK',
+    famille: TYPE_NUM_TO_FAMILLE[q.afb_typededocument as number] ?? 'RISK',
     version: String(q.afb_version ?? 1),
-    nbQuestions: 0,
-    affectations: 0,
-    statut: STATUT_TO_DISPLAY[q.afb_statutdepublicationname ?? ''] ?? 'Brouillon',
+    nbQuestions,
+    affectations,
+    statut: STATUT_NUM_TO_DISPLAY[q.afb_statutdepublication as number] ?? 'Brouillon',
     dernierMaj: frDate(q.modifiedon ?? q.afb_datedepublication),
   };
 }

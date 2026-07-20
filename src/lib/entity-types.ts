@@ -69,6 +69,27 @@ export type RequiredDoc = {
   hint?: string;
 };
 
+/** Liste des pièces attendues : la liste PERSONNALISÉE (JSON stocké sur le tiers,
+ *  afb_documentsrequis) si présente, sinon les pièces par défaut du type. */
+export function parseRequiredDocs(jsonStr: string | undefined, entityType: EntityType): RequiredDoc[] {
+  if (jsonStr) {
+    try {
+      const arr = JSON.parse(jsonStr);
+      if (Array.isArray(arr) && arr.length) {
+        return arr.map((d: { key?: string; name?: string; mandatory?: boolean; hint?: string }, i: number) => ({
+          key: d.key || `p${i}`,
+          name: d.name || d.key || 'Pièce',
+          mandatory: !!d.mandatory,
+          hint: d.hint,
+        }));
+      }
+    } catch {
+      /* JSON invalide → repli sur le type */
+    }
+  }
+  return requiredDocsByType[entityType];
+}
+
 export const requiredDocsByType: Record<EntityType, RequiredDoc[]> = {
   correspondant: [
     { key: "licence", name: "Licence bancaire / agrément régulateur", mandatory: true },

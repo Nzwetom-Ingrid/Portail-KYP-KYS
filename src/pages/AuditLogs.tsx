@@ -14,7 +14,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { type AuditLog } from '@/lib/mockData';
-import { journalAudit } from '@/lib/dataverse/entityHooks';
+import { journalAudit, utilisateursInternes } from '@/lib/dataverse/entityHooks';
 import { toAuditLog } from '@/lib/dataverse/auditMappers';
 import {
   DetailDrawer,
@@ -23,6 +23,7 @@ import {
 } from '@/components/common/DetailDrawer';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { exportToCsv } from '@/lib/exportCsv';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -110,23 +111,24 @@ function categorieColor(c: AuditLog['categorie']) {
 
 function ResultatBadge({ r }: { r: AuditLog['resultat'] }) {
   const styles = useStyles();
+  const { t } = useT();
   if (r === 'Succès') {
     return (
       <span className={styles.resultatCell} style={{ color: '#15803D' }}>
-        <CheckmarkCircle16Filled /> Succès
+        <CheckmarkCircle16Filled /> {t('Succès')}
       </span>
     );
   }
   if (r === 'Échec') {
     return (
-      <span className={styles.resultatCell} style={{ color: '#E30613' }}>
-        <ErrorCircle16Filled /> Échec
+      <span className={styles.resultatCell} style={{ color: '#c8102e' }}>
+        <ErrorCircle16Filled /> {t('Échec')}
       </span>
     );
   }
   return (
     <span className={styles.resultatCell} style={{ color: '#B45309' }}>
-      <Warning16Filled /> Avertissement
+      <Warning16Filled /> {t('Avertissement')}
     </span>
   );
 }
@@ -137,47 +139,9 @@ function resultatColor(r: AuditLog['resultat']) {
   return 'warning';
 }
 
-function buildPayload(log: AuditLog): string {
-  const base = {
-    eventId: log.id,
-    timestamp: log.horodatage + ' UTC+01',
-    actor: {
-      principal: log.utilisateur,
-      role: 'Chargé conformité',
-      direction: 'DCONF',
-      sessionId: 'sess_8a4f9c2e-31bd-4f70',
-    },
-    action: {
-      category: log.categorie,
-      verb: log.action,
-      target: log.cible,
-    },
-    result: log.resultat,
-    context: {
-      ipAddress: log.ip,
-      userAgent: 'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36',
-      geo: { country: 'CM', city: 'Yaoundé', asn: 'CAMTEL' },
-      mfa: { verified: true, method: 'TOTP' },
-    },
-    payload:
-      log.categorie === 'Validation'
-        ? { decision: 'Validé', score: 78, niveau: 'Standard', motif: '—', archived: true, retention: '10 ans' }
-        : log.categorie === 'Screening'
-          ? { sources: ['ONU', 'OFAC', 'UE', 'PPE'], matches: 0, durationMs: 412 }
-          : log.categorie === 'Export'
-            ? { format: 'PDF', sizeBytes: 2_478_315, fileName: 'reporting_cobac_2026Q1.pdf' }
-            : { changes: ['statut: En cours → Validé'] },
-    integrity: {
-      hash: 'sha256:7b9c4e1f...a82d',
-      previousHash: 'sha256:0c41e2b9...1f0c',
-      sealed: true,
-    },
-  };
-  return JSON.stringify(base, null, 2);
-}
-
 export default function AuditLogs() {
   const styles = useStyles();
+  const { t } = useT();
   const { notifySuccess } = useNotifications();
   const [search, setSearch] = useState('');
   const [categorieFilter, setCategorieFilter] = useState('');
@@ -190,7 +154,16 @@ export default function AuditLogs() {
     top: 200,
     orderBy: ['afb_horodatage desc'],
   });
-  const logs = useMemo(() => (rawLogs ?? []).map(toAuditLog), [rawLogs]);
+  // Utilisateurs internes pour résoudre le nom de l'auteur (le `*name` n'est pas renvoyé).
+  const { data: rawUsers } = utilisateursInternes.useList({ top: 500 });
+  const usersByGuid = useMemo(
+    () => new Map((rawUsers ?? []).map((u) => [u.afb_utilisateurinterneid, u.afb_nomcomplet])),
+    [rawUsers],
+  );
+  const logs = useMemo(
+    () => (rawLogs ?? []).map((l) => toAuditLog(l, usersByGuid)),
+    [rawLogs, usersByGuid],
+  );
 
   const counts = useMemo(
     () => ({
@@ -232,17 +205,15 @@ export default function AuditLogs() {
         </Badge>
       ),
     },
-    { key: 'action', header: 'Action', render: (l) => l.action },
     { key: 'cible', header: 'Cible', render: (l) => <span style={{ color: '#767676' }}>{l.cible}</span> },
     { key: 'resultat', header: 'Résultat', render: (l) => <ResultatBadge r={l.resultat} /> },
-    { key: 'ip', header: 'Adresse IP', render: (l) => <span className={styles.ipCell}>{l.ip}</span> },
     {
       key: 'actions',
       header: '',
       align: 'right',
       render: (l) => (
         <div onClick={(e) => e.stopPropagation()}>
-          <Tooltip content="Voir le détail" relationship="label">
+          <Tooltip content={t('Voir le détail')} relationship="label">
             <Button size="small" appearance="subtle" icon={<Eye20Regular />} onClick={() => open(l)} />
           </Tooltip>
         </div>
@@ -270,39 +241,38 @@ export default function AuditLogs() {
                   Action: l.action,
                   Cible: l.cible,
                   Résultat: l.resultat,
-                  IP: l.ip,
                 })),
               );
-              notifySuccess(ok ? 'Export généré' : 'Aucune donnée', {
-                description: ok ? `${filtered.length} événements exportés (CSV).` : 'Aucun événement à exporter.',
+              notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+                description: ok ? `${filtered.length} ${t('événements exportés (CSV).')}` : t('Aucun événement à exporter.'),
               });
             }}
           >
-            Export CSV
+            {t('Export CSV')}
           </Button>
         }
       />
 
       <div className={styles.kpiRow}>
         <div className={styles.kpi} onClick={() => { setCategorieFilter(''); setResultatFilter(''); }}>
-          <div className={styles.kpiLabel}>Événements 24h</div>
+          <div className={styles.kpiLabel}>{t('Événements 24h')}</div>
           <div className={styles.kpiValue}>{counts.total24h}</div>
-          <div className={styles.kpiMeta}>toutes catégories</div>
+          <div className={styles.kpiMeta}>{t('toutes catégories')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setResultatFilter('Succès')}>
-          <div className={styles.kpiLabel}>Succès</div>
+          <div className={styles.kpiLabel}>{t('Succès')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{counts.succes24h}</div>
-          <div className={styles.kpiMeta}>actions abouties</div>
+          <div className={styles.kpiMeta}>{t('actions abouties')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setResultatFilter('Avertissement')}>
-          <div className={styles.kpiLabel}>Avertissements</div>
+          <div className={styles.kpiLabel}>{t('Avertissements')}</div>
           <div className={styles.kpiValue} style={{ color: '#B45309' }}>{counts.avertissements24h}</div>
-          <div className={styles.kpiMeta}>à examiner</div>
+          <div className={styles.kpiMeta}>{t('à examiner')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setResultatFilter('Échec')}>
-          <div className={styles.kpiLabel}>Échecs</div>
-          <div className={styles.kpiValue} style={{ color: '#E30613' }}>{counts.echecs24h}</div>
-          <div className={styles.kpiMeta}>connexions / actions refusées</div>
+          <div className={styles.kpiLabel}>{t('Échecs')}</div>
+          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{counts.echecs24h}</div>
+          <div className={styles.kpiMeta}>{t('connexions / actions refusées')}</div>
         </div>
       </div>
 
@@ -320,17 +290,17 @@ export default function AuditLogs() {
         flush
         title={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <History20Regular /> Journal d’audit
+            <History20Regular /> {t('Journal d’audit')}
           </span>
         }
         subtitle={`${filtered.length} sur ${logs.length} événements`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#C20012', fontSize: '13px' }}>
-            Erreur de chargement depuis Dataverse : {error.message}
+          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+            {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>Chargement du journal…</div>
+          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement du journal…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -346,7 +316,7 @@ export default function AuditLogs() {
       <DetailDrawer
         open={openLog !== null}
         onOpenChange={(o) => !o && setOpenLog(null)}
-        eyebrow={`Événement · ${openLog?.id ?? ''}`}
+        eyebrow={`${t('Événement')} · ${openLog?.id ?? ''}`}
         title={openLog?.action ?? ''}
         subtitle={openLog ? `${openLog.utilisateur} · ${openLog.horodatage}` : ''}
         size="large"
@@ -360,16 +330,12 @@ export default function AuditLogs() {
                 {openLog.resultat}
               </Badge>
               <Badge appearance="tint" color="subtle" size="small" icon={<LockClosed20Regular style={{ fontSize: '12px' }} />}>
-                Lecture seule
+                {t('Lecture seule')}
               </Badge>
             </>
           ) : null
         }
-        tabs={[
-          { id: 'synthese', label: 'Synthèse' },
-          { id: 'contexte', label: 'Contexte technique' },
-          { id: 'payload', label: 'Payload JSON' },
-        ]}
+        tabs={[{ id: 'synthese', label: t('Synthèse') }]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       >
@@ -378,76 +344,28 @@ export default function AuditLogs() {
             <div className={styles.banner}>
               <LockClosed20Regular style={{ color: '#404040', flexShrink: 0, marginTop: '1px' }} />
               <div style={{ fontSize: '12.5px', color: '#404040', lineHeight: 1.5 }}>
-                <strong>Journal en lecture seule.</strong> Conformément à l'Article 12 COBAC R-2023/01,
-                les événements d'audit ne sont pas modifiables et sont conservés 10 ans avec scellement
-                cryptographique (chaîne de hash).
+                <strong>{t('Journal en lecture seule.')}</strong> {t("Conformément à l'Article 12 COBAC R-2023/01, les événements d'audit ne sont pas modifiables et sont conservés 10 ans avec scellement cryptographique (chaîne de hash).")}
               </div>
             </div>
 
-            {activeTab === 'synthese' && (
-              <>
-                <DrawerSection title="Acteur">
-                  <FieldGrid
-                    items={[
-                      { label: 'Utilisateur', value: openLog.utilisateur },
-                      { label: 'Rôle', value: 'Chargé conformité' },
-                      { label: 'Direction', value: 'DCONF' },
-                      { label: 'Session ID', value: 'sess_8a4f9c2e-31bd-4f70', mono: true },
-                    ]}
-                  />
-                </DrawerSection>
-                <DrawerSection title="Action">
-                  <FieldGrid
-                    items={[
-                      { label: 'Catégorie', value: openLog.categorie },
-                      { label: 'Action', value: openLog.action },
-                      { label: 'Cible', value: openLog.cible, mono: true, full: true },
-                      { label: 'Résultat', value: <ResultatBadge r={openLog.resultat} /> },
-                      { label: 'Horodatage', value: openLog.horodatage, mono: true },
-                    ]}
-                  />
-                </DrawerSection>
-              </>
-            )}
-
-            {activeTab === 'contexte' && (
-              <>
-                <DrawerSection title="Réseau">
-                  <FieldGrid
-                    items={[
-                      { label: 'Adresse IP', value: openLog.ip, mono: true },
-                      { label: 'Géolocalisation', value: 'Yaoundé, Cameroun (CM)' },
-                      { label: 'Opérateur (ASN)', value: 'CAMTEL' },
-                      { label: 'User-Agent', value: 'Edge 124 / Windows 11', mono: true },
-                    ]}
-                  />
-                </DrawerSection>
-                <DrawerSection title="Sécurité">
-                  <FieldGrid
-                    items={[
-                      { label: 'Authentification', value: 'Azure AD B2C' },
-                      { label: 'MFA', value: 'Vérifié (TOTP)' },
-                      { label: 'Token issuer', value: 'sts.windows.net/afribank.com', mono: true },
-                    ]}
-                  />
-                </DrawerSection>
-                <DrawerSection title="Intégrité">
-                  <FieldGrid
-                    items={[
-                      { label: 'Hash événement', value: 'sha256:7b9c4e1f…a82d', mono: true },
-                      { label: 'Hash précédent', value: 'sha256:0c41e2b9…1f0c', mono: true },
-                      { label: 'Scellé', value: 'Oui (chaîne vérifiée)' },
-                    ]}
-                  />
-                </DrawerSection>
-              </>
-            )}
-
-            {activeTab === 'payload' && (
-              <DrawerSection title="Payload JSON" description="Document brut tel que stocké dans le journal d'audit Dataverse.">
-                <pre className={styles.payload}>{buildPayload(openLog)}</pre>
-              </DrawerSection>
-            )}
+            <DrawerSection title={t('Acteur')}>
+              <FieldGrid
+                items={[
+                  { label: t('Utilisateur'), value: openLog.utilisateur },
+                  { label: t('Horodatage'), value: openLog.horodatage, mono: true },
+                ]}
+              />
+            </DrawerSection>
+            <DrawerSection title={t('Action')}>
+              <FieldGrid
+                items={[
+                  { label: t('Catégorie'), value: openLog.categorie },
+                  { label: t('Action'), value: openLog.action },
+                  { label: t('Cible'), value: openLog.cible, mono: true, full: true },
+                  { label: t('Résultat'), value: <ResultatBadge r={openLog.resultat} /> },
+                ]}
+              />
+            </DrawerSection>
           </>
         )}
       </DetailDrawer>

@@ -87,7 +87,7 @@ const useStyles = makeStyles({
     gap: '6px',
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#C20012',
+    color: '#c8102e',
     textTransform: 'uppercase',
     letterSpacing: '0.10em',
     marginBottom: '8px',
@@ -136,11 +136,11 @@ const useStyles = makeStyles({
     position: 'relative',
   },
   stepBarActive: {
-    backgroundColor: '#C20012',
-    boxShadow: '0 0 8px rgba(194, 0, 18, 0.30)',
+    backgroundColor: '#c8102e',
+    boxShadow: '0 0 8px rgba(200, 16, 46, 0.30)',
   },
   stepBarCurrent: {
-    background: 'linear-gradient(90deg, #C20012 0%, #C20012 60%, #ED4C58 100%)',
+    background: 'linear-gradient(90deg, #c8102e 0%, #c8102e 60%, #d8324a 100%)',
   },
   stepLabels: {
     display: 'flex',

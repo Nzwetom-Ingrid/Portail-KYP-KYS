@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Plateforme d'onboarding KYP / KYS — Connaissance partenaire et fournisseur." />
 
@@ -15,10 +15,31 @@
     />
 
     <title>KYP / KYS · Mon espace</title>
-    <script type="module" crossorigin src="/assets/index-CZ_c6Fzg.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-D9-fqq9M.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-CcKmb8vp.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-CBM6zNEK.css">
+
+    <!-- Identité du tiers connecté, injectée par Power Pages via Liquid
+         (rendu côté serveur quand l'utilisateur est authentifié). Garde
+         défensive : si le Liquid n'est pas rendu (dev local, ou page servie
+         en statique), les valeurs commencent par « { » et sont ignorées —
+         le portail retombe alors sur ses autres voies de résolution. -->
+    <script>
+      (function () {
+        var u = {
+          id: "{{ user.id }}",
+          firstName: "{{ user.firstname }}",
+          lastName: "{{ user.lastname }}",
+          fullName: "{{ user.fullname }}",
+          email: "{{ user.emailaddress1 }}"
+        };
+        if (u.id && u.id.charAt(0) !== "{") {
+          u.contactId = u.id;
+          window.User = u;
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="./index-d8pxnwot.js"></script>
+    <link rel="modulepreload" crossorigin href="./rolldown-runtime-d9-fqq9m.js">
+    <link rel="modulepreload" crossorigin href="./vendor-cckmb8vp.js">
+    <link rel="stylesheet" crossorigin href="./index-dftwwoiq.css">
   </head>
   <body>
     <div id="root"></div>

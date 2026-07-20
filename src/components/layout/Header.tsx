@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { makeStyles, Tooltip, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
+import { useNavigate } from 'react-router-dom';
+import { makeStyles, Tooltip, Popover, PopoverSurface, PopoverTrigger, Input } from '@fluentui/react-components';
 import {
   Alert24Regular,
   Search20Regular,
@@ -10,6 +11,8 @@ import {
 } from '@fluentui/react-icons';
 import { RoleSwitcher } from './RoleSwitcher';
 import { useThemeStore } from '@/store/themeStore';
+import { useDossierNotifications } from '@/lib/notifications/useDossierNotifications';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   header: {
@@ -206,48 +209,48 @@ const useStyles = makeStyles({
   },
 });
 
-const SAMPLE_NOTIFS = [
-  { title: '3 dossiers en attente J-2', desc: 'SLA réglementaire COBAC R-2023/01 — relance auto programmée.', time: 'il y a 12 min', unread: true },
-  { title: 'Screening : 1 hit potentiel', desc: 'KYC-B-2026-0042 — Sanctions UE, à valider par RCSI.', time: 'il y a 1 h', unread: true },
-  { title: 'Document expiré', desc: 'Attestation fiscale — Fournisseur Cybernet Solutions.', time: 'il y a 3 h', unread: false },
-  { title: 'Nouveau questionnaire reçu', desc: 'Wolfsberg signé — Citibank N.A. Branch London.', time: 'aujourd’hui 09h12', unread: false },
-];
-
 export function Header() {
   const styles = useStyles();
+  const { t, lang, setLang } = useT();
+  const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [q, setQ] = useState('');
   const theme = useThemeStore(s => s.theme);
   const toggleTheme = useThemeStore(s => s.toggleTheme);
   const isDark = theme === 'dark';
+  // Notifications dérivées des décisions/dossiers, adaptées au rôle connecté.
+  const notifs = useDossierNotifications();
 
   return (
     <header className={styles.header}>
       <div className={styles.leftZone}>
-        <button
-          type="button"
-          className={styles.searchPill}
-          aria-label="Recherche globale"
-        >
-          <Search20Regular />
-          <span>Rechercher un dossier, un partenaire, un UBO…</span>
-          <span className={styles.searchKbd}>Ctrl K</span>
-        </button>
+        <Input
+          style={{ width: '100%' }}
+          contentBefore={<Search20Regular style={{ color: 'var(--text-muted)' }} />}
+          placeholder={t('Rechercher un dossier, un partenaire, un UBO…')}
+          aria-label={t('Recherche globale')}
+          value={q}
+          onChange={(_, data) => setQ(data.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') navigate(`/dossiers?q=${encodeURIComponent(q)}`);
+          }}
+        />
       </div>
 
       <div className={styles.rightZone}>
-        <Tooltip content="Assistant IA conformité" relationship="label" withArrow>
-          <button type="button" className={styles.iconBtn} aria-label="Assistant IA">
+        <Tooltip content={t('Assistant IA conformité')} relationship="label" withArrow>
+          <button type="button" className={styles.iconBtn} aria-label={t('Assistant IA conformité')}>
             <Sparkle20Regular />
           </button>
         </Tooltip>
 
-        <Tooltip content="Aide & documentation" relationship="label" withArrow>
-          <button type="button" className={styles.iconBtn} aria-label="Aide">
+        <Tooltip content={t('Aide & documentation')} relationship="label" withArrow>
+          <button type="button" className={styles.iconBtn} aria-label={t('Aide & documentation')}>
             <QuestionCircle20Regular />
           </button>
         </Tooltip>
 
-        <Tooltip content={isDark ? 'Mode clair' : 'Mode sombre'} relationship="label" withArrow>
+        <Tooltip content={isDark ? t('Mode clair') : t('Mode sombre')} relationship="label" withArrow>
           <button
             type="button"
             className={styles.iconBtn}
@@ -272,30 +275,74 @@ export function Header() {
               aria-label="Notifications"
             >
               <Alert24Regular />
-              <span className={styles.notifDot} />
+              {notifs.length > 0 && <span className={styles.notifDot} />}
             </button>
           </PopoverTrigger>
           <PopoverSurface className={styles.popoverSurface}>
             <div className={styles.popoverHeader}>
-              <div className={styles.popoverTitle}>Notifications</div>
-              <div className={styles.popoverSub}>2 non lues · {SAMPLE_NOTIFS.length} au total</div>
+              <div className={styles.popoverTitle}>{t('Notifications')}</div>
+              <div className={styles.popoverSub}>
+                {notifs.length > 0 ? `${notifs.length} ${t('à traiter')}` : t('Aucune notification')}
+              </div>
             </div>
             <div className={styles.popoverList}>
-              {SAMPLE_NOTIFS.map((n, i) => (
-                <div key={i} className={styles.notifItem}>
-                  {n.unread && <span className={styles.notifDotInline} />}
-                  {!n.unread && <span style={{ width: '8px', flexShrink: 0 }} />}
-                  <div className={styles.notifBody}>
-                    <div className={styles.notifTitle}>{n.title}</div>
-                    <div className={styles.notifDesc}>{n.desc}</div>
-                    <div className={styles.notifTime}>{n.time}</div>
-                  </div>
+              {notifs.length === 0 ? (
+                <div style={{ padding: '20px 18px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                  {t('Rien à signaler pour le moment.')}
                 </div>
-              ))}
+              ) : (
+                notifs.map((n) => (
+                  <div
+                    key={n.id}
+                    className={styles.notifItem}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => { setNotifOpen(false); navigate(n.target); }}
+                  >
+                    <span className={styles.notifDotInline} />
+                    <div className={styles.notifBody}>
+                      <div className={styles.notifTitle}>{n.title}</div>
+                      <div className={styles.notifDesc}>{n.desc}</div>
+                      {n.time && <div className={styles.notifTime}>{n.time}</div>}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-            <div className={styles.popoverFooter}>Voir toutes les notifications →</div>
           </PopoverSurface>
         </Popover>
+
+        {/* Sélecteur de langue FR / EN */}
+        <div
+          style={{
+            display: 'inline-flex',
+            border: '1px solid var(--glass-border)',
+            borderRadius: 'var(--radius-md)',
+            overflow: 'hidden',
+            fontSize: '12px',
+            fontWeight: 700,
+          }}
+          role="group"
+          aria-label={t('Langue')}
+        >
+          {(['fr', 'en'] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => setLang(l)}
+              aria-pressed={lang === l}
+              style={{
+                padding: '7px 11px',
+                border: 'none',
+                cursor: 'pointer',
+                background: lang === l ? 'var(--accent)' : 'transparent',
+                color: lang === l ? '#fff' : 'var(--text-secondary)',
+              }}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
 
         <span className={styles.divider} />
         <RoleSwitcher />

@@ -13,11 +13,12 @@ import {
   DocumentPdf24Regular,
   Person24Regular,
   History24Regular,
-  Settings24Regular,
   ShieldTask24Regular,
+  Share24Regular,
 } from '@fluentui/react-icons';
 import { useRoleStore } from '@/store/roleStore';
-import type { Permission } from '@/types/roles';
+import { useT } from '@/i18n/i18n';
+import type { Permission, Direction } from '@/types/roles';
 import type { ReactNode } from 'react';
 
 const useStyles = makeStyles({
@@ -201,7 +202,7 @@ const useStyles = makeStyles({
     backgroundColor: 'var(--accent)',
     color: '#ffffff',
     fontWeight: 600,
-    boxShadow: '0 6px 18px -6px var(--accent-glow), 0 2px 6px -2px rgba(227, 6, 19, 0.30)',
+    boxShadow: '0 6px 18px -6px var(--accent-glow), 0 2px 6px -2px rgba(200, 16, 46, 0.30)',
     ':hover': {
       backgroundColor: 'var(--accent-dark)',
       color: '#ffffff',
@@ -241,6 +242,10 @@ interface NavItem {
   label: string;
   icon: ReactNode;
   permission?: Permission;
+  /** Si présent, l'item n'est visible que pour ces directions internes. */
+  directions?: Direction[];
+  /** Si présent, l'item n'est visible que pour ces rôles (par id). */
+  roles?: string[];
 }
 
 interface NavSection {
@@ -253,17 +258,18 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Pilotage',
     items: [
       { to: '/dashboard',         label: 'Dashboard',                icon: <Home24Regular />, permission: 'dashboard.view' },
-      { to: '/dossiers',          label: 'Validation dossiers',      icon: <ClipboardTaskListLtr24Regular />, permission: 'dossiers.validate' },
-      { to: '/validations-dconf', label: 'Validations DCONF',        icon: <ShieldTask24Regular />, permission: 'dossiers.validate' },
+      { to: '/mes-dossiers',      label: 'Mes dossiers',             icon: <ClipboardTaskListLtr24Regular />, roles: ['charge-relation'] },
+      { to: '/dossiers',          label: 'Dossiers',                 icon: <ClipboardTaskListLtr24Regular />, permission: 'dossiers.validate' },
+      { to: '/validations-dconf', label: 'Validation',               icon: <ShieldTask24Regular />, permission: 'dossiers.confirm' },
       { to: '/calendar',          label: 'Calendrier expirations',   icon: <CalendarLtr24Regular /> },
+      { to: '/document-share',    label: 'Documents partagés',       icon: <Share24Regular />, directions: ['DCONF', 'DMG'] },
     ],
   },
   {
     title: 'Référentiel',
     items: [
-      { to: '/partners', label: 'Partenaires & Cibles', icon: <Building24Regular />, permission: 'partners.view' },
       { to: '/ubo',      label: 'Bénéficiaires UBO',    icon: <PeopleTeam24Regular />, permission: 'ubo.view' },
-      { to: '/admin/partner-types', label: 'Types de partenaires', icon: <Building24Regular /> },
+      { to: '/admin/partner-types', label: 'Types de partenaires', icon: <Building24Regular />, permission: 'admin.full' },
     ],
   },
   {
@@ -285,16 +291,17 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/users',         label: 'Utilisateurs',  icon: <Person24Regular />,   permission: 'users.manage' },
       { to: '/audit-logs',    label: 'Logs d’audit',  icon: <History24Regular />,  permission: 'admin.full' },
-      { to: '/configuration', label: 'Configuration', icon: <Settings24Regular />, permission: 'admin.full' },
     ],
   },
 ];
 
 export function Navigation() {
   const styles = useStyles();
+  const { t } = useT();
   const location = useLocation();
   const can = useRoleStore(s => s.can);
   const currentRole = useRoleStore(s => s.currentRole);
+  const identity = useRoleStore(s => s.identity);
 
   return (
     <aside className={mergeClasses('afb-rail', styles.sidebar)}>
@@ -311,7 +318,7 @@ export function Navigation() {
             <div className={styles.brandTextBlock}>
               <span className={styles.brandEyebrow}>
                 <span className={styles.brandEyebrowDot} aria-hidden="true" />
-                Session active
+                {t('Session active')}
               </span>
               <span className={styles.brandText}>
                 Portail <span className={styles.brandTextHighlight}>KYP / KYS</span>
@@ -323,8 +330,8 @@ export function Navigation() {
 
           <div className={styles.brandFooter}>
             <span className={styles.brandChip}>
-              <span className={styles.brandChipLabel}>Direction</span>
-              <span className={styles.brandChipValue}>{currentRole.direction ?? 'Externe'}</span>
+              <span className={styles.brandChipLabel}>{t('Direction')}</span>
+              <span className={styles.brandChipValue}>{identity.direction ?? currentRole.direction ?? t('Externe')}</span>
             </span>
             <span className={styles.brandComplianceChip}>COBAC</span>
           </div>
@@ -332,14 +339,18 @@ export function Navigation() {
       </Tooltip>
 
       {NAV_SECTIONS.map((section, sectionIdx) => {
+        const currentDir = identity.direction ?? currentRole.direction;
         const visibleItems = section.items.filter(
-          item => !item.permission || can(item.permission)
+          item =>
+            (!item.permission || can(item.permission)) &&
+            (!item.directions || (currentDir ? item.directions.includes(currentDir as Direction) : false)) &&
+            (!item.roles || item.roles.includes(currentRole.id)),
         );
         if (visibleItems.length === 0) return null;
         return (
           <div key={section.title}>
             <div className={mergeClasses(styles.sectionLabel, sectionIdx === 0 && styles.sectionLabelFirst)}>
-              {section.title}
+              {t(section.title)}
             </div>
             {visibleItems.map(item => {
               const isActive = location.pathname.startsWith(item.to);
@@ -350,7 +361,7 @@ export function Navigation() {
                   className={mergeClasses(styles.link, isActive && styles.linkActive)}
                 >
                   <span className={styles.linkIcon}>{item.icon}</span>
-                  <span className={styles.linkLabel}>{item.label}</span>
+                  <span className={styles.linkLabel}>{t(item.label)}</span>
                 </NavLink>
               );
             })}

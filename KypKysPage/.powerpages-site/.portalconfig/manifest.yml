@@ -1,10 +1,1175 @@
+adx_entitypermission:
+- RecordId: 4afb1001-1001-4001-8001-100100100101
+  DisplayName: 4afb1001-1001-4001-8001-100100100101
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100102
+  DisplayName: 4afb1001-1001-4001-8001-100100100102
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100103
+  DisplayName: 4afb1001-1001-4001-8001-100100100103
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100104
+  DisplayName: 4afb1001-1001-4001-8001-100100100104
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100105
+  DisplayName: 4afb1001-1001-4001-8001-100100100105
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100106
+  DisplayName: 4afb1001-1001-4001-8001-100100100106
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100107
+  DisplayName: 4afb1001-1001-4001-8001-100100100107
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100108
+  DisplayName: 4afb1001-1001-4001-8001-100100100108
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100109
+  DisplayName: 4afb1001-1001-4001-8001-100100100109
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100110
+  DisplayName: 4afb1001-1001-4001-8001-100100100110
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100111
+  DisplayName: 4afb1001-1001-4001-8001-100100100111
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100112
+  DisplayName: 4afb1001-1001-4001-8001-100100100112
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100113
+  DisplayName: 4afb1001-1001-4001-8001-100100100113
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100114
+  DisplayName: 4afb1001-1001-4001-8001-100100100114
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100115
+  DisplayName: 4afb1001-1001-4001-8001-100100100115
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4afb1001-1001-4001-8001-100100100116
+  DisplayName: 4afb1001-1001-4001-8001-100100100116
+  CheckSum: 
+  IsDeleted: true
 adx_webfile:
+- RecordId: 01b7e349-e2e3-4d04-ab88-9ab0eaaf1289
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 021dd333-7d4e-4f6e-a25c-b251da0d9709
+  DisplayName: 021dd333-7d4e-4f6e-a25c-b251da0d9709
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0226e0fe-427c-47a0-84c4-b5063b05f5d7
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 02950dfc-664a-4d4b-bbb1-e54589ba56fd
+  DisplayName: 02950dfc-664a-4d4b-bbb1-e54589ba56fd
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0306a99c-78e7-4cfa-be8b-287b5b3d65a2
+  DisplayName: 0306a99c-78e7-4cfa-be8b-287b5b3d65a2
+  CheckSum: 
+  IsDeleted: true
 - RecordId: 03d8b4f7-73f1-4b82-a7e7-833f46aab504
   DisplayName: index-lhZeoGFZ.js
   CheckSum: 
   IsDeleted: true
+- RecordId: 03fd78d6-8458-4ded-aa7a-29fbcc28c561
+  DisplayName: index-dbe7cwlv.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 04c8a942-008c-4627-b8fd-06d8cb0fc511
+  DisplayName: 04c8a942-008c-4627-b8fd-06d8cb0fc511
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 050e0c37-3519-4eb1-97e7-c8370d375dff
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 06c72247-93a2-46ce-b565-3b5a2b238b6e
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 09f2dca2-e58a-453a-949d-2bd42f5b601c
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0aca3c80-5c74-4302-89e3-91049de567ae
+  DisplayName: 0aca3c80-5c74-4302-89e3-91049de567ae
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0c108c2e-7b5f-467a-8cc9-f6ac11ac4d19
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0c3a8821-bb0e-47a2-b9d3-88282328b8d4
+  DisplayName: index-B0Z7r-l5.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0d6fd3eb-444b-426f-8ed9-ef23df43b520
+  DisplayName: 0d6fd3eb-444b-426f-8ed9-ef23df43b520
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0dfbab4d-20bd-4401-974f-bf1ca550f8e6
+  DisplayName: index-bekrrgzn.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0e84d222-8024-4dde-912e-b27902ddfb36
+  DisplayName: 0e84d222-8024-4dde-912e-b27902ddfb36
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0e88bd4d-306a-480a-a6a9-5fb69e811566
+  DisplayName: 0e88bd4d-306a-480a-a6a9-5fb69e811566
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0ed0d013-6a96-470b-9bbc-f92da599a13b
+  DisplayName: vendor-CcKmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0f807755-48da-4e5a-8140-aee28aab2e05
+  DisplayName: 0f807755-48da-4e5a-8140-aee28aab2e05
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 1037ef2a-4a6c-4b06-94c9-965006e038a9
+  DisplayName: index-CgjOm__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 107d72cb-43d3-4751-a432-8e114e308217
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 1301e710-7ccc-4988-bee9-3537c7124fb5
+  DisplayName: index-cicao5rc.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 13d25d68-80d6-48e5-873d-e1035785410f
+  DisplayName: index-CgjOm__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 13f942b1-525e-49f7-8850-bc6301d42e72
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 1602271c-68d1-43ee-a0a7-b079511aa6ba
+  DisplayName: index-lkcpxa0m.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 17fcc5d9-7b48-496f-9f95-363bc46bb5f3
+  DisplayName: 17fcc5d9-7b48-496f-9f95-363bc46bb5f3
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 18d3b245-575b-444b-91b7-9b68dba8c7de
+  DisplayName: 18d3b245-575b-444b-91b7-9b68dba8c7de
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 191fd64a-d30f-4d28-b7b2-e4d0e28fbba9
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 194edf20-7eab-444c-a7ef-c05898826e4c
+  DisplayName: 194edf20-7eab-444c-a7ef-c05898826e4c
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 1a4139aa-aa6f-4d8e-b8ab-91fc371a4320
+  DisplayName: 1a4139aa-aa6f-4d8e-b8ab-91fc371a4320
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 1edf741b-e96c-4e00-900a-143b72246e83
+  DisplayName: 1edf741b-e96c-4e00-900a-143b72246e83
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 208648b7-dd64-4276-8844-df5bbb450bc1
+  DisplayName: 208648b7-dd64-4276-8844-df5bbb450bc1
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 20b10d77-c3fd-4d4c-b869-28a538c5bb6d
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 214beaee-761b-4fc3-9dda-967e806a7321
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 21758094-ce90-47b8-b7e2-f35f2a86b8bb
+  DisplayName: index-CgjOm__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2196123f-b62d-483f-ad5b-b4dd3ee7d192
+  DisplayName: index-cvww1n6s.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2295b5d5-7978-43ac-aafb-8bdcc22620ad
+  DisplayName: index-c3tqvgup.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 230894be-72b9-4fbe-9a66-4784c6d060f2
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 236be33e-2415-4438-b5d9-ee46bebc7b6b
+  DisplayName: 236be33e-2415-4438-b5d9-ee46bebc7b6b
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2401121e-fd0b-4fb0-bfd2-0d69449a8db7
+  DisplayName: 2401121e-fd0b-4fb0-bfd2-0d69449a8db7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 257e9b47-9aa4-48f7-9f8b-35b205a445d7
+  DisplayName: 257e9b47-9aa4-48f7-9f8b-35b205a445d7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 267dabfc-db84-4938-8dc7-9e6bcba67300
+  DisplayName: 267dabfc-db84-4938-8dc7-9e6bcba67300
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 27a225ee-d951-4ff8-afe1-a8aeed99884e
+  DisplayName: 27a225ee-d951-4ff8-afe1-a8aeed99884e
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 298648ef-deea-46dd-9e11-de987cc8b914
+  DisplayName: 298648ef-deea-46dd-9e11-de987cc8b914
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 29ac321d-7379-48e6-a623-033966851d8b
+  DisplayName: 29ac321d-7379-48e6-a623-033966851d8b
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 29ad1563-3499-4cc0-9925-dca877e258cd
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 29f5adf7-f401-48da-a5e4-2c31d12aa592
+  DisplayName: index-cgjom__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2a950acd-f8ba-4c92-9cbe-e8366a675965
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2ac8cdb4-0778-4799-91ae-9e79eb6d60c4
+  DisplayName: 2ac8cdb4-0778-4799-91ae-9e79eb6d60c4
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2ad787e7-2da2-47ce-aaf4-300fc6f4c214
+  DisplayName: 2ad787e7-2da2-47ce-aaf4-300fc6f4c214
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2afcc1e9-e390-49d0-ab12-1f4506aae8aa
+  DisplayName: 2afcc1e9-e390-49d0-ab12-1f4506aae8aa
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2d00fd6c-68da-440f-992f-d5d2c3d20ebf
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2de5ae0a-161d-4f15-8e28-71ac570da351
+  DisplayName: 2de5ae0a-161d-4f15-8e28-71ac570da351
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2e712563-48c2-4200-a4ba-c48fea30fe9e
+  DisplayName: 2e712563-48c2-4200-a4ba-c48fea30fe9e
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2e854f13-eb9f-4a84-b12c-2528d2afa9e5
+  DisplayName: 2e854f13-eb9f-4a84-b12c-2528d2afa9e5
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2eb6590b-8681-4fb1-9cff-570b3696c14a
+  DisplayName: 2eb6590b-8681-4fb1-9cff-570b3696c14a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2f494aa0-b3fe-41a3-9d55-e3a2eb54bbba
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2fb5013b-b7fa-49a8-8ce4-93b8d06cf98b
+  DisplayName: 2fb5013b-b7fa-49a8-8ce4-93b8d06cf98b
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3203c982-3fd0-436c-ae13-f71989376c9a
+  DisplayName: 3203c982-3fd0-436c-ae13-f71989376c9a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3214a6b0-db99-4243-838f-c735dcc48f27
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 336b03cb-1b6e-47a3-9a18-69a47db90a37
+  DisplayName: 336b03cb-1b6e-47a3-9a18-69a47db90a37
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 349d6d9b-907a-446e-9aec-c3856be0ae02
+  DisplayName: 349d6d9b-907a-446e-9aec-c3856be0ae02
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 34f0a99b-9c61-4fd7-a8ad-19aa135afd11
+  DisplayName: 34f0a99b-9c61-4fd7-a8ad-19aa135afd11
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 36c06f16-4089-4542-a9e3-3635c326fc9a
+  DisplayName: 36c06f16-4089-4542-a9e3-3635c326fc9a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 37d5c14a-3684-4707-b913-1d55e522c1e4
+  DisplayName: afriland-logo-D2QHGJEL.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 387001c0-36df-4b15-8962-29c0fe5169ae
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3873e2fe-0ffa-4b96-ab4c-3425404d86ed
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 38935736-25f3-459a-a12a-e12fb7d39692
+  DisplayName: 38935736-25f3-459a-a12a-e12fb7d39692
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 392732f4-7cd5-4f56-b701-ca9fd9c031e0
+  DisplayName: 392732f4-7cd5-4f56-b701-ca9fd9c031e0
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 39e4656b-9945-41f4-b6a6-4266327b5bb2
+  DisplayName: 39e4656b-9945-41f4-b6a6-4266327b5bb2
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3bd28844-4149-48be-a588-a7c26964ba2c
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3c398513-1254-4b78-ae1d-8a6473d142b3
+  DisplayName: 3c398513-1254-4b78-ae1d-8a6473d142b3
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3d1613b2-10c9-443e-a9e8-cb275df0e508
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3d4aa24a-5c14-438b-93a2-f89f32f77164
+  DisplayName: index-bgc3xhs-.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3dd7043f-7d33-43e8-9503-b554807ec8cb
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3eb19b71-02ba-4b7f-a364-9b31bd3d9361
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3ed1156b-fc0e-4853-8008-281ae407060c
+  DisplayName: index-imqeurax.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3f859af9-5884-4b1b-8069-5294325b8b28
+  DisplayName: 3f859af9-5884-4b1b-8069-5294325b8b28
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 40c63b52-a03f-4c28-b67f-431d144e1bc9
+  DisplayName: index-c882tkur.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4101283e-e215-4402-b049-ff4d35a7044a
+  DisplayName: 4101283e-e215-4402-b049-ff4d35a7044a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 41cec854-5f4a-45b7-b931-aee3f1da8f11
+  DisplayName: 41cec854-5f4a-45b7-b931-aee3f1da8f11
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 41f60dc8-0079-4629-804f-bb89ffabb795
+  DisplayName: 41f60dc8-0079-4629-804f-bb89ffabb795
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 425fada4-a3d6-48b2-9ee8-41746fcfe224
+  DisplayName: 425fada4-a3d6-48b2-9ee8-41746fcfe224
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 429c9f21-c958-43c4-93a5-23828a13747e
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 43072d78-b36c-499b-9468-d4b007b6a553
+  DisplayName: 43072d78-b36c-499b-9468-d4b007b6a553
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 439b566d-23f7-41a6-94c8-0266d663c67a
+  DisplayName: vendor-CcKmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4447d624-e674-4437-95d8-e1ad4519f7f4
+  DisplayName: 4447d624-e674-4437-95d8-e1ad4519f7f4
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 44c45daa-4f7a-4975-8784-25ea58f6c455
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 45036648-d6ac-4192-a1bd-3ee6bb36e80c
+  DisplayName: index-caatbykc.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4596af86-f61c-4302-8149-fb9f386ecb64
+  DisplayName: 4596af86-f61c-4302-8149-fb9f386ecb64
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4696a7ad-1b11-4a6b-8a9f-eb79c377d362
+  DisplayName: 4696a7ad-1b11-4a6b-8a9f-eb79c377d362
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4764ebfc-c801-493e-af5c-37975432506b
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4779512d-3b51-4b5c-809c-5afff4e83740
+  DisplayName: index-dskyzvze.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4785548d-f016-4a2d-801d-aac29c9135fe
+  DisplayName: vendor-CcKmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4886e99d-ea52-4da5-8243-fb64518fb7f2
+  DisplayName: 4886e99d-ea52-4da5-8243-fb64518fb7f2
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 491d4fed-6a8f-4ce8-a912-e3f4af63c9ff
+  DisplayName: 491d4fed-6a8f-4ce8-a912-e3f4af63c9ff
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4a2c1686-5c9a-43b9-94f5-b0e9db69bd31
+  DisplayName: 4a2c1686-5c9a-43b9-94f5-b0e9db69bd31
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4a392dab-9e02-44e0-91e2-2bfc0051ff4e
+  DisplayName: 4a392dab-9e02-44e0-91e2-2bfc0051ff4e
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4c49ada6-e076-42ce-8c9e-a9afc77bbb96
+  DisplayName: index-CgjOm__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4c7b600d-a807-4c7b-b2e4-e5c3f16df0de
+  DisplayName: 4c7b600d-a807-4c7b-b2e4-e5c3f16df0de
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4d870145-df2d-4b43-b0f2-882cdbf644c1
+  DisplayName: 4d870145-df2d-4b43-b0f2-882cdbf644c1
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4dc12dd7-edc5-494a-a8a1-554585f83d2d
+  DisplayName: 4dc12dd7-edc5-494a-a8a1-554585f83d2d
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4e9c97d8-6449-4a29-861d-4fba5ad70c80
+  DisplayName: vendor-CcKmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4f25161e-554a-4df4-9b00-8b1ce1aaf3a1
+  DisplayName: 4f25161e-554a-4df4-9b00-8b1ce1aaf3a1
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4f6a2e4e-ac9c-4f5e-8693-dcf93bad2dfd
+  DisplayName: index-cfye_tsp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 52e7cc94-48dd-4aff-9fdd-f87f30d2d07e
+  DisplayName: 52e7cc94-48dd-4aff-9fdd-f87f30d2d07e
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 52f16a75-bc08-4ff7-a68e-dd3ffd022452
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5303ee35-f47c-4f48-8e0b-16a01baabd95
+  DisplayName: 5303ee35-f47c-4f48-8e0b-16a01baabd95
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 535f98bf-6c2b-4fa5-879d-73d9520ac1c9
+  DisplayName: 535f98bf-6c2b-4fa5-879d-73d9520ac1c9
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 540e74f3-03cd-40a5-b253-3eb39f3f61ae
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5612fc73-5619-47b0-b83c-dffddc499040
+  DisplayName: index-ulivb20k.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 563e19af-5a67-4662-8984-37baa3c5a141
+  DisplayName: 563e19af-5a67-4662-8984-37baa3c5a141
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5dcb0b1e-d601-4b32-abcb-10f14799e57b
+  DisplayName: 5dcb0b1e-d601-4b32-abcb-10f14799e57b
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5e933a43-cbe1-4942-9be9-3403fe6a1f02
+  DisplayName: 5e933a43-cbe1-4942-9be9-3403fe6a1f02
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5ec093c7-6fda-4d26-af6f-8845f6f1624f
+  DisplayName: 5ec093c7-6fda-4d26-af6f-8845f6f1624f
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5ec13f78-135d-445e-8b5e-4e2a7fd0fce1
+  DisplayName: 5ec13f78-135d-445e-8b5e-4e2a7fd0fce1
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6097fecc-f227-492f-9def-f81ff384bf08
+  DisplayName: index-cpblnkhl.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 612d1c36-1055-4a59-806e-bb979bc92c50
+  DisplayName: index-z14caokt.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 626a7013-3c45-4944-9ed3-45f13f5149df
+  DisplayName: 626a7013-3c45-4944-9ed3-45f13f5149df
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6372eeba-9130-4a89-a05a-f794ae0be1bf
+  DisplayName: 6372eeba-9130-4a89-a05a-f794ae0be1bf
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 64c30678-6db8-4ed4-a0cd-1201efe14b4a
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 64cdd7f8-0200-4f6b-96d2-fcb5218b5c59
+  DisplayName: afriland-logo-D2QHGJEL.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 64dd05b8-f228-426e-a67f-d7d7fc03e403
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 66ad4768-acf6-49e7-a3a9-a0ff5da43e24
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 66e39a2c-a981-4d27-b5b4-50cffec3bddf
+  DisplayName: 66e39a2c-a981-4d27-b5b4-50cffec3bddf
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 68185272-0bf7-4545-b00d-3a1595bb5947
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 690f4093-80a6-4602-a2c6-0203b4bf4f21
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6a679bda-6c56-46cb-a33c-0e143246a401
+  DisplayName: 6a679bda-6c56-46cb-a33c-0e143246a401
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6ab9a19b-14c6-4dd8-a9ee-9b2b601b7c39
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6ac03db7-def1-4f60-a29d-d014fb244c85
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6d291ae0-f504-4633-ac49-dc50700cc912
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6e0edd2f-ba49-4e71-86ce-f392cb2e3ff7
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6ef5c6bc-a269-4915-b2f0-59fc68e8dac2
+  DisplayName: afriland-logo-D2QHGJEL.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6ef7c5fb-a0cd-4d88-9538-ac6412f7b7f7
+  DisplayName: 6ef7c5fb-a0cd-4d88-9538-ac6412f7b7f7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7005fd6d-cceb-42de-ab3a-a47820d30623
+  DisplayName: index-CBM6zNEK.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7122180c-ecbc-4f79-a30b-70b73403f284
+  DisplayName: 7122180c-ecbc-4f79-a30b-70b73403f284
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 71f64a38-8e73-41f2-90b4-263ad8f00be3
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 721fd137-6a1b-4f49-bfa2-e0224593fe41
+  DisplayName: 721fd137-6a1b-4f49-bfa2-e0224593fe41
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7319416c-e6ad-4ed0-8fea-d8a0a76d6bdb
+  DisplayName: 7319416c-e6ad-4ed0-8fea-d8a0a76d6bdb
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 73475b85-aa2f-44fb-8d4d-885b3d262256
+  DisplayName: 73475b85-aa2f-44fb-8d4d-885b3d262256
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 76d4065c-ad10-452f-8197-a6b8dc6a90f9
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 78c845f9-2841-4990-847f-feeff998368f
+  DisplayName: index-CZ_c6Fzg.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7ad34b30-a6e5-4b11-83d8-fabc59167b17
+  DisplayName: 7ad34b30-a6e5-4b11-83d8-fabc59167b17
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7bab0d28-f36c-49a5-9349-b75ad862553a
+  DisplayName: 7bab0d28-f36c-49a5-9349-b75ad862553a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7c080d5a-c344-4928-9a9f-a68dcbfe06d4
+  DisplayName: 7c080d5a-c344-4928-9a9f-a68dcbfe06d4
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7c27fab9-4629-4147-ab5a-4645c1388cba
+  DisplayName: 7c27fab9-4629-4147-ab5a-4645c1388cba
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7c2c8d1f-ccbb-4dd5-94ad-3715726bf7c1
+  DisplayName: vendor-CcKmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7c903c1a-c2e2-4c5c-aa92-f650424ea80c
+  DisplayName: 7c903c1a-c2e2-4c5c-aa92-f650424ea80c
+  CheckSum: 
+  IsDeleted: true
 - RecordId: 7cb88670-b574-44d6-aba7-3dd1017812a0
   DisplayName: index-B4QqeYl8.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7d9ca649-a6fc-4bc4-9fa2-c9d0de72f783
+  DisplayName: 7d9ca649-a6fc-4bc4-9fa2-c9d0de72f783
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7f19ed1b-9787-46f3-87c8-2365ba85e13a
+  DisplayName: 7f19ed1b-9787-46f3-87c8-2365ba85e13a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7f8482fd-b692-40a6-b548-9b2e9e62150f
+  DisplayName: index-cxei6laq.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 81560540-5a40-4d87-a66d-3d1c54c4a33f
+  DisplayName: index--w7cl_pi.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 826ec299-9b8b-4324-b3ae-1e0ae181d078
+  DisplayName: 826ec299-9b8b-4324-b3ae-1e0ae181d078
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 82865589-5a52-44b0-a150-f4aa6aa78d59
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8351811d-b61f-40ce-82ec-c8f1d127c844
+  DisplayName: index-cz-xycyz.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 83ea4a4b-b13a-47a1-aaa9-3cb14ad7c47f
+  DisplayName: 83ea4a4b-b13a-47a1-aaa9-3cb14ad7c47f
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8408383f-69a4-4236-8374-1a0a8f5e7036
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 84fa0614-e3d0-4e5d-8fb5-d928808cd32d
+  DisplayName: 84fa0614-e3d0-4e5d-8fb5-d928808cd32d
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 867f3816-e707-4cec-b099-6c43d4ce164d
+  DisplayName: 867f3816-e707-4cec-b099-6c43d4ce164d
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 87ad1dbe-3beb-4ea7-8c34-6503d0141d3b
+  DisplayName: 87ad1dbe-3beb-4ea7-8c34-6503d0141d3b
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8824fe2a-c9e5-4246-8e96-456bfa9f6fce
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 88a83102-79cd-4b9f-bcb5-61e82b465d22
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 88fe3f8a-42da-4b5f-b776-fe8378ed61a7
+  DisplayName: 88fe3f8a-42da-4b5f-b776-fe8378ed61a7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 89075b31-d500-4b34-94c2-235e73e78801
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 893c63db-ca15-4b50-96c2-33c3f2198de7
+  DisplayName: 893c63db-ca15-4b50-96c2-33c3f2198de7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8bc14c09-5ac9-46fd-b1cf-af5c76d1b0b4
+  DisplayName: 8bc14c09-5ac9-46fd-b1cf-af5c76d1b0b4
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8c7013f8-143c-4753-8554-77a75391d8a7
+  DisplayName: 8c7013f8-143c-4753-8554-77a75391d8a7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8cc8c92e-582a-429c-ad39-01406f0dd3e9
+  DisplayName: index-dlfv5wcj.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8d65c0ce-b4e2-4ea4-91d4-4099a0ba8129
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8eb36a9e-a0b5-4f81-a48d-326ca2997c47
+  DisplayName: 8eb36a9e-a0b5-4f81-a48d-326ca2997c47
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8f095fba-288a-4bc0-a60d-60f2045633f1
+  DisplayName: 8f095fba-288a-4bc0-a60d-60f2045633f1
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8f4eb734-f5f2-4aa9-b3eb-7a1a5a6cf56c
+  DisplayName: 8f4eb734-f5f2-4aa9-b3eb-7a1a5a6cf56c
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8f729653-9dd6-4d30-9838-b77c7f076cee
+  DisplayName: 8f729653-9dd6-4d30-9838-b77c7f076cee
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8faca3db-97db-46af-b958-06e5802b9700
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 940910be-8bfb-4215-8a2b-c11e306c1506
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 952d0ea0-efdd-4f16-ae7c-e138a9619f6c
+  DisplayName: 952d0ea0-efdd-4f16-ae7c-e138a9619f6c
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 98422146-b86b-48df-a676-0fc2d3492110
+  DisplayName: 98422146-b86b-48df-a676-0fc2d3492110
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 989be98b-5300-4bdd-8923-229de6b16ec2
+  DisplayName: 989be98b-5300-4bdd-8923-229de6b16ec2
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9a30856c-c490-4f20-8f70-da08652fb956
+  DisplayName: 9a30856c-c490-4f20-8f70-da08652fb956
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9afc1aa7-868d-4721-b6f6-6b656de043b0
+  DisplayName: 9afc1aa7-868d-4721-b6f6-6b656de043b0
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9b14fd12-f663-4af9-92af-a3ac49ac28b8
+  DisplayName: afriland-logo-D2QHGJEL.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9b96ed9f-29d8-42fe-9565-5d0a63829d94
+  DisplayName: 9b96ed9f-29d8-42fe-9565-5d0a63829d94
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9c1988c6-31ce-449a-86bd-a4733d75c5d7
+  DisplayName: 9c1988c6-31ce-449a-86bd-a4733d75c5d7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9c50342f-21da-4784-a804-4cfd63aab097
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9d2ea34a-b662-478e-bae6-b51846cabd66
+  DisplayName: afriland-logo-D2QHGJEL.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9d96aefd-2e5f-4b01-a421-46f8a1151566
+  DisplayName: rolldown-runtime-D9-fqq9M.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9da2d2b3-7969-4938-9fd4-bf3c45483132
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9eb194e7-f038-464d-933f-8670081a5a5a
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a2542d7c-20c1-4a3a-84dd-fb967777b421
+  DisplayName: a2542d7c-20c1-4a3a-84dd-fb967777b421
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a2716984-f022-4e95-b637-3a61b693e389
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a2cec174-cd10-4041-861e-3b25aa8913c5
+  DisplayName: a2cec174-cd10-4041-861e-3b25aa8913c5
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a3fb230d-b120-45e0-8ae4-75971d0c8a86
+  DisplayName: index-CgjOm__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a649df60-db93-488d-82e4-5f9f0ed2e4d5
+  DisplayName: a649df60-db93-488d-82e4-5f9f0ed2e4d5
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a6bd96b0-fc65-4816-bc15-34f9e8a778eb
+  DisplayName: index-ba44ij4f.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a757f6bf-07b8-4619-a522-415d8b8c7be2
+  DisplayName: a757f6bf-07b8-4619-a522-415d8b8c7be2
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a76c77e6-ad2b-4b7b-8fe4-dfa61a8ce839
+  DisplayName: index-de2pvj47.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a817db53-d571-4096-8040-6d848798b65c
+  DisplayName: index-bm_y4yr2.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a9570b99-3fb9-4fbc-b54b-69c94fa3e348
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a9b9b25b-4d49-49b0-a31f-7c988e6472f0
+  DisplayName: a9b9b25b-4d49-49b0-a31f-7c988e6472f0
+  CheckSum: 
+  IsDeleted: true
+- RecordId: adeadd5a-a763-4ff6-9e86-bc923c722bea
+  DisplayName: adeadd5a-a763-4ff6-9e86-bc923c722bea
+  CheckSum: 
+  IsDeleted: true
+- RecordId: afb1b1e9-2bf2-4c3b-a4d7-ffbdd93aa4ef
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: afc3d689-2a2f-4b41-82bf-ca2148acc88a
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b045cb1d-79e4-4e1c-9c30-f2b182eaa85e
+  DisplayName: index-bic-zena.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b15e37a6-99bd-4b63-a7a0-426882a49c1c
+  DisplayName: b15e37a6-99bd-4b63-a7a0-426882a49c1c
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b4b8f82f-3a44-4efe-88fb-9cb747323c8c
+  DisplayName: index-fq9j2ffh.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b4d0405b-3b4b-47a1-a579-44d8d1f8b9ec
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b62127c6-0e41-467e-a163-e511562ea2cc
+  DisplayName: index-brf68kqo.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b7384a90-9ad1-471f-9c98-aefb5bd703e8
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b7564c5c-5914-4531-bc31-1bf14eb8b43f
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b7af9535-26c9-4e3c-8518-c41a7f5e18f8
+  DisplayName: b7af9535-26c9-4e3c-8518-c41a7f5e18f8
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b7decdf6-c103-48d8-bd87-20feeee32694
+  DisplayName: b7decdf6-c103-48d8-bd87-20feeee32694
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b81c766d-9f18-4d53-88ab-7d3eba35b523
+  DisplayName: b81c766d-9f18-4d53-88ab-7d3eba35b523
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b8493139-6c3d-41e4-b8e9-909ee22f25d5
+  DisplayName: b8493139-6c3d-41e4-b8e9-909ee22f25d5
+  CheckSum: 
+  IsDeleted: true
+- RecordId: bab0b25c-5a4f-48aa-ab05-a213600a5d61
+  DisplayName: bab0b25c-5a4f-48aa-ab05-a213600a5d61
+  CheckSum: 
+  IsDeleted: true
+- RecordId: bd970048-7a7f-4969-9908-80518f06e76a
+  DisplayName: bd970048-7a7f-4969-9908-80518f06e76a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: bdd1e8fd-0ef9-4eaa-bd17-dbc6776bbe28
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: bdf8eb92-75e5-4397-b945-2271d02064ec
+  DisplayName: bdf8eb92-75e5-4397-b945-2271d02064ec
+  CheckSum: 
+  IsDeleted: true
+- RecordId: be8e6f25-0f4e-482b-a0cc-00e6de90fedd
+  DisplayName: be8e6f25-0f4e-482b-a0cc-00e6de90fedd
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c22cee6e-3b58-41a9-8289-7a499aa3bd3f
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c239e1cf-fd37-4109-b346-b10371cf9ea7
+  DisplayName: c239e1cf-fd37-4109-b346-b10371cf9ea7
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c30f0dff-4675-4c56-bb37-412e68d0f138
+  DisplayName: c30f0dff-4675-4c56-bb37-412e68d0f138
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c3bc1131-dc42-4edf-a5c0-9d5862b9c102
+  DisplayName: c3bc1131-dc42-4edf-a5c0-9d5862b9c102
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c47b4e53-52ed-4cc6-bf3b-861dba86320d
+  DisplayName: c47b4e53-52ed-4cc6-bf3b-861dba86320d
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c51dea76-6723-4a4d-bcf2-fdcd39a7f527
+  DisplayName: c51dea76-6723-4a4d-bcf2-fdcd39a7f527
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c5a7bbce-daa8-45c8-b9ba-eccb782abe11
+  DisplayName: c5a7bbce-daa8-45c8-b9ba-eccb782abe11
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c63488b6-f6e2-458a-92c7-0209d3958a71
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c6fe8e06-154e-4302-aed9-adba17f1ddce
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c76551cb-7675-4c61-ab20-eb807b36d040
+  DisplayName: index-dyv4nfv6.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c79727db-4496-4229-9a80-0e69d7031deb
+  DisplayName: c79727db-4496-4229-9a80-0e69d7031deb
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c8281491-1c8e-4239-bd45-09b72e8276c1
+  DisplayName: c8281491-1c8e-4239-bd45-09b72e8276c1
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c86ed3c1-ec83-4ecc-96e5-2d1680448a9e
+  DisplayName: rolldown-runtime-D9-fqq9M.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c93b5a3b-0f2c-4f4c-95d9-f4952a90ce54
+  DisplayName: rolldown-runtime-D9-fqq9M.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: cb76249b-0e0e-41e2-be12-4af3723883f7
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: cc378827-0e52-47a0-a202-42dba9b898c8
+  DisplayName: index-dznjbjak.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: cc9001ac-92dc-40ac-871c-84530172dd44
+  DisplayName: rolldown-runtime-D9-fqq9M.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: cde33a86-67c5-4688-b1b9-78a85db6428d
+  DisplayName: cde33a86-67c5-4688-b1b9-78a85db6428d
+  CheckSum: 
+  IsDeleted: true
+- RecordId: cee6bfde-abc2-41ef-af69-4e3e3544cf0a
+  DisplayName: cee6bfde-abc2-41ef-af69-4e3e3544cf0a
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d0c57a32-edb2-4b48-a93d-9f44302ea4be
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d4101207-26d8-41f3-b7e6-8b570e4b47a6
+  DisplayName: d4101207-26d8-41f3-b7e6-8b570e4b47a6
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d4f7baa7-c951-4edd-bacd-b52d30717435
+  DisplayName: d4f7baa7-c951-4edd-bacd-b52d30717435
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d5845131-2e5a-49c9-b549-298da287ccf9
+  DisplayName: rolldown-runtime-D9-fqq9M.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d5a8051a-0606-4093-b5d8-db148a3572ed
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d63b4cc9-808b-4802-8841-8abf8ad12f62
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d6a7cfe1-2382-4be3-a6b0-0e611f7d0fd8
+  DisplayName: d6a7cfe1-2382-4be3-a6b0-0e611f7d0fd8
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d6bfe421-883d-45b3-86f9-7d7099ad1f5b
+  DisplayName: d6bfe421-883d-45b3-86f9-7d7099ad1f5b
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d72e9775-88b5-42ce-b312-988d703745aa
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d80724d6-ce01-4d85-9245-7a6a37a13362
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d91921b3-1b77-4649-bda2-d6b33a00445e
+  DisplayName: index-da-aw-q9.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d91a35a7-0c81-4f07-a8bb-f905b64b1f13
+  DisplayName: d91a35a7-0c81-4f07-a8bb-f905b64b1f13
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d9c820c7-f0e0-4c47-9898-c5e8d11a3569
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: daa90fc2-8f4a-429b-aa3c-7aeac4d0581c
+  DisplayName: daa90fc2-8f4a-429b-aa3c-7aeac4d0581c
+  CheckSum: 
+  IsDeleted: true
+- RecordId: db3c5e92-ce2e-4474-b9ae-4ea48622853f
+  DisplayName: db3c5e92-ce2e-4474-b9ae-4ea48622853f
+  CheckSum: 
+  IsDeleted: true
+- RecordId: dbb558d9-ff26-4dec-a5bb-f63249bf5061
+  DisplayName: dbb558d9-ff26-4dec-a5bb-f63249bf5061
+  CheckSum: 
+  IsDeleted: true
+- RecordId: dded7999-9557-4c31-bd4d-f371d989a349
+  DisplayName: dded7999-9557-4c31-bd4d-f371d989a349
+  CheckSum: 
+  IsDeleted: true
+- RecordId: ded5291b-ce93-4409-baad-8f9be68e98bb
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e1036f5f-a443-4bb9-9239-518d52f9c729
+  DisplayName: e1036f5f-a443-4bb9-9239-518d52f9c729
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e318c2b5-6fe1-4ae3-8646-6019e4a301a6
+  DisplayName: e318c2b5-6fe1-4ae3-8646-6019e4a301a6
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e34a7d3a-7e9d-4ffb-b4aa-a082b76e1941
+  DisplayName: e34a7d3a-7e9d-4ffb-b4aa-a082b76e1941
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e3c7ef86-2001-4add-8170-dd871cdc8536
+  DisplayName: e3c7ef86-2001-4add-8170-dd871cdc8536
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e3dd0b5c-7d87-4542-a082-8856cc23e6ad
+  DisplayName: e3dd0b5c-7d87-4542-a082-8856cc23e6ad
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e588d340-8b40-4763-8997-3de133938305
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e6a6726a-ad33-4c51-87b6-92c97a6c1de7
+  DisplayName: index-c1qeajjs.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e711dac3-3dd0-49da-a365-50d0b6fb33f0
+  DisplayName: e711dac3-3dd0-49da-a365-50d0b6fb33f0
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e8d97e1e-e8e9-4259-9fc1-9d8967728cd9
+  DisplayName: e8d97e1e-e8e9-4259-9fc1-9d8967728cd9
+  CheckSum: 
+  IsDeleted: true
+- RecordId: eb540661-3db0-4c18-9484-d48c681e8496
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: ec43cf5d-0e6e-438d-b494-f66a80951502
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: ec5bf1dd-6a53-4a71-a053-27656b6ecf2b
+  DisplayName: ec5bf1dd-6a53-4a71-a053-27656b6ecf2b
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f057f5b5-9ad6-4259-b57a-6ce27da3efc5
+  DisplayName: f057f5b5-9ad6-4259-b57a-6ce27da3efc5
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f0ecb3c3-5314-4fd2-8c3b-a74b8b9b5399
+  DisplayName: index-c02jtym1.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f2768a91-5808-48fb-b3ba-199901cd004d
+  DisplayName: f2768a91-5808-48fb-b3ba-199901cd004d
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f39f0ba0-9bc4-43e7-9bfa-3e0ce3b4a8cf
+  DisplayName: f39f0ba0-9bc4-43e7-9bfa-3e0ce3b4a8cf
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f3b8a639-977d-4d19-97f4-fd80f7d10e6a
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f449f8eb-c34f-4c81-b5dc-40c674e1ed64
+  DisplayName: f449f8eb-c34f-4c81-b5dc-40c674e1ed64
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f457f684-ff10-4e3d-8dc4-571336aea610
+  DisplayName: f457f684-ff10-4e3d-8dc4-571336aea610
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f54ad123-5417-4ad1-826a-fbd834f502d9
+  DisplayName: f54ad123-5417-4ad1-826a-fbd834f502d9
   CheckSum: 
   IsDeleted: true
 - RecordId: f55185c8-2a45-4e8d-b61a-c5fe987d70db
@@ -13,5 +1178,722 @@ adx_webfile:
   IsDeleted: true
 - RecordId: f6b60512-ff42-44ed-811f-4faee4b09bb3
   DisplayName: index-kgaowDKz.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f8e9e29e-2a63-48e6-926a-5ee30fbac834
+  DisplayName: f8e9e29e-2a63-48e6-926a-5ee30fbac834
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f98a11d4-2608-4e8f-9179-e16e9b6cdc45
+  DisplayName: f98a11d4-2608-4e8f-9179-e16e9b6cdc45
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f9b48ba7-2c29-4630-992a-2f18f9b1bb22
+  DisplayName: f9b48ba7-2c29-4630-992a-2f18f9b1bb22
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fa40bc5c-f770-484a-83b1-95a686453a9d
+  DisplayName: fa40bc5c-f770-484a-83b1-95a686453a9d
+  CheckSum: 
+  IsDeleted: true
+- RecordId: faa74f96-de4f-4483-b85f-879ba78c82a5
+  DisplayName: faa74f96-de4f-4483-b85f-879ba78c82a5
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fc587f5c-3551-4830-84e4-bc27fa831517
+  DisplayName: fc587f5c-3551-4830-84e4-bc27fa831517
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fcc70107-8d54-4fbe-89f7-37636bcc96b9
+  DisplayName: fcc70107-8d54-4fbe-89f7-37636bcc96b9
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fce024ac-760d-4f13-9f93-b93ac04ea4ad
+  DisplayName: fce024ac-760d-4f13-9f93-b93ac04ea4ad
+  CheckSum: 
+  IsDeleted: true
+annotation:
+- RecordId: 021dd333-7d4e-4f6e-a25c-b251da0d9709
+  DisplayName: Authentication-Registration-OpenRegistrationEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 02950dfc-664a-4d4b-bbb1-e54589ba56fd
+  DisplayName: Mobile-Header.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0306a99c-78e7-4cfa-be8b-287b5b3d65a2
+  DisplayName: README.md
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 03fd78d6-8458-4ded-aa7a-29fbcc28c561
+  DisplayName: index-dbe7cwlv.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 04c8a942-008c-4627-b8fd-06d8cb0fc511
+  DisplayName: Authentication-Registration-LocalLoginEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0aca3c80-5c74-4302-89e3-91049de567ae
+  DisplayName: Authentication-OpenAuth-Twitter-ConsumerSecret.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0c3a8821-bb0e-47a2-b9d3-88282328b8d4
+  DisplayName: index-B0Z7r-l5.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0d6fd3eb-444b-426f-8ed9-ef23df43b520
+  DisplayName: Search-ResultsTitle.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0e84d222-8024-4dde-912e-b27902ddfb36
+  DisplayName: Logo-alt-text.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0e88bd4d-306a-480a-a6a9-5fb69e811566
+  DisplayName: Webapi-afb_question-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 0f807755-48da-4e5a-8140-aee28aab2e05
+  DisplayName: Profile-Enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 17fcc5d9-7b48-496f-9f95-363bc46bb5f3
+  DisplayName: Header-Toggle-Navigation.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 18d3b245-575b-444b-91b7-9b68dba8c7de
+  DisplayName: Webapi-afb_questionnaireassignment-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 194edf20-7eab-444c-a7ef-c05898826e4c
+  DisplayName: Site-name.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 1a4139aa-aa6f-4d8e-b8ab-91fc371a4320
+  DisplayName: Search-IndexNotesAttachments.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 1edf741b-e96c-4e00-900a-143b72246e83
+  DisplayName: eslint.config.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 208648b7-dd64-4276-8844-df5bbb450bc1
+  DisplayName: Site-BootstrapV5Enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2196123f-b62d-483f-ad5b-b4dd3ee7d192
+  DisplayName: index-cvww1n6s.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2295b5d5-7978-43ac-aafb-8bdcc22620ad
+  DisplayName: index-c3tqvgup.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 236be33e-2415-4438-b5d9-ee46bebc7b6b
+  DisplayName: Authentication-Registration-LocalLoginDeprecated.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2401121e-fd0b-4fb0-bfd2-0d69449a8db7
+  DisplayName: Authentication-OpenAuth-Microsoft-ClientSecret.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 257e9b47-9aa4-48f7-9f8b-35b205a445d7
+  DisplayName: Tiers-son-propre.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 267dabfc-db84-4938-8dc7-9e6bcba67300
+  DisplayName: Webapi-afb_document-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 27a225ee-d951-4ff8-afe1-a8aeed99884e
+  DisplayName: Logo-URL.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 298648ef-deea-46dd-9e11-de987cc8b914
+  DisplayName: Webapi-afb_kycchecklist-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 29ac321d-7379-48e6-a623-033966851d8b
+  DisplayName: Search-ResultsTitle.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 29f5adf7-f401-48da-a5e4-2c31d12aa592
+  DisplayName: index-cgjom__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2ac8cdb4-0778-4799-91ae-9e79eb6d60c4
+  DisplayName: Questionnaire-template-global.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2ad787e7-2da2-47ce-aaf4-300fc6f4c214
+  DisplayName: Logo-URL.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2afcc1e9-e390-49d0-ab12-1f4506aae8aa
+  DisplayName: Authentication-Registration-EmailConfirmationEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2de5ae0a-161d-4f15-8e28-71ac570da351
+  DisplayName: Footer.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2e712563-48c2-4200-a4ba-c48fea30fe9e
+  DisplayName: Authentication-OpenIdConnect-AzureAD-RebrandDisclaimerEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2e854f13-eb9f-4a84-b12c-2528d2afa9e5
+  DisplayName: search-query.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2eb6590b-8681-4fb1-9cff-570b3696c14a
+  DisplayName: Default-studio-template.pagetemplate.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 2fb5013b-b7fa-49a8-8ce4-93b8d06cf98b
+  DisplayName: Webapi-afb_questionnaire-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3203c982-3fd0-436c-ae13-f71989376c9a
+  DisplayName: KnowledgeManagement-NotesFilter.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 336b03cb-1b6e-47a3-9a18-69a47db90a37
+  DisplayName: Footer.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 349d6d9b-907a-446e-9aec-c3856be0ae02
+  DisplayName: Webapi-afb_kycchecklist-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 34f0a99b-9c61-4fd7-a8ad-19aa135afd11
+  DisplayName: manifest.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 36c06f16-4089-4542-a9e3-3635c326fc9a
+  DisplayName: afriland-logo-d2qhgjel.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 38935736-25f3-459a-a12a-e12fb7d39692
+  DisplayName: Response-sa-propre.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 392732f4-7cd5-4f56-b701-ca9fd9c031e0
+  DisplayName: Webapi-afb_partnertype-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 39e4656b-9945-41f4-b6a6-4266327b5bb2
+  DisplayName: HTTP-X-Frame-Options.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3c398513-1254-4b78-ae1d-8a6473d142b3
+  DisplayName: POWERPAGES_SETUP.md
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 3f859af9-5884-4b1b-8069-5294325b8b28
+  DisplayName: Annotation-sur-ses-documents.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 40c63b52-a03f-4c28-b67f-431d144e1bc9
+  DisplayName: index-c882tkur.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4101283e-e215-4402-b049-ff4d35a7044a
+  DisplayName: Webapi-afb_partnertype-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 41cec854-5f4a-45b7-b931-aee3f1da8f11
+  DisplayName: Header-Toggle-Navigation.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 41f60dc8-0079-4629-804f-bb89ffabb795
+  DisplayName: Webapi-afb_documentcategory-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 425fada4-a3d6-48b2-9ee8-41746fcfe224
+  DisplayName: search-filters.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 43072d78-b36c-499b-9468-d4b007b6a553
+  DisplayName: afriland-logo-D2QHGJEL.jpg
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4447d624-e674-4437-95d8-e1ad4519f7f4
+  DisplayName: Webapi-afb_kycchecklistitem-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4596af86-f61c-4302-8149-fb9f386ecb64
+  DisplayName: Header-Search-ToolTip.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4696a7ad-1b11-4a6b-8a9f-eb79c377d362
+  DisplayName: Webapi-afb_tiers-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4779512d-3b51-4b5c-809c-5afff4e83740
+  DisplayName: index-dskyzvze.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4886e99d-ea52-4da5-8243-fb64518fb7f2
+  DisplayName: index-bpzdfln1.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 491d4fed-6a8f-4ce8-a912-e3f4af63c9ff
+  DisplayName: Header-Search-ToolTip.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4a2c1686-5c9a-43b9-94f5-b0e9db69bd31
+  DisplayName: Webapi-afb_dossierkypkys-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4a392dab-9e02-44e0-91e2-2bfc0051ff4e
+  DisplayName: org40a0a528.crm12.dynamics.com-manifest.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4c7b600d-a807-4c7b-b2e4-e5c3f16df0de
+  DisplayName: Search-ResultsCount.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4d870145-df2d-4b43-b0f2-882cdbf644c1
+  DisplayName: Authentication-Registration-ProfileRedirectEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4dc12dd7-edc5-494a-a8a1-554585f83d2d
+  DisplayName: vendor-CcKmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 4f25161e-554a-4df4-9b00-8b1ce1aaf3a1
+  DisplayName: Authentication-Registration-InvitationEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 52e7cc94-48dd-4aff-9fdd-f87f30d2d07e
+  DisplayName: Draft.publishingstate.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5303ee35-f47c-4f48-8e0b-16a01baabd95
+  DisplayName: Access-Denied.pagetemplate.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 535f98bf-6c2b-4fa5-879d-73d9520ac1c9
+  DisplayName: Webapi-afb_questionresponse-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5612fc73-5619-47b0-b83c-dffddc499040
+  DisplayName: index-ulivb20k.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 563e19af-5a67-4662-8984-37baa3c5a141
+  DisplayName: Profile-ShowMarketingOptionsPanel.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5dcb0b1e-d601-4b32-abcb-10f14799e57b
+  DisplayName: Document-son-propre.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5e933a43-cbe1-4942-9be9-3403fe6a1f02
+  DisplayName: Search-NoResults.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5ec093c7-6fda-4d26-af6f-8845f6f1624f
+  DisplayName: Site-name.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 5ec13f78-135d-445e-8b5e-4e2a7fd0fce1
+  DisplayName: Webapi-afb_documentversion-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 612d1c36-1055-4a59-806e-bb979bc92c50
+  DisplayName: index-z14caokt.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 626a7013-3c45-4944-9ed3-45f13f5149df
+  DisplayName: index-cgjom__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6372eeba-9130-4a89-a05a-f794ae0be1bf
+  DisplayName: Webapi-afb_kycchecklistitem-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 66e39a2c-a981-4d27-b5b4-50cffec3bddf
+  DisplayName: Webapi-annotation-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6a679bda-6c56-46cb-a33c-0e143246a401
+  DisplayName: Authentication-OpenAuth-Microsoft-ClientId.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 6ef7c5fb-a0cd-4d88-9538-ac6412f7b7f7
+  DisplayName: Webapi-afb_documentcategory-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7005fd6d-cceb-42de-ab3a-a47820d30623
+  DisplayName: index-CBM6zNEK.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7122180c-ecbc-4f79-a30b-70b73403f284
+  DisplayName: Webapi-afb_questionnairesection-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 721fd137-6a1b-4f49-bfa2-e0224593fe41
+  DisplayName: Webapi-afb_questionnaireresponse-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7319416c-e6ad-4ed0-8fea-d8a0a76d6bdb
+  DisplayName: Authentication-OpenIdConnect-AzureAD-Caption.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 73475b85-aa2f-44fb-8d4d-885b3d262256
+  DisplayName: Webapi-contact-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7ad34b30-a6e5-4b11-83d8-fabc59167b17
+  DisplayName: package.json
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7bab0d28-f36c-49a5-9349-b75ad862553a
+  DisplayName: Webapi-afb_documentversion-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7c080d5a-c344-4928-9a9f-a68dcbfe06d4
+  DisplayName: rolldown-runtime-D9-fqq9M.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7c27fab9-4629-4147-ab5a-4645c1388cba
+  DisplayName: Webapi-afb_tiers-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7c903c1a-c2e2-4c5c-aa92-f650424ea80c
+  DisplayName: Authentication-OpenAuth-LinkedIn-ConsumerSecret.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7d9ca649-a6fc-4bc4-9fa2-c9d0de72f783
+  DisplayName: index-cgjom__o.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 7f19ed1b-9787-46f3-87c8-2365ba85e13a
+  DisplayName: Authentication-Registration-Enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 81560540-5a40-4d87-a66d-3d1c54c4a33f
+  DisplayName: index--w7cl_pi.css
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 826ec299-9b8b-4324-b3ae-1e0ae181d078
+  DisplayName: Webapi-error-innererror-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 83ea4a4b-b13a-47a1-aaa9-3cb14ad7c47f
+  DisplayName: Page-Not-Found.sitemarker.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 84fa0614-e3d0-4e5d-8fb5-d928808cd32d
+  DisplayName: Webapi-afb_questionlogic-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 867f3816-e707-4cec-b099-6c43d4ce164d
+  DisplayName: Authentication-LoginTrackingEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 87ad1dbe-3beb-4ea7-8c34-6503d0141d3b
+  DisplayName: ThemeFeature.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 88fe3f8a-42da-4b5f-b776-fe8378ed61a7
+  DisplayName: vite.config.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 893c63db-ca15-4b50-96c2-33c3f2198de7
+  DisplayName: Published.publishingstate.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8bc14c09-5ac9-46fd-b1cf-af5c76d1b0b4
+  DisplayName: website.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8c7013f8-143c-4753-8554-77a75391d8a7
+  DisplayName: MultiLanguage-DisplayLanguageCodeInURL.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8eb36a9e-a0b5-4f81-a48d-326ca2997c47
+  DisplayName: Search-IndexQueryName.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8f095fba-288a-4bc0-a60d-60f2045633f1
+  DisplayName: vendor-cckmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8f4eb734-f5f2-4aa9-b3eb-7a1a5a6cf56c
+  DisplayName: powerpages.config.json
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 8f729653-9dd6-4d30-9838-b77c7f076cee
+  DisplayName: Webapi-contact-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 952d0ea0-efdd-4f16-ae7c-e138a9619f6c
+  DisplayName: Authentication-Registration-TermsPublicationDate.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 98422146-b86b-48df-a676-0fc2d3492110
+  DisplayName: MultiLanguage-MaximumDepthToClone.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 989be98b-5300-4bdd-8923-229de6b16ec2
+  DisplayName: Authentication-Registration-DenyMinorsWithoutParentalConsent.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9a30856c-c490-4f20-8f70-da08652fb956
+  DisplayName: Search-RecordTypeFacetsEntities.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9afc1aa7-868d-4721-b6f6-6b656de043b0
+  DisplayName: rolldown-runtime-d9-fqq9m.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9b96ed9f-29d8-42fe-9565-5d0a63829d94
+  DisplayName: rolldown-runtime-d9-fqq9m.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: 9c1988c6-31ce-449a-86bd-a4733d75c5d7
+  DisplayName: Search-ResultsCount.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a2542d7c-20c1-4a3a-84dd-fb967777b421
+  DisplayName: Dossier-son-propre.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a2cec174-cd10-4041-861e-3b25aa8913c5
+  DisplayName: Assignment-son-propre.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a649df60-db93-488d-82e4-5f9f0ed2e4d5
+  DisplayName: Authentication-Registration-TermsAgreementEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a6bd96b0-fc65-4816-bc15-34f9e8a778eb
+  DisplayName: index-ba44ij4f.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a757f6bf-07b8-4619-a522-415d8b8c7be2
+  DisplayName: Search-Title.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: a9b9b25b-4d49-49b0-a31f-7c988e6472f0
+  DisplayName: Header-ShowAllProfileNavigationLinks.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: adeadd5a-a763-4ff6-9e86-bc923c722bea
+  DisplayName: Authentication-LoginThrottling-MaxAttemptsTimeLimitTimeSpan.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b045cb1d-79e4-4e1c-9c30-f2b182eaa85e
+  DisplayName: index-bic-zena.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b15e37a6-99bd-4b63-a7a0-426882a49c1c
+  DisplayName: KnowledgeManagement-DisplayNotes.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b4b8f82f-3a44-4efe-88fb-9cb747323c8c
+  DisplayName: index-fq9j2ffh.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b62127c6-0e41-467e-a163-e511562ea2cc
+  DisplayName: index-brf68kqo.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b7af9535-26c9-4e3c-8518-c41a7f5e18f8
+  DisplayName: Search-NoResults.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b7decdf6-c103-48d8-bd87-20feeee32694
+  DisplayName: Profile-ForceSignUp.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b81c766d-9f18-4d53-88ab-7d3eba35b523
+  DisplayName: Referentiels-KYC-global.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: b8493139-6c3d-41e4-b8e9-909ee22f25d5
+  DisplayName: Mobile-Header.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: bab0b25c-5a4f-48aa-ab05-a213600a5d61
+  DisplayName: English.websitelanguage.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: bd970048-7a7f-4969-9908-80518f06e76a
+  DisplayName: Logo-alt-text.contentsnippet.value.html
+  CheckSum: 
+  IsDeleted: true
+- RecordId: bdf8eb92-75e5-4397-b945-2271d02064ec
+  DisplayName: Webapi-afb_questionnaireclarification-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: be8e6f25-0f4e-482b-a0cc-00e6de90fedd
+  DisplayName: CodeSite-Enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c239e1cf-fd37-4109-b346-b10371cf9ea7
+  DisplayName: Search.pagetemplate.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c30f0dff-4675-4c56-bb37-412e68d0f138
+  DisplayName: Authentication-OpenAuth-Twitter-ConsumerKey.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c3bc1131-dc42-4edf-a5c0-9d5862b9c102
+  DisplayName: Search.sitemarker.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c47b4e53-52ed-4cc6-bf3b-861dba86320d
+  DisplayName: Search-FacetedView.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c51dea76-6723-4a4d-bcf2-fdcd39a7f527
+  DisplayName: Questions-options-sections-global.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c5a7bbce-daa8-45c8-b9ba-eccb782abe11
+  DisplayName: Webapi-afb_questionnaireclarification-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c79727db-4496-4229-9a80-0e69d7031deb
+  DisplayName: vendor-cckmb8vp.js
+  CheckSum: 
+  IsDeleted: true
+- RecordId: c8281491-1c8e-4239-bd45-09b72e8276c1
+  DisplayName: Profile.pagetemplate.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: cde33a86-67c5-4688-b1b9-78a85db6428d
+  DisplayName: Authentication-Registration-DenyMinors.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: cee6bfde-abc2-41ef-af69-4e3e3544cf0a
+  DisplayName: Authentication-OpenAuth-Facebook-AppSecret.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d4101207-26d8-41f3-b7e6-8b570e4b47a6
+  DisplayName: Search-Enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d4f7baa7-c951-4edd-bacd-b52d30717435
+  DisplayName: Webapi-afb_questionnairesection-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d6a7cfe1-2382-4be3-a6b0-0e611f7d0fd8
+  DisplayName: Webapi-afb_questionlogic-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d6bfe421-883d-45b3-86f9-7d7099ad1f5b
+  DisplayName: Webapi-afb_questionoption-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: d91a35a7-0c81-4f07-a8bb-f905b64b1f13
+  DisplayName: QuestionResponse-sa-propre.tablepermission.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: daa90fc2-8f4a-429b-aa3c-7aeac4d0581c
+  DisplayName: Footer-OutputCache-Enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: db3c5e92-ce2e-4474-b9ae-4ea48622853f
+  DisplayName: CustomerSupport-DisplayAllUserActivitiesOnTimeline.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: dbb558d9-ff26-4dec-a5bb-f63249bf5061
+  DisplayName: Profile.sitemarker.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: dded7999-9557-4c31-bd4d-f371d989a349
+  DisplayName: English.portallanguage.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e1036f5f-a443-4bb9-9239-518d52f9c729
+  DisplayName: Authentication-OpenAuth-Facebook-AppId.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e318c2b5-6fe1-4ae3-8646-6019e4a301a6
+  DisplayName: Search-Title.contentsnippet.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e34a7d3a-7e9d-4ffb-b4aa-a082b76e1941
+  DisplayName: Access-Denied.sitemarker.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e3c7ef86-2001-4add-8170-dd871cdc8536
+  DisplayName: Authentication-OpenAuth-LinkedIn-ConsumerKey.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e3dd0b5c-7d87-4542-a082-8856cc23e6ad
+  DisplayName: OnlineDomains.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e711dac3-3dd0-49da-a365-50d0b6fb33f0
+  DisplayName: Webapi-afb_question-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: e8d97e1e-e8e9-4259-9fc1-9d8967728cd9
+  DisplayName: Authentication-LoginThrottling-IpAddressTimeoutTimeSpan.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: ec5bf1dd-6a53-4a71-a053-27656b6ecf2b
+  DisplayName: Webapi-afb_questionnaireassignment-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f057f5b5-9ad6-4259-b57a-6ce27da3efc5
+  DisplayName: Authentication-Registration-ExternalLoginEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f2768a91-5808-48fb-b3ba-199901cd004d
+  DisplayName: README.md
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f39f0ba0-9bc4-43e7-9bfa-3e0ce3b4a8cf
+  DisplayName: Webapi-afb_questionresponse-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f449f8eb-c34f-4c81-b5dc-40c674e1ed64
+  DisplayName: Webapi-afb_questionnaire-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f457f684-ff10-4e3d-8dc4-571336aea610
+  DisplayName: Home.sitemarker.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f54ad123-5417-4ad1-826a-fbd834f502d9
+  DisplayName: Webapi-afb_questionnaireresponse-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f8e9e29e-2a63-48e6-926a-5ee30fbac834
+  DisplayName: Authentication-Registration-LoginButtonAuthenticationType.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f98a11d4-2608-4e8f-9179-e16e9b6cdc45
+  DisplayName: Webapi-annotation-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: f9b48ba7-2c29-4630-992a-2f18f9b1bb22
+  DisplayName: Webapi-afb_questionoption-fields.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fa40bc5c-f770-484a-83b1-95a686453a9d
+  DisplayName: Header-OutputCache-Enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: faa74f96-de4f-4483-b85f-879ba78c82a5
+  DisplayName: package-lock.json
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fc587f5c-3551-4830-84e4-bc27fa831517
+  DisplayName: Authentication-Registration-AzureADLoginEnabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fcc70107-8d54-4fbe-89f7-37636bcc96b9
+  DisplayName: Webapi-afb_document-enabled.sitesetting.yml
+  CheckSum: 
+  IsDeleted: true
+- RecordId: fce024ac-760d-4f13-9f93-b93ac04ea4ad
+  DisplayName: Webapi-afb_dossierkypkys-fields.sitesetting.yml
   CheckSum: 
   IsDeleted: true

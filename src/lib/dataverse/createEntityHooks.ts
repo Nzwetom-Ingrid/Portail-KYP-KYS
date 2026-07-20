@@ -93,12 +93,18 @@ export function createEntityHooks<TModel, TCreate>(
       mutationFn: async (record) => unwrap(await service.create(record), entityName),
       ...mutationOptions,
       onSuccess: async (data, variables, onMutateResult, context) => {
-        // Journalisation best-effort (ne bloque pas le flux).
-        void logAudit({
-          entity: entityName,
-          recordId: (data as Record<string, unknown> | undefined)?.[`${entityName}id`] as string | undefined,
-          action: 'create',
-        });
+        // Journalisation best-effort (ne bloque pas le flux) ; une fois la ligne
+        // d'audit écrite, on rafraîchit le journal pour que « Créé par » /
+        // traçabilité apparaissent sans recharger la page.
+        if (entityName !== 'afb_journalaudit') {
+          void logAudit({
+            entity: entityName,
+            recordId: (data as Record<string, unknown> | undefined)?.[`${entityName}id`] as string | undefined,
+            action: 'create',
+          }).finally(() => {
+            void queryClient.invalidateQueries({ queryKey: ['afb_journalaudit', 'list'], refetchType: 'all' });
+          });
+        }
         // refetchType: 'all' force aussi les requêtes inactives ; await garantit
         // que la liste est à jour avant la fin de la mutation.
         await queryClient.invalidateQueries({ queryKey: keys.lists(), refetchType: 'all' });

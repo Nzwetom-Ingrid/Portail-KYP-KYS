@@ -20,6 +20,59 @@ export const MOCK_DOSSIER = {
   afb_version: 1,
 }
 
+export const MOCK_DOCUMENT_CATEGORIES = [
+  { id: 'cat-iden', label: 'Identification' },
+  { id: 'cat-loca', label: 'Localisation' },
+  { id: 'cat-just', label: 'Justificatifs' },
+  { id: 'cat-comp', label: 'Compléments' },
+  { id: 'cat-conv', label: 'Conventions' },
+  { id: 'cat-audi', label: 'Audit' },
+  { id: 'cat-assu', label: 'Assurance' },
+  { id: 'cat-autr', label: 'Autres' },
+]
+
+export const MOCK_UBOS = [
+  { afb_uboid: 'u1', afb_nomouraisonsociale: 'Jean-Pierre Mbarga',        afb_nationalite: 'Camerounaise', afb_datedenaissance: '1972-03-14', afb_pourcentagededetentiondirecte: 35, afb_typedentite: 1, afb_statutdevalidation: 0, afb_statutppe: 0, createdon: '2026-05-19T10:00:00Z' },
+  { afb_uboid: 'u2', afb_nomouraisonsociale: 'Aïssatou Diallo',           afb_nationalite: 'Sénégalaise',  afb_datedenaissance: '1980-11-02', afb_pourcentagededetentiondirecte: 22, afb_typedentite: 1, afb_statutdevalidation: 1, afb_statutppe: 1, createdon: '2026-05-20T09:00:00Z' },
+  { afb_uboid: 'u3', afb_nomouraisonsociale: 'Holdings International Ltd.', afb_nationalite: 'Jersey',       afb_datedenaissance: null,         afb_pourcentagededetentiondirecte: 43, afb_typedentite: 0, afb_statutdevalidation: 1, afb_statutppe: 0, createdon: '2026-05-21T08:00:00Z' },
+]
+
+// Évaluations validées vues par le tiers (shape = sortie de mapEvaluation).
+export const MOCK_EVALUATIONS = [
+  {
+    id: 'ev1',
+    reference: 'EVAL-2026-001',
+    date: '2026-05-28T10:00:00Z',
+    periodeDebut: '2026-01-01',
+    periodeFin: '2026-03-31',
+    note: 82,
+    noteMax: 100,
+    pourcentage: 82,
+    risque: 'Modéré',
+    tendance: 'Amélioration',
+    avis: "Bonne qualité de service sur la période. Respect des SLA satisfaisant, quelques retards ponctuels de transmission documentaire à corriger. Coopération conforme aux attentes de la Direction.",
+    plan: "Réduire les délais de réponse aux demandes de complément à moins de 5 jours ouvrés.",
+    decision: 'Maintenir',
+    dateValidation: '2026-05-30T09:00:00Z',
+  },
+  {
+    id: 'ev2',
+    reference: 'EVAL-2025-004',
+    date: '2025-11-15T10:00:00Z',
+    periodeDebut: '2025-07-01',
+    periodeFin: '2025-09-30',
+    note: 64,
+    noteMax: 100,
+    pourcentage: 64,
+    risque: 'Élevé',
+    tendance: 'Dégradation',
+    avis: "Dégradation du niveau de service constatée. Plusieurs incidents non résolus dans les délais. Mise sous surveillance renforcée recommandée.",
+    plan: "Plan de remédiation à fournir sous 30 jours. Point de suivi mensuel avec la Direction.",
+    decision: 'Sous surveillance',
+    dateValidation: '2025-11-20T09:00:00Z',
+  },
+]
+
 export const MOCK_DOCUMENTS = [
   { afb_documentid: 'd1', afb_nomfichier: 'Registre de commerce (RCCM)',          afb_typedocument: 'PDF · 1,2 Mo', afb_categorie_label: 'Légal',     afb_statutvalidite: 'Valide',     createdon: '2026-05-20T10:00:00Z' },
   { afb_documentid: 'd2', afb_nomfichier: 'Statuts de la société',                afb_typedocument: 'PDF · 3,4 Mo', afb_categorie_label: 'Légal',     afb_statutvalidite: 'Valide',     createdon: '2026-05-20T11:00:00Z' },

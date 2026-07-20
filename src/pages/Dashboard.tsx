@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { exportToCsv } from '@/lib/exportCsv';
+import { COUNTRIES } from '@/lib/countries';
 import {
   makeStyles,
   Button,
@@ -26,6 +27,8 @@ import type { Dossier } from '@/lib/mockData';
 import { SLAAlerts } from '@/components/dashboard/SLAAlerts';
 import { mockKPIs } from '@/lib/mockData';
 import { dossiersKypKys, tiers as tiersHooks, documents as documentsHooks, resultatsScreening, partnerTypes, utilisateursInternes } from '@/lib/dataverse/entityHooks';
+import { useRoleStore } from '@/store/roleStore';
+import { assignQuestionnairesForTiers } from '@/lib/dataverse/assignQuestionnaires';
 import { toDossier } from '@/lib/dataverse/dossierMappers';
 import { toDocExpiration } from '@/lib/dataverse/documentMappers';
 import {
@@ -37,6 +40,7 @@ import {
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   pageHeader: {
@@ -54,14 +58,14 @@ const useStyles = makeStyles({
     gap: '7px',
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#C20012',
+    color: '#c8102e',
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
     marginBottom: '12px',
     padding: '4px 12px',
-    backgroundColor: 'rgba(227, 6, 19, 0.06)',
+    backgroundColor: 'rgba(200, 16, 46, 0.06)',
     borderRadius: '999px',
-    border: '1px solid rgba(227, 6, 19, 0.14)',
+    border: '1px solid rgba(200, 16, 46, 0.14)',
   },
   title: {
     fontSize: '33px',
@@ -144,7 +148,9 @@ const DIRECTIONS = [
 export default function Dashboard() {
   const styles = useStyles();
   const navigate = useNavigate();
+  const can = useRoleStore(s => s.can);
   const { notifySuccess, notifyInfo } = useNotifications();
+  const { t } = useT();
 
   // Dossiers réels depuis Dataverse (afb_dossierkypkys).
   const { data: rawDossiers } = dossiersKypKys.useList({ top: 200 });
@@ -178,7 +184,7 @@ export default function Dashboard() {
   const { data: rawScreening } = resultatsScreening.useList({ top: 500 });
 
   const documentsExpires = useMemo(
-    () => (rawDocs ?? []).map(toDocExpiration).filter((d) => d.statut !== 'Valide').length,
+    () => (rawDocs ?? []).map((d) => toDocExpiration(d)).filter((d) => d.statut !== 'Valide').length,
     [rawDocs],
   );
   const alertesScreening = useMemo(
@@ -234,8 +240,8 @@ export default function Dashboard() {
     // Type juridique : GUID du type de partenaire sélectionné dans le référentiel.
     const ptGuid = typeId;
     if (!ptGuid) {
-      notifyInfo('Création impossible', {
-        description: 'Sélectionnez un type de partenaire — gérez-les dans Administration → Types de partenaires.',
+      notifyInfo(t('Création impossible'), {
+        description: t('Sélectionnez un type de partenaire — gérez-les dans Administration → Types de partenaires.'),
       });
       return;
     }
@@ -268,15 +274,22 @@ export default function Dashboard() {
         'afb_nomdutiers@odata.bind': `/afb_tierses(${newTiers.afb_tiersid})`,
       } as unknown as Parameters<typeof createDossier.mutateAsync>[0]);
 
-      notifySuccess('Nouveau dossier créé', {
-        description: `${ref} · ${nom} — dossier initialisé dans Dataverse.`,
-        action: { label: 'Voir', onClick: () => navigate('/dossiers') },
+      // 3) Affecte automatiquement le(s) questionnaire(s) selon le type du tiers.
+      await assignQuestionnairesForTiers(
+        newTiers.afb_tiersid,
+        ptData?.find((p) => p.afb_partnertypeid === typeId)?.afb_codeinstitution,
+        (userData ?? [])[0]?.afb_utilisateurinterneid,
+      );
+
+      notifySuccess(t('Nouveau dossier créé'), {
+        description: `${ref} · ${nom} — ${t('dossier initialisé dans Dataverse.')}`,
+        action: { label: t('Voir'), onClick: () => navigate('/dossiers') },
       });
       setNewDossierOpen(false);
       reset();
     } catch (e) {
-      notifyInfo('Création impossible', {
-        description: e instanceof Error ? e.message : 'Erreur Dataverse lors de la création du dossier.',
+      notifyInfo(t('Création impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse lors de la création du dossier.'),
       });
       throw e;
     }
@@ -297,8 +310,8 @@ export default function Dashboard() {
         Chargé: d.charge ?? '',
       })),
     );
-    notifySuccess(ok ? 'Export généré' : 'Aucune donnée', {
-      description: ok ? `${dossiers.length} dossiers exportés au format CSV.` : 'Aucun dossier à exporter.',
+    notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+      description: ok ? `${dossiers.length} ${t('dossiers exportés au format CSV.')}` : t('Aucun dossier à exporter.'),
     });
     setConfirmExport(false);
   };
@@ -337,35 +350,39 @@ export default function Dashboard() {
     <div>
       <div className={styles.pageHeader}>
         <div className={styles.titleBlock}>
-          <div className={styles.eyebrow}>Conformité · COBAC R-2023/01</div>
-          <h1 className={styles.title}>Tableau de bord</h1>
+          <div className={styles.eyebrow}>{t('Conformité · COBAC R-2023/01')}</div>
+          <h1 className={styles.title}>{t('Tableau de bord')}</h1>
           <p className={styles.subtitle}>
-            Suivi temps réel des dossiers, scoring de risque et alertes SLA — vue consolidée des activités KYP/KYS.
+            {t('Suivi temps réel des dossiers, scoring de risque et alertes SLA — vue consolidée des activités KYP/KYS.')}
           </p>
         </div>
         <div className={styles.actions}>
-          <Button
-            icon={<ArrowDownload20Regular />}
-            appearance="outline"
-            onClick={() => setConfirmExport(true)}
-          >
-            Exporter
-          </Button>
-          <Button
-            icon={<Add20Regular />}
-            appearance="primary"
-            onClick={() => setNewDossierOpen(true)}
-          >
-            Nouveau dossier
-          </Button>
+          {can('reports.export') && (
+            <Button
+              icon={<ArrowDownload20Regular />}
+              appearance="outline"
+              onClick={() => setConfirmExport(true)}
+            >
+              {t('Exporter')}
+            </Button>
+          )}
+          {can('partners.create') && (
+            <Button
+              icon={<Add20Regular />}
+              appearance="primary"
+              onClick={() => setNewDossierOpen(true)}
+            >
+              {t('Nouveau dossier')}
+            </Button>
+          )}
         </div>
       </div>
 
-      <div className={styles.sectionLabel}>Indicateurs clés</div>
+      <div className={styles.sectionLabel}>{t('Indicateurs clés')}</div>
 
       <div className={styles.kpiGrid}>
         <KPICard
-          label="Dossiers en cours"
+          label={t('Dossiers en cours')}
           value={dossiersEnCours}
           evolution={mockKPIs.dossiersEnCours.evolution}
           period={mockKPIs.dossiersEnCours.period}
@@ -373,7 +390,7 @@ export default function Dashboard() {
           onClick={() => navigate('/dossiers')}
         />
         <KPICard
-          label="Documents expirés"
+          label={t('Documents expirés')}
           value={documentsExpires}
           evolution={mockKPIs.documentsExpires.evolution}
           period={mockKPIs.documentsExpires.period}
@@ -381,7 +398,7 @@ export default function Dashboard() {
           onClick={() => navigate('/calendar')}
         />
         <KPICard
-          label="Alertes screening"
+          label={t('Alertes screening')}
           value={alertesScreening}
           evolution={mockKPIs.alertesScreening.evolution}
           period={mockKPIs.alertesScreening.period}
@@ -389,23 +406,23 @@ export default function Dashboard() {
           onClick={() => navigate('/screening')}
         />
         <KPICard
-          label="Validés ce mois"
+          label={t('Validés ce mois')}
           value={validesCeMois}
           evolution={mockKPIs.validesCeMois.evolution}
           period={mockKPIs.validesCeMois.period}
           variant="positive"
-          onClick={() => navigate('/validations-dconf')}
+          onClick={() => navigate('/dossiers')}
         />
       </div>
 
-      <div className={styles.sectionLabel}>Activité & risques</div>
+      <div className={styles.sectionLabel}>{t('Activité & risques')}</div>
 
       <div className={styles.midRow}>
         <ProgressionChart />
         <RiskDistribution counts={riskCounts} />
       </div>
 
-      <div className={styles.sectionLabel}>Dossiers récents</div>
+      <div className={styles.sectionLabel}>{t('Dossiers récents')}</div>
 
       <div className={styles.bottomRow}>
         <RecentDossiersTable onRowClick={handleRowClick} rows={recents} />
@@ -416,7 +433,7 @@ export default function Dashboard() {
       <DetailDrawer
         open={openDossier !== null}
         onOpenChange={(o) => !o && setOpenDossier(null)}
-        eyebrow="Aperçu rapide"
+        eyebrow={t('Aperçu rapide')}
         title={openDossier?.entite ?? ''}
         subtitle={openDossier?.ref}
         size="medium"
@@ -434,7 +451,7 @@ export default function Dashboard() {
                 }
                 size="small"
               >
-                Risque {openDossier.risque}
+                {t('Risque')} {openDossier.risque}
               </Badge>
               <Badge appearance="tint" color="brand" size="small">
                 {openDossier.statut}
@@ -451,25 +468,25 @@ export default function Dashboard() {
                 navigate('/dossiers');
               }}
             >
-              Ouvrir la fiche complète
+              {t('Ouvrir la fiche complète')}
             </Button>
           </div>
         }
       >
         {openDossier && (
           <>
-            <DrawerSection title="Identification">
+            <DrawerSection title={t('Identification')}>
               <FieldGrid
                 items={[
-                  { label: 'Référence dossier', value: openDossier.ref, mono: true },
-                  { label: 'Entité', value: openDossier.entite },
-                  { label: 'Type', value: openDossier.type },
-                  { label: 'Chargé de relation', value: openDossier.charge },
+                  { label: t('Référence dossier'), value: openDossier.ref, mono: true },
+                  { label: t('Entité'), value: openDossier.entite },
+                  { label: t('Type'), value: openDossier.type },
+                  { label: t('Chargé de relation'), value: openDossier.charge },
                 ]}
               />
             </DrawerSection>
 
-            <DrawerSection title="Progression">
+            <DrawerSection title={t('Progression')}>
               <div
                 style={{
                   display: 'flex',
@@ -491,7 +508,7 @@ export default function Dashboard() {
                     style={{
                       height: '100%',
                       width: `${openDossier.progression}%`,
-                      backgroundColor: openDossier.progression >= 80 ? '#15803D' : '#E30613',
+                      backgroundColor: openDossier.progression >= 80 ? '#15803D' : '#c8102e',
                       borderRadius: '999px',
                     }}
                   />
@@ -501,27 +518,27 @@ export default function Dashboard() {
                 </strong>
               </div>
               <p style={{ fontSize: '12px', color: '#767676', margin: 0 }}>
-                Dossier en cours de constitution — 14 pièces sur 18 fournies.
+                {t('Dossier en cours de constitution — 14 pièces sur 18 fournies.')}
               </p>
             </DrawerSection>
 
-            <DrawerSection title="Activité récente">
+            <DrawerSection title={t('Activité récente')}>
               <DrawerTimeline
                 events={[
                   {
-                    when: 'Aujourd’hui 09h12',
-                    title: 'Pièce déposée',
-                    detail: 'Questionnaire Wolfsberg (signé) — par le tiers',
+                    when: `${t('Aujourd’hui')} 09h12`,
+                    title: t('Pièce déposée'),
+                    detail: t('Questionnaire Wolfsberg (signé) — par le tiers'),
                   },
                   {
-                    when: 'Hier 16h44',
-                    title: 'Relance automatique J-30',
-                    detail: 'Attestation fiscale arrive à expiration le 17/06/2026',
+                    when: `${t('Hier')} 16h44`,
+                    title: t('Relance automatique J-30'),
+                    detail: t('Attestation fiscale arrive à expiration le 17/06/2026'),
                   },
                   {
                     when: '14/05/2026',
-                    title: 'Screening exécuté',
-                    detail: 'Aucun match — sources ONU / OFAC / UE / PPE',
+                    title: t('Screening exécuté'),
+                    detail: t('Aucun match — sources ONU / OFAC / UE / PPE'),
                   },
                 ]}
               />
@@ -537,31 +554,31 @@ export default function Dashboard() {
           if (!o) reset();
           setNewDossierOpen(o);
         }}
-        eyebrow="Workflow d’entrée en relation"
-        title="Créer un nouveau dossier KYP/KYS"
-        subtitle="Initialise la fiche dans Dataverse et déclenche l’invitation Azure AD B2C avec OTP."
+        eyebrow={t('Workflow d’entrée en relation')}
+        title={t('Créer un nouveau dossier KYP/KYS')}
+        subtitle={t('Initialise la fiche dans Dataverse et déclenche l’invitation Azure AD B2C avec OTP.')}
         size="large"
-        submitLabel="Créer et inviter"
+        submitLabel={t('Créer et inviter')}
         submitDisabled={!stepValid}
         onSubmit={submitNouveau}
       >
         <FormSection
-          title="Initialisation"
-          description="Le chargé de relation crée la fiche du tiers et envoie l’invitation sécurisée. Le lien est valable 72 heures."
+          title={t('Initialisation')}
+          description={t('Le chargé de relation crée la fiche du tiers et envoie l’invitation sécurisée. Le lien est valable 72 heures.')}
         >
           <FieldRow cols={2}>
-            <Field label="Direction porteuse" required>
-              <Dropdown value={DIRECTIONS.find((d) => d.value === direction)?.label} selectedOptions={[direction]} onOptionSelect={(_, d) => setDirection(d.optionValue ?? 'DCONF')}>
+            <Field label={t('Direction porteuse')} required>
+              <Dropdown value={t(DIRECTIONS.find((d) => d.value === direction)?.label ?? '')} selectedOptions={[direction]} onOptionSelect={(_, d) => setDirection(d.optionValue ?? 'DCONF')}>
                 {DIRECTIONS.map((d) => (
-                  <Option key={d.value} value={d.value}>
-                    {d.label}
+                  <Option key={d.value} value={d.value} text={t(d.label)}>
+                    {t(d.label)}
                   </Option>
                 ))}
               </Dropdown>
             </Field>
-            <Field label="Type de partenaire" required hint="Référentiel « Types de partenaires » (Dataverse)">
+            <Field label={t('Type de partenaire')} required hint={t('Référentiel « Types de partenaires » (Dataverse)')}>
               <Dropdown
-                placeholder="Sélectionner un type de partenaire"
+                placeholder={t('Sélectionner un type de partenaire')}
                 value={ptData?.find((p) => p.afb_partnertypeid === typeId)?.afb_libellefrancais ?? ''}
                 selectedOptions={typeId ? [typeId] : []}
                 onOptionSelect={(_, d) => d.optionValue && setTypeId(d.optionValue)}
@@ -576,32 +593,25 @@ export default function Dashboard() {
             </Field>
           </FieldRow>
           <FieldRow cols={2}>
-            <Field label="Raison sociale" required>
-              <Input value={nom} onChange={(_, d) => setNom(d.value)} placeholder="Ex. SOCAPALM SA" />
+            <Field label={t('Raison sociale')} required>
+              <Input value={nom} onChange={(_, d) => setNom(d.value)} placeholder={t('Ex. SOCAPALM SA')} />
             </Field>
-            <Field label="Pays" required>
+            <Field label={t('Pays')} required>
               <Dropdown
                 value={pays}
                 selectedOptions={[pays]}
                 onOptionSelect={(_, d) => d.optionValue && setPays(d.optionValue)}
               >
-                <Option value="Cameroun">Cameroun</Option>
-                <Option value="Congo">Congo</Option>
-                <Option value="Gabon">Gabon</Option>
-                <Option value="Tchad">Tchad</Option>
-                <Option value="Sénégal">Sénégal</Option>
-                <Option value="Côte d'Ivoire">Côte d'Ivoire</Option>
-                <Option value="France">France</Option>
-                <Option value="Royaume-Uni">Royaume-Uni</Option>
-                <Option value="États-Unis">États-Unis</Option>
-                <Option value="Émirats arabes unis">Émirats arabes unis</Option>
+                {COUNTRIES.map((c) => (
+                  <Option key={c} value={c}>{c}</Option>
+                ))}
               </Dropdown>
             </Field>
           </FieldRow>
           <FieldRow cols={1}>
-            <Field label="Chargé de relation" required hint="Utilisateur interne responsable du tiers">
+            <Field label={t('Chargé de relation')} required hint={t('Utilisateur interne responsable du tiers')}>
               <Dropdown
-                placeholder="Sélectionner un chargé"
+                placeholder={t('Sélectionner un chargé')}
                 value={userData?.find((u) => u.afb_utilisateurinterneid === chargeId)?.afb_nomcomplet ?? ''}
                 selectedOptions={chargeId ? [chargeId] : []}
                 onOptionSelect={(_, d) => d.optionValue && setChargeId(d.optionValue)}
@@ -614,21 +624,21 @@ export default function Dashboard() {
               </Dropdown>
             </Field>
           </FieldRow>
-          <Field label="Niveau de risque estimé" required>
+          <Field label={t('Niveau de risque estimé')} required>
             <RadioGroup value={risque} onChange={(_, d) => setRisque(d.value as 'Standard' | 'Élevé' | 'Critique')} layout="horizontal">
-              <Radio value="Standard" label="Standard — chargé conformité" />
-              <Radio value="Élevé" label="Élevé — +RCSI" />
-              <Radio value="Critique" label="Critique — +Comité (Art. 41-48)" />
+              <Radio value="Standard" label={t('Standard — chargé conformité')} />
+              <Radio value="Élevé" label={t('Élevé — +RCSI')} />
+              <Radio value="Critique" label={t('Critique — +Comité (Art. 41-48)')} />
             </RadioGroup>
           </Field>
         </FormSection>
 
         <FormSection
-          title="Invitation au tiers"
-          description="L’e-mail d’invitation est envoyé immédiatement après création. L’authentification se fait via Azure AD B2C + OTP."
+          title={t('Invitation au tiers')}
+          description={t('L’e-mail d’invitation est envoyé immédiatement après création. L’authentification se fait via Azure AD B2C + OTP.')}
         >
           <FieldRow cols={2}>
-            <Field label="E-mail du contact" required hint="Le tiers reçoit l’invitation sur cette adresse.">
+            <Field label={t('E-mail du contact')} required hint={t('Le tiers reçoit l’invitation sur cette adresse.')}>
               <Input
                 type="email"
                 value={email}
@@ -636,12 +646,12 @@ export default function Dashboard() {
                 placeholder="conformite@correspondant.com"
               />
             </Field>
-            <Field label="Note interne (optionnelle)">
+            <Field label={t('Note interne (optionnelle)')}>
               <Textarea
                 value={note}
                 onChange={(_, d) => setNote(d.value)}
                 rows={2}
-                placeholder="Contexte de l’entrée en relation, contact pré-existant, etc."
+                placeholder={t('Contexte de l’entrée en relation, contact pré-existant, etc.')}
               />
             </Field>
           </FieldRow>
@@ -655,10 +665,9 @@ export default function Dashboard() {
               borderRadius: '8px',
             }}
           >
-            <CheckmarkCircle20Filled style={{ color: '#C20012', flexShrink: 0, marginTop: '1px' }} />
+            <CheckmarkCircle20Filled style={{ color: '#c8102e', flexShrink: 0, marginTop: '1px' }} />
             <div style={{ fontSize: '12.5px', color: '#525252', lineHeight: 1.5 }}>
-              Une fois soumis, le système crée la fiche dans le référentiel, charge la checklist KYC adaptée au type
-              de tiers, et envoie l’e-mail d’invitation avec lien sécurisé (validité 72 h).
+              {t('Une fois soumis, le système crée la fiche dans le référentiel, charge la checklist KYC adaptée au type de tiers, et envoie l’e-mail d’invitation avec lien sécurisé (validité 72 h).')}
             </div>
           </div>
         </FormSection>
@@ -669,9 +678,9 @@ export default function Dashboard() {
         open={confirmExport}
         onOpenChange={setConfirmExport}
         intent="info"
-        title="Exporter le tableau de bord ?"
-        description="L’export inclut les KPI, la distribution des risques et les dossiers récents. Les données sont anonymisées avant export selon la politique RBAC."
-        confirmLabel="Générer l’export"
+        title={t('Exporter le tableau de bord ?')}
+        description={t('L’export inclut les KPI, la distribution des risques et les dossiers récents. Les données sont anonymisées avant export selon la politique RBAC.')}
+        confirmLabel={t('Générer l’export')}
         onConfirm={exportAction}
       />
     </div>

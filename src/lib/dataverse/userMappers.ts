@@ -30,7 +30,7 @@ export const DV_ROLE_CODE = {
 const ROLE_CODE_TO_DISPLAY: Record<number, Utilisateur['role']> = {
   [DV_ROLE_CODE.SuperadminDCONF]: 'Super Admin',
   [DV_ROLE_CODE.ChargeConformite]: 'Chargé conformité',
-  [DV_ROLE_CODE.ChargeRelation]: 'Analyste',
+  [DV_ROLE_CODE.ChargeRelation]: 'Chargé de relation',
   [DV_ROLE_CODE.Auditeurinterne]: 'Visiteur',
   [DV_ROLE_CODE.Auditeurexterne]: 'Visiteur',
 };
@@ -45,6 +45,7 @@ const DIRECTION_CODE_TO_DISPLAY: Record<number, Direction> = {
 };
 
 export const DV_ACTIF_OUI = 0;
+export const DV_ACTIF_NON = 747010001;
 
 function frDate(value?: string, withTime = false): string {
   if (!value) return '—';
@@ -67,7 +68,9 @@ export function toUtilisateur(u: Afb_utilisateurinternes): Utilisateur {
     email: u.afb_adresseemail ?? '',
     role: ROLE_CODE_TO_DISPLAY[u.afb_role as number] ?? 'Visiteur',
     direction: DIRECTION_CODE_TO_DISPLAY[u.afb_direction as number] ?? 'DCONF',
-    statut: u.statecode === 1 ? 'Inactif' : 'Actif',
+    // « Suspendu » = accès révoqué (afb_actif = Non) ; « Inactif » = ligne désactivée.
+    statut:
+      (u.afb_actif as number) === DV_ACTIF_NON ? 'Suspendu' : u.statecode === 1 ? 'Inactif' : 'Actif',
     derniereConnexion: frDate(u.afb_derniereconnexion, true),
     dossiersTraites: 0,
     creeLe: frDate(u.createdon),

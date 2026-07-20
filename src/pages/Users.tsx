@@ -14,7 +14,6 @@ import {
   Add20Regular,
   ArrowDownload20Regular,
   Edit20Regular,
-  Key20Regular,
   Person20Regular,
   Eye20Regular,
   ShieldKeyhole20Regular,
@@ -24,8 +23,8 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { type Utilisateur } from '@/lib/mockData';
-import { utilisateursInternes } from '@/lib/dataverse/entityHooks';
-import { toUtilisateur, DV_DIRECTION_CODE, DV_ROLE_CODE, DV_ACTIF_OUI } from '@/lib/dataverse/userMappers';
+import { utilisateursInternes, journalAudit } from '@/lib/dataverse/entityHooks';
+import { toUtilisateur, DV_DIRECTION_CODE, DV_ROLE_CODE, DV_ACTIF_OUI, DV_ACTIF_NON } from '@/lib/dataverse/userMappers';
 import { exportToCsv } from '@/lib/exportCsv';
 import {
   DetailDrawer,
@@ -36,6 +35,7 @@ import {
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { ConfirmActionDialog, type ConfirmIntent } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -70,7 +70,7 @@ const useStyles = makeStyles({
     height: '36px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#E30613',
+    color: '#c8102e',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -83,7 +83,7 @@ const useStyles = makeStyles({
     height: '64px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#E30613',
+    color: '#c8102e',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -120,7 +120,7 @@ const ROLE_OPTIONS = [
   { label: 'Super Admin', value: 'Super Admin' },
   { label: 'Admin Direction', value: 'Admin Direction' },
   { label: 'Chargé conformité', value: 'Chargé conformité' },
-  { label: 'Analyste', value: 'Analyste' },
+  { label: 'Chargé de relation', value: 'Chargé de relation' },
   { label: 'Visiteur', value: 'Visiteur' },
 ];
 
@@ -150,7 +150,7 @@ const ROLE_FORM_TO_CODE: Record<string, number> = {
   'Super Admin': DV_ROLE_CODE.SuperadminDCONF,
   'Admin Direction': DV_ROLE_CODE.SuperadminDCONF,
   'Chargé conformité': DV_ROLE_CODE.ChargeConformite,
-  Analyste: DV_ROLE_CODE.ChargeRelation,
+  'Chargé de relation': DV_ROLE_CODE.ChargeRelation,
   Visiteur: DV_ROLE_CODE.Auditeurinterne,
 };
 
@@ -158,7 +158,7 @@ function roleColor(r: Utilisateur['role']) {
   if (r === 'Super Admin') return 'danger';
   if (r === 'Admin Direction') return 'severe';
   if (r === 'Chargé conformité') return 'important';
-  if (r === 'Analyste') return 'warning';
+  if (r === 'Chargé de relation') return 'warning';
   return 'subtle';
 }
 
@@ -197,7 +197,7 @@ const PERMISSIONS_BY_ROLE: Record<string, { name: string; granted: boolean }[]> 
     { name: 'Validation · Élevé, Critique', granted: false },
     { name: 'Export · données nominatives', granted: false },
   ],
-  Analyste: [
+  'Chargé de relation': [
     { name: 'Lecture · dossiers assignés', granted: true },
     { name: 'Édition · pré-instruction', granted: true },
     { name: 'Validation', granted: false },
@@ -213,13 +213,60 @@ const PERMISSIONS_BY_ROLE: Record<string, { name: string; granted: boolean }[]> 
 
 export default function Users() {
   const styles = useStyles();
+  const { t } = useT();
   const { notifySuccess, notifyInfo, notifyWarning } = useNotifications();
 
   // Données réelles depuis Dataverse (table afb_utilisateurinterne).
   const { data: rawUsers, isLoading, error } = utilisateursInternes.useList({ top: 200 });
+  // Journal d'audit : source des stats par utilisateur (auteur = afb_utilisateurinterne).
+  const { data: rawAudit } = journalAudit.useList({ top: 2000 });
   const createUser = utilisateursInternes.useCreate();
   const updateUser = utilisateursInternes.useUpdate();
-  const users = useMemo(() => (rawUsers ?? []).map(toUtilisateur), [rawUsers]);
+
+  // Statistiques dérivées du journal d'audit, indexées par GUID d'utilisateur :
+  //  - dossiers traités  = nb de dossiers distincts validés ou rejetés par l'utilisateur.
+  //  - dernière connexion = horodatage le plus récent d'une action « Connexion ».
+  const statsByUser = useMemo(() => {
+    const ACTION_VALIDATION = 747010004;
+    const ACTION_REJET = 747010002;
+    const ACTION_CONNEXION = 3;
+    const map = new Map<string, { dossiers: Set<string>; lastLogin: string }>();
+    for (const l of rawAudit ?? []) {
+      const uid = l._afb_auteurdelamodification_value;
+      if (!uid) continue;
+      let s = map.get(uid);
+      if (!s) {
+        s = { dossiers: new Set<string>(), lastLogin: '' };
+        map.set(uid, s);
+      }
+      const action = l.afb_typedaction as number;
+      if ((action === ACTION_VALIDATION || action === ACTION_REJET) && l.afb_guiddelenregistrement) {
+        s.dossiers.add(l.afb_guiddelenregistrement);
+      }
+      if (action === ACTION_CONNEXION && l.afb_horodatage && l.afb_horodatage > s.lastLogin) {
+        s.lastLogin = l.afb_horodatage;
+      }
+    }
+    return map;
+  }, [rawAudit]);
+
+  const users = useMemo(
+    () =>
+      (rawUsers ?? []).map((u) => {
+        const base = toUtilisateur(u);
+        const s = statsByUser.get(base.id);
+        if (!s) return base;
+        return {
+          ...base,
+          // On complète depuis l'audit ; on garde la valeur du mapper en repli.
+          dossiersTraites: s.dossiers.size > 0 ? s.dossiers.size : base.dossiersTraites,
+          derniereConnexion: s.lastLogin
+            ? new Date(s.lastLogin).toLocaleString('fr-FR')
+            : base.derniereConnexion,
+        };
+      }),
+    [rawUsers, statsByUser],
+  );
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -228,7 +275,8 @@ export default function Users() {
   const [openUser, setOpenUser] = useState<Utilisateur | null>(null);
   const [activeTab, setActiveTab] = useState('profil');
   const [newOpen, setNewOpen] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
+  // GUID de l'utilisateur en cours d'édition (null = création).
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmIntent, setConfirmIntent] = useState<ConfirmIntent | null>(null);
 
   // form state — new user
@@ -267,6 +315,7 @@ export default function Users() {
   };
 
   const resetForm = () => {
+    setEditingId(null);
     setUPrenom('');
     setUNom('');
     setUEmail('');
@@ -276,33 +325,53 @@ export default function Users() {
     setUMfa(true);
   };
 
-  const submitNew = async () => {
+  /** Ouvre le formulaire pré-rempli pour éditer un utilisateur existant. */
+  const startEdit = (u: Utilisateur) => {
+    setEditingId(u.id);
+    setUPrenom(u.prenom);
+    setUNom(u.nom);
+    setUEmail(u.email);
+    setURole(u.role);
+    setUDirection(u.direction);
+    setUSendInvite(false);
+    setUMfa(true);
+    setOpenUser(null);
+    setNewOpen(true);
+  };
+
+  const submitUser = async () => {
+    const fields = {
+      afb_nomcomplet: `${uPrenom} ${uNom}`.trim(),
+      afb_adresseemail: uEmail,
+      afb_direction: DIR_FORM_TO_CODE[uDirection] ?? DV_DIRECTION_CODE.DCONF,
+      afb_role: ROLE_FORM_TO_CODE[uRole] ?? DV_ROLE_CODE.Auditeurinterne,
+    };
     try {
-      await createUser.mutateAsync({
-        afb_nomcomplet: `${uPrenom} ${uNom}`.trim(),
-        afb_adresseemail: uEmail,
-        afb_direction: DIR_FORM_TO_CODE[uDirection] ?? DV_DIRECTION_CODE.DCONF,
-        afb_role: ROLE_FORM_TO_CODE[uRole] ?? DV_ROLE_CODE.Auditeurinterne,
-        afb_actif: DV_ACTIF_OUI,
-      } as unknown as Parameters<typeof createUser.mutateAsync>[0]);
-      notifySuccess('Compte créé', {
-        description: `${uPrenom} ${uNom} — ${uRole} (${uDirection}) enregistré dans Dataverse.${uSendInvite ? ' Invitation à envoyer par e-mail.' : ''}`,
-      });
+      if (editingId) {
+        await updateUser.mutateAsync({
+          id: editingId,
+          changes: fields as unknown as Parameters<typeof updateUser.mutateAsync>[0]['changes'],
+        });
+        notifySuccess(t('Compte modifié'), {
+          description: `${uPrenom} ${uNom} — ${uRole} (${uDirection}) ${t('mis à jour dans Dataverse.')}`,
+        });
+      } else {
+        await createUser.mutateAsync({
+          ...fields,
+          afb_actif: DV_ACTIF_OUI,
+        } as unknown as Parameters<typeof createUser.mutateAsync>[0]);
+        notifySuccess(t('Compte créé'), {
+          description: `${uPrenom} ${uNom} — ${uRole} (${uDirection}) ${t('enregistré dans Dataverse.')}${uSendInvite ? ' ' + t('Invitation à envoyer par e-mail.') : ''}`,
+        });
+      }
       setNewOpen(false);
       resetForm();
     } catch (e) {
-      notifyInfo('Création échouée', {
-        description: e instanceof Error ? e.message : 'Erreur lors de l\'enregistrement Dataverse.',
+      notifyInfo(editingId ? t('Modification échouée') : t('Création échouée'), {
+        description: e instanceof Error ? e.message : t('Erreur lors de l\'enregistrement Dataverse.'),
       });
+      throw e;
     }
-  };
-
-  const submitReset = async () => {
-    await new Promise((r) => setTimeout(r, 500));
-    notifyInfo('Mot de passe réinitialisé', {
-      description: `${openUser?.prenom} ${openUser?.nom} — e-mail de réinitialisation envoyé. Lien valide 4 heures.`,
-    });
-    setConfirmReset(false);
   };
 
   const onSuspend = async (motif?: string) => {
@@ -310,18 +379,32 @@ export default function Users() {
       try {
         await updateUser.mutateAsync({
           id: openUser.id,
-          changes: { afb_actif: 747010001 } as unknown as Parameters<typeof updateUser.mutateAsync>[0]['changes'],
+          changes: { afb_actif: DV_ACTIF_NON } as unknown as Parameters<typeof updateUser.mutateAsync>[0]['changes'],
         });
       } catch (e) {
-        notifyWarning('Suspension impossible', { description: e instanceof Error ? e.message : 'Erreur Dataverse.' });
+        notifyWarning(t('Suspension impossible'), { description: e instanceof Error ? e.message : t('Erreur Dataverse.') });
         throw e;
       }
     }
-    notifyInfo('Compte suspendu', {
-      description: `${openUser?.prenom} ${openUser?.nom} — accès révoqué. Motif : ${motif}.`,
+    notifyInfo(t('Compte suspendu'), {
+      description: `${openUser?.prenom} ${openUser?.nom} — ${t('accès révoqué. Motif :')} ${motif}.`,
     });
     setConfirmIntent(null);
     setOpenUser(null);
+  };
+
+  /** Réactive un compte suspendu (afb_actif = Oui). */
+  const onReactivate = async (u: Utilisateur) => {
+    try {
+      await updateUser.mutateAsync({
+        id: u.id,
+        changes: { afb_actif: DV_ACTIF_OUI } as unknown as Parameters<typeof updateUser.mutateAsync>[0]['changes'],
+      });
+      notifySuccess(t('Accès réactivé'), { description: `${u.prenom} ${u.nom} — ${t('le compte peut de nouveau se connecter.')}` });
+      setOpenUser(null);
+    } catch (e) {
+      notifyWarning(t('Réactivation impossible'), { description: e instanceof Error ? e.message : t('Erreur Dataverse.') });
+    }
   };
 
   const newUserValid = uPrenom.trim().length >= 2 && uNom.trim().length >= 2 && /^\S+@\S+\.\S+$/.test(uEmail);
@@ -375,19 +458,11 @@ export default function Users() {
       align: 'right',
       render: (u) => (
         <div className={styles.rowActions} onClick={(e) => e.stopPropagation()}>
-          <Tooltip content="Voir le profil" relationship="label">
+          <Tooltip content={t('Voir le profil')} relationship="label">
             <Button size="small" appearance="subtle" icon={<Eye20Regular />} onClick={() => open(u)} />
           </Tooltip>
-          <Tooltip content="Éditer" relationship="label">
-            <Button size="small" appearance="subtle" icon={<Edit20Regular />} onClick={() => open(u)} />
-          </Tooltip>
-          <Tooltip content="Réinitialiser le mot de passe" relationship="label">
-            <Button
-              size="small"
-              appearance="subtle"
-              icon={<Key20Regular />}
-              onClick={() => { setOpenUser(u); setConfirmReset(true); }}
-            />
+          <Tooltip content={t('Éditer')} relationship="label">
+            <Button size="small" appearance="subtle" icon={<Edit20Regular />} onClick={() => startEdit(u)} />
           </Tooltip>
         </div>
       ),
@@ -418,15 +493,15 @@ export default function Users() {
                     'Dernière connexion': u.derniereConnexion,
                   })),
                 );
-                notifySuccess(ok ? 'Export généré' : 'Aucune donnée', {
-                  description: ok ? `${filtered.length} utilisateurs exportés (CSV).` : 'Aucun utilisateur à exporter.',
+                notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+                  description: ok ? `${filtered.length} ${t('utilisateurs exportés (CSV).')}` : t('Aucun utilisateur à exporter.'),
                 });
               }}
             >
-              Export
+              {t('Export')}
             </Button>
             <Button icon={<Add20Regular />} appearance="primary" onClick={() => setNewOpen(true)}>
-              Nouvel utilisateur
+              {t('Nouvel utilisateur')}
             </Button>
           </>
         }
@@ -434,24 +509,24 @@ export default function Users() {
 
       <div className={styles.kpiRow}>
         <div className={styles.kpi} onClick={() => { setRoleFilter(''); setDirectionFilter(''); setStatutFilter(''); }}>
-          <div className={styles.kpiLabel}>Comptes</div>
+          <div className={styles.kpiLabel}>{t('Comptes')}</div>
           <div className={styles.kpiValue}>{kpis.total}</div>
-          <div className={styles.kpiMeta}>tous statuts confondus</div>
+          <div className={styles.kpiMeta}>{t('tous statuts confondus')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Actif')}>
-          <div className={styles.kpiLabel}>Actifs</div>
+          <div className={styles.kpiLabel}>{t('Actifs')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.actifs}</div>
-          <div className={styles.kpiMeta}>connectés sous 30 jours</div>
+          <div className={styles.kpiMeta}>{t('connectés sous 30 jours')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setRoleFilter('Super Admin')}>
-          <div className={styles.kpiLabel}>Administrateurs</div>
+          <div className={styles.kpiLabel}>{t('Administrateurs')}</div>
           <div className={styles.kpiValue}>{kpis.admins}</div>
-          <div className={styles.kpiMeta}>Super Admin + Admin Direction</div>
+          <div className={styles.kpiMeta}>{t('Super Admin + Admin Direction')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Suspendu')}>
-          <div className={styles.kpiLabel}>Suspendus</div>
-          <div className={styles.kpiValue} style={{ color: '#E30613' }}>{kpis.suspendus}</div>
-          <div className={styles.kpiMeta}>accès révoqué</div>
+          <div className={styles.kpiLabel}>{t('Suspendus')}</div>
+          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{kpis.suspendus}</div>
+          <div className={styles.kpiMeta}>{t('accès révoqué')}</div>
         </div>
       </div>
 
@@ -476,11 +551,11 @@ export default function Users() {
         subtitle={`${filtered.length} sur ${users.length} utilisateurs`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#C20012', fontSize: '13px' }}>
-            Erreur de chargement depuis Dataverse : {error.message}
+          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+            {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>Chargement des utilisateurs…</div>
+          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des utilisateurs…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -494,7 +569,7 @@ export default function Users() {
 
       {/* Drawer utilisateur */}
       <DetailDrawer
-        open={openUser !== null && !confirmReset && confirmIntent === null}
+        open={openUser !== null && confirmIntent === null}
         onOpenChange={(o) => !o && setOpenUser(null)}
         eyebrow={openUser?.direction ?? ''}
         title={openUser ? `${openUser.prenom} ${openUser.nom}` : ''}
@@ -513,38 +588,31 @@ export default function Users() {
           ) : null
         }
         tabs={[
-          { id: 'profil', label: 'Profil' },
-          { id: 'roles', label: 'Rôles & permissions' },
-          { id: 'activite', label: 'Activité récente' },
+          { id: 'profil', label: t('Profil') },
+          { id: 'roles', label: t('Rôles & permissions') },
+          { id: 'activite', label: t('Activité récente') },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         footer={
           openUser ? (
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', width: '100%' }}>
+              {openUser.statut === 'Suspendu' ? (
+                <Button appearance="subtle" onClick={() => openUser && onReactivate(openUser)}>
+                  {t('Réactiver l\'accès')}
+                </Button>
+              ) : (
+                <Button appearance="subtle" onClick={() => setConfirmIntent('suspend')}>
+                  {t('Suspendre l\'accès')}
+                </Button>
+              )}
               <Button
-                appearance="subtle"
-                onClick={() => setConfirmIntent('suspend')}
-                disabled={openUser.statut === 'Suspendu'}
+                appearance="primary"
+                icon={<Edit20Regular />}
+                onClick={() => openUser && startEdit(openUser)}
               >
-                Suspendre l'accès
+                {t('Éditer')}
               </Button>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Button appearance="outline" icon={<Key20Regular />} onClick={() => setConfirmReset(true)}>
-                  Réinitialiser le mot de passe
-                </Button>
-                <Button
-                  appearance="primary"
-                  icon={<Edit20Regular />}
-                  onClick={() =>
-                    notifyInfo('Édition du profil', {
-                      description: `Ouverture de la fiche de ${openUser?.nom ?? 'l’utilisateur'} en mode édition.`,
-                    })
-                  }
-                >
-                  Éditer
-                </Button>
-              </div>
             </div>
           ) : null
         }
@@ -565,24 +633,24 @@ export default function Users() {
 
             {activeTab === 'profil' && (
               <>
-                <DrawerSection title="Identification">
+                <DrawerSection title={t('Identification')}>
                   <FieldGrid
                     items={[
-                      { label: 'Prénom', value: openUser.prenom },
-                      { label: 'Nom', value: openUser.nom },
-                      { label: 'E-mail', value: openUser.email },
-                      { label: 'Direction', value: openUser.direction },
-                      { label: 'Dernière connexion', value: openUser.derniereConnexion },
-                      { label: 'Dossiers traités', value: openUser.dossiersTraites },
+                      { label: t('Prénom'), value: openUser.prenom },
+                      { label: t('Nom'), value: openUser.nom },
+                      { label: t('E-mail'), value: openUser.email },
+                      { label: t('Direction'), value: openUser.direction },
+                      { label: t('Dernière connexion'), value: openUser.derniereConnexion },
+                      { label: t('Dossiers traités'), value: openUser.dossiersTraites },
                     ]}
                   />
                 </DrawerSection>
-                <DrawerSection title="Sécurité">
+                <DrawerSection title={t('Sécurité')}>
                   <FieldGrid
                     items={[
-                      { label: 'Authentification', value: 'Azure AD B2C + MFA' },
-                      { label: 'Dernière modif. MDP', value: 'Il y a 47 jours' },
-                      { label: 'Sessions actives', value: '1 (Edge — Windows)' },
+                      { label: t('Authentification'), value: 'Azure AD B2C + MFA' },
+                      { label: t('Dernière modif. MDP'), value: t('Il y a 47 jours') },
+                      { label: t('Sessions actives'), value: t('1 (Edge — Windows)') },
                     ]}
                   />
                 </DrawerSection>
@@ -591,8 +659,8 @@ export default function Users() {
 
             {activeTab === 'roles' && (
               <DrawerSection
-                title="Permissions effectives"
-                description={`Découlent du rôle "${openUser.role}" — héritage RBAC complet.`}
+                title={t('Permissions effectives')}
+                description={`${t('Découlent du rôle')} "${openUser.role}" ${t('— héritage RBAC complet.')}`}
               >
                 {(PERMISSIONS_BY_ROLE[openUser.role] ?? []).map((p) => (
                   <div key={p.name} className={styles.perm}>
@@ -601,12 +669,12 @@ export default function Users() {
                       className={styles.permName}
                       style={{ color: p.granted ? '#1A1A1A' : '#C8C8C8', textDecoration: p.granted ? 'none' : 'line-through' }}
                     >
-                      {p.name}
+                      {t(p.name)}
                     </span>
                     {p.granted ? (
-                      <Badge appearance="filled" color="success" size="small">Accordée</Badge>
+                      <Badge appearance="filled" color="success" size="small">{t('Accordée')}</Badge>
                     ) : (
-                      <Badge appearance="tint" color="subtle" size="small">Refusée</Badge>
+                      <Badge appearance="tint" color="subtle" size="small">{t('Refusée')}</Badge>
                     )}
                   </div>
                 ))}
@@ -614,13 +682,13 @@ export default function Users() {
             )}
 
             {activeTab === 'activite' && (
-              <DrawerSection title="Dernières actions">
+              <DrawerSection title={t('Dernières actions')}>
                 <DrawerTimeline
                   events={[
-                    { when: openUser.derniereConnexion, title: 'Connexion réussie', detail: 'IP 192.168.x.x · Edge / Windows 11' },
-                    { when: 'Hier 16h22', title: 'Validation décision', detail: 'KYC-B-2026-1247 · Standard · Validé' },
-                    { when: 'Hier 14h08', title: 'Dossier modifié', detail: 'KYC-B-2026-1247 · Mise à jour UBO' },
-                    { when: '12/05/2026 09h00', title: 'Connexion réussie', detail: 'IP 192.168.x.x' },
+                    { when: openUser.derniereConnexion, title: t('Connexion réussie'), detail: 'IP 192.168.x.x · Edge / Windows 11' },
+                    { when: t('Hier 16h22'), title: t('Validation décision'), detail: `KYC-B-2026-1247 · Standard · ${t('Validé')}` },
+                    { when: t('Hier 14h08'), title: t('Dossier modifié'), detail: `KYC-B-2026-1247 · ${t('Mise à jour UBO')}` },
+                    { when: '12/05/2026 09h00', title: t('Connexion réussie'), detail: 'IP 192.168.x.x' },
                   ]}
                 />
               </DrawerSection>
@@ -633,101 +701,95 @@ export default function Users() {
       <FormDialog
         open={newOpen}
         onOpenChange={(o) => { if (!o) resetForm(); setNewOpen(o); }}
-        eyebrow="Administration"
-        title="Créer un nouvel utilisateur"
-        subtitle="L'utilisateur est créé dans Azure AD B2C. Une invitation lui est envoyée par e-mail pour finaliser son inscription et activer le MFA."
+        eyebrow={t('Administration')}
+        title={editingId ? t('Modifier l\'utilisateur') : t('Créer un nouvel utilisateur')}
+        subtitle={
+          editingId
+            ? t('Mettez à jour l\'identité, le rôle et la direction. Les permissions découlent automatiquement du rôle.')
+            : t("L'utilisateur est créé dans Azure AD B2C. Une invitation lui est envoyée par e-mail pour finaliser son inscription et activer le MFA.")
+        }
         size="large"
-        submitLabel="Créer le compte"
+        submitLabel={editingId ? t('Enregistrer les modifications') : t('Créer le compte')}
         submitDisabled={!newUserValid}
-        onSubmit={submitNew}
+        onSubmit={submitUser}
       >
-        <FormSection title="Identité">
+        <FormSection title={t('Identité')}>
           <FieldRow cols={2}>
-            <Field label="Prénom" required>
+            <Field label={t('Prénom')} required>
               <Input value={uPrenom} onChange={(_, d) => setUPrenom(d.value)} placeholder="Sarah" />
             </Field>
-            <Field label="Nom" required>
+            <Field label={t('Nom')} required>
               <Input value={uNom} onChange={(_, d) => setUNom(d.value)} placeholder="Mballa" />
             </Field>
           </FieldRow>
           <FieldRow>
-            <Field label="Adresse e-mail (AD)" required hint="L'e-mail doit appartenir au domaine AFB ou aux domaines autorisés">
+            <Field label={t('Adresse e-mail (AD)')} required hint={t('L\'e-mail doit appartenir au domaine AFB ou aux domaines autorisés')}>
               <Input type="email" value={uEmail} onChange={(_, d) => setUEmail(d.value)} placeholder="s.mballa@afribank.com" />
             </Field>
           </FieldRow>
         </FormSection>
 
-        <FormSection title="Affectation">
+        <FormSection title={t('Affectation')}>
           <FieldRow cols={2}>
-            <Field label="Rôle" required>
+            <Field label={t('Rôle')} required>
               <Dropdown
                 value={uRole}
                 selectedOptions={[uRole]}
                 onOptionSelect={(_, d) => setURole((d.optionValue ?? 'Chargé conformité') as Utilisateur['role'])}
               >
-                <Option value="Super Admin">Super Admin</Option>
-                <Option value="Admin Direction">Admin Direction</Option>
-                <Option value="Chargé conformité">Chargé conformité</Option>
-                <Option value="Analyste">Analyste</Option>
-                <Option value="Visiteur">Visiteur</Option>
+                <Option value="Super Admin">{t('Super Admin')}</Option>
+                <Option value="Admin Direction">{t('Admin Direction')}</Option>
+                <Option value="Chargé conformité">{t('Chargé conformité')}</Option>
+                <Option value="Chargé de relation">{t('Chargé de relation')}</Option>
+                <Option value="Visiteur">{t('Visiteur')}</Option>
               </Dropdown>
             </Field>
-            <Field label="Direction" required>
+            <Field label={t('Direction')} required>
               <Dropdown
                 value={uDirection}
                 selectedOptions={[uDirection]}
                 onOptionSelect={(_, d) => setUDirection((d.optionValue ?? 'DCONF') as Utilisateur['direction'])}
               >
-                <Option value="DCONF">DCONF — Direction Conformité</Option>
-                <Option value="DMG">DMG — Management Général</Option>
-                <Option value="TRESO">TRESO — Trésorerie</Option>
-                <Option value="COMEX">COMEX — Commerce Extérieur</Option>
+                <Option value="DCONF">{t('DCONF — Direction Conformité')}</Option>
+                <Option value="DMG">{t('DMG — Management Général')}</Option>
+                <Option value="TRESO">{t('TRESO — Trésorerie')}</Option>
+                <Option value="COMEX">{t('COMEX — Commerce Extérieur')}</Option>
               </Dropdown>
             </Field>
           </FieldRow>
         </FormSection>
 
-        <FormSection title="Sécurité et activation">
-          <Field>
-            <Switch
-              checked={uMfa}
-              onChange={(_, d) => setUMfa(d.checked)}
-              label="Activer le MFA obligatoire (recommandé pour DCONF)"
-            />
-          </Field>
-          <Field>
-            <Switch
-              checked={uSendInvite}
-              onChange={(_, d) => setUSendInvite(d.checked)}
-              label="Envoyer immédiatement l'invitation par e-mail"
-            />
-          </Field>
-        </FormSection>
+        {!editingId && (
+          <FormSection title={t('Sécurité et activation')}>
+            <Field>
+              <Switch
+                checked={uMfa}
+                onChange={(_, d) => setUMfa(d.checked)}
+                label={t('Activer le MFA obligatoire (recommandé pour DCONF)')}
+              />
+            </Field>
+            <Field>
+              <Switch
+                checked={uSendInvite}
+                onChange={(_, d) => setUSendInvite(d.checked)}
+                label={t('Envoyer immédiatement l\'invitation par e-mail')}
+              />
+            </Field>
+          </FormSection>
+        )}
       </FormDialog>
-
-      {/* Confirm reset password */}
-      <ConfirmActionDialog
-        open={confirmReset}
-        onOpenChange={setConfirmReset}
-        intent="info"
-        title="Réinitialiser le mot de passe ?"
-        description="Un e-mail de réinitialisation sera envoyé à l'utilisateur. Le lien est valide 4 heures."
-        confirmLabel="Envoyer le lien"
-        entityRef={openUser ? `${openUser.prenom} ${openUser.nom}` : undefined}
-        onConfirm={submitReset}
-      />
 
       {/* Confirm suspend */}
       <ConfirmActionDialog
         open={confirmIntent === 'suspend' && openUser !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="suspend"
-        title="Suspendre l'accès ?"
-        description="L'utilisateur ne pourra plus se connecter. Les dossiers en cours seront réattribués manuellement."
-        confirmLabel="Suspendre"
+        title={t('Suspendre l\'accès ?')}
+        description={t('L\'utilisateur ne pourra plus se connecter. Les dossiers en cours seront réattribués manuellement.')}
+        confirmLabel={t('Suspendre')}
         requireMotif
-        motifLabel="Motif de la suspension"
-        motifPlaceholder="Départ, soupçon de fraude, congés prolongés…"
+        motifLabel={t('Motif de la suspension')}
+        motifPlaceholder={t('Départ, soupçon de fraude, congés prolongés…')}
         entityRef={openUser ? `${openUser.prenom} ${openUser.nom}` : undefined}
         onConfirm={onSuspend}
       />

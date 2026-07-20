@@ -17,7 +17,10 @@ import {
   ArrowDownload20Regular,
   ClipboardCheckmark20Regular,
   Eye20Regular,
-  Edit20Regular,
+  CheckmarkCircle20Regular,
+  DismissCircle20Regular,
+  ShieldCheckmark20Regular,
+  Send20Regular,
 } from '@fluentui/react-icons';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
@@ -35,6 +38,7 @@ import {
 } from '@/components/common/DetailDrawer';
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -122,12 +126,12 @@ const useStyles = makeStyles({
     width: '8px',
     height: '8px',
     borderRadius: '50%',
-    backgroundColor: '#E30613',
+    backgroundColor: '#c8102e',
     marginTop: '6px',
     flexShrink: 0,
   },
-  ecartTitle: { fontSize: '13px', fontWeight: 600, color: '#A50410', marginBottom: '2px' },
-  ecartDetail: { fontSize: '12px', color: '#A50410', lineHeight: 1.5 },
+  ecartTitle: { fontSize: '13px', fontWeight: 600, color: '#a30f24', marginBottom: '2px' },
+  ecartDetail: { fontSize: '12px', color: '#a30f24', lineHeight: 1.5 },
 });
 
 const TYPE_OPTIONS = [
@@ -148,7 +152,7 @@ const STATUT_OPTIONS = [
 function scoreColor(score: number) {
   if (score >= 80) return '#15803D';
   if (score >= 60) return '#B45309';
-  return '#E30613';
+  return '#c8102e';
 }
 
 function statutColor(s: Evaluation['statut']) {
@@ -165,6 +169,7 @@ function typeColor(t: Evaluation['typeEval']) {
 }
 
 function Donut({ conforme, ameliorer, nonConforme }: { conforme: number; ameliorer: number; nonConforme: number }) {
+  const { t } = useT();
   const total = conforme + ameliorer + nonConforme;
   const r = 36;
   const c = 2 * Math.PI * r;
@@ -177,16 +182,17 @@ function Donut({ conforme, ameliorer, nonConforme }: { conforme: number; amelior
       <g transform="rotate(-90 48 48)">
         <circle cx="48" cy="48" r={r} fill="none" stroke="#15803D" strokeWidth="14" strokeDasharray={`${sConforme} ${c - sConforme}`} />
         <circle cx="48" cy="48" r={r} fill="none" stroke="#B45309" strokeWidth="14" strokeDasharray={`${sAmeliorer} ${c - sAmeliorer}`} strokeDashoffset={-sConforme} />
-        <circle cx="48" cy="48" r={r} fill="none" stroke="#E30613" strokeWidth="14" strokeDasharray={`${sNon} ${c - sNon}`} strokeDashoffset={-(sConforme + sAmeliorer)} />
+        <circle cx="48" cy="48" r={r} fill="none" stroke="#c8102e" strokeWidth="14" strokeDasharray={`${sNon} ${c - sNon}`} strokeDashoffset={-(sConforme + sAmeliorer)} />
       </g>
       <text x="48" y="50" textAnchor="middle" fontSize="16" fontWeight="700" fill="#1A1A1A">{total}</text>
-      <text x="48" y="64" textAnchor="middle" fontSize="9" fill="#767676">évaluations</text>
+      <text x="48" y="64" textAnchor="middle" fontSize="9" fill="#767676">{t('évaluations')}</text>
     </svg>
   );
 }
 
 export default function Evaluations() {
   const styles = useStyles();
+  const { t } = useT();
   const { notifySuccess, notifyInfo } = useNotifications();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -203,22 +209,39 @@ export default function Evaluations() {
   const [periode, setPeriode] = useState<'semestrielle' | 'annuelle' | 'ad-hoc'>('semestrielle');
   const [dateLimite, setDateLimite] = useState('');
   const [contexte, setContexte] = useState('');
+  // Score attribué par l'évaluateur (0–100).
+  const [noteGlobale, setNoteGlobale] = useState('');
 
-  // Création + listes pour les lookups.
+  // Création + mutations + listes pour les lookups.
   const createEval = evaluationsPartenaire.useCreate();
+  const updateEval = evaluationsPartenaire.useUpdate();
+  const updateTiers = tiersHooks.useUpdate();
   const { data: tiersData } = tiersHooks.useList({ top: 200 });
   const { data: grilleData } = grilleEvaluation.useList({ top: 200 });
   const { data: userData } = utilisateursInternes.useList({ top: 200 });
 
   // Données réelles depuis Dataverse (afb_evaluationpartenaire).
   const { data: rawEvals } = evaluationsPartenaire.useList({ top: 200 });
-  const evaluations = useMemo(() => (rawEvals ?? []).map(toEvaluation), [rawEvals]);
+  const evaluations = useMemo(() => {
+    // Résolution des libellés (les *name ne sont pas renvoyés par le SDK).
+    const tiersById = new Map((tiersData ?? []).map((t) => [t.afb_tiersid, t.afb_nomdupartenaire ?? '—']));
+    const usersById = new Map((userData ?? []).map((u) => [u.afb_utilisateurinterneid, u.afb_nomcomplet ?? '—']));
+    return (rawEvals ?? []).map((e) => toEvaluation(e, { tiersById, usersById }));
+  }, [rawEvals, tiersData, userData]);
 
   const filtered = useMemo(() => {
     return evaluations.filter((e) => {
       if (typeFilter && e.typeEval !== typeFilter) return false;
       if (statutFilter && e.statut !== statutFilter) return false;
-      if (search && !e.partenaire.toLowerCase().includes(search.toLowerCase())) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        if (
+          !e.partenaire.toLowerCase().includes(q) &&
+          !e.id.toLowerCase().includes(q) &&
+          !e.evaluateur.toLowerCase().includes(q)
+        )
+          return false;
+      }
       return true;
     });
   }, [evaluations, search, typeFilter, statutFilter]);
@@ -231,16 +254,83 @@ export default function Evaluations() {
     const nonConformes = evaluations.filter((e) => e.statut === 'Non conforme').length;
     const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
     return {
-      total: { value: total, label: 'Évaluations' },
-      conformes: { value: conformes, label: 'Conformes', pct: pct(conformes) },
-      ameliorer: { value: ameliorer, label: 'À améliorer', pct: pct(ameliorer) },
-      nonConformes: { value: nonConformes, label: 'Non conformes', pct: pct(nonConformes) },
+      total: { value: total, label: t('Évaluations') },
+      conformes: { value: conformes, label: t('Conformes'), pct: pct(conformes) },
+      ameliorer: { value: ameliorer, label: t('À améliorer'), pct: pct(ameliorer) },
+      nonConformes: { value: nonConformes, label: t('Non conformes'), pct: pct(nonConformes) },
     };
-  }, [evaluations]);
+  }, [evaluations, t]);
 
   const open = (e: Evaluation) => {
     setOpenEval(e);
     setActiveTab('synthese');
+  };
+
+  const isValidated = (e: Evaluation | null) => !!e?.statutEval && /valid/i.test(e.statutEval);
+
+  // Valide l'évaluation (Brouillon/En revue → Validée) — décision INTERNE.
+  // ⚠️ Ne rend PAS l'évaluation visible par le tiers : il faut « Pousser au
+  // partenaire » (ci-dessous) pour la publier.
+  const validateEval = async () => {
+    if (!openEval?.recordId) return;
+    try {
+      await updateEval.mutateAsync({
+        id: openEval.recordId,
+        changes: { afb_statutdelevaluation: 0 },
+      });
+      notifySuccess(t('Évaluation validée'), {
+        description: `${openEval.id} — ${openEval.partenaire}. ${t('Validée en interne (non encore visible par le tiers).')}`,
+      });
+      setOpenEval((prev) => (prev ? { ...prev, statutEval: 'Validée' } : prev));
+    } catch (err) {
+      notifyInfo(t('Action impossible'), { description: err instanceof Error ? err.message : t('Erreur Dataverse.') });
+    }
+  };
+
+  // Publie l'évaluation vers l'espace du tiers (« push »). On horodate
+  // afb_datedevalidation, utilisée comme date de mise à disposition : le portail
+  // ne montre QUE les évaluations validées ET publiées.
+  const pushEval = async () => {
+    if (!openEval?.recordId) return;
+    try {
+      await updateEval.mutateAsync({
+        id: openEval.recordId,
+        changes: { afb_datedevalidation: new Date().toISOString() },
+      });
+      notifySuccess(t('Évaluation publiée'), {
+        description: `${openEval.id} — ${openEval.partenaire}. ${t('Elle est désormais visible dans l\'espace du tiers.')}`,
+      });
+      setOpenEval((prev) => (prev ? { ...prev, publie: true } : prev));
+    } catch (err) {
+      notifyInfo(t('Publication impossible'), { description: err instanceof Error ? err.message : t('Erreur Dataverse.') });
+    }
+  };
+
+  // Décision de partenariat (Maintenir=0 / Sous surveillance=1 / Annuler=2).
+  // « Annuler » clôture aussi le tiers (afb_statutdutiers = Clôturé = 747010003).
+  const decide = async (value: 0 | 1 | 2, label: string) => {
+    if (!openEval?.recordId) return;
+    try {
+      await updateEval.mutateAsync({
+        id: openEval.recordId,
+        changes: { afb_decisionpartenariat: value },
+      } as unknown as Parameters<typeof updateEval.mutateAsync>[0]);
+      if (value === 2 && openEval.tiersId) {
+        await updateTiers.mutateAsync({
+          id: openEval.tiersId,
+          changes: { afb_statutdutiers: 747010003 },
+        });
+      }
+      notifySuccess(`${t('Décision enregistrée —')} ${label}`, {
+        description:
+          value === 2
+            ? `${openEval.partenaire} : ${t('partenariat clôturé. Le tiers en est informé via son espace.')}`
+            : `${openEval.partenaire} : ${t('décision')} « ${label} » ${t('communiquée au tiers.')}`,
+      });
+      setOpenEval((prev) => (prev ? { ...prev, decision: label } : prev));
+    } catch (err) {
+      notifyInfo(t('Action impossible'), { description: err instanceof Error ? err.message : t('Erreur Dataverse.') });
+    }
   };
 
   const resetForm = () => {
@@ -251,6 +341,7 @@ export default function Evaluations() {
     setPeriode('semestrielle');
     setDateLimite('');
     setContexte('');
+    setNoteGlobale('');
   };
 
   const submitNew = async () => {
@@ -259,14 +350,14 @@ export default function Evaluations() {
     const fin = new Date();
     const debut = new Date();
     debut.setMonth(debut.getMonth() - (periode === 'annuelle' ? 12 : periode === 'semestrielle' ? 6 : 1));
-    const partenaireNom = tiersData?.find((t) => t.afb_tiersid === tiersId)?.afb_nomdupartenaire ?? 'le tiers';
+    const partenaireNom = tiersData?.find((ti) => ti.afb_tiersid === tiersId)?.afb_nomdupartenaire ?? t('le tiers');
     try {
       await createEval.mutateAsync({
         afb_referencedevaluation: ref,
         afb_datedevaluation: fin.toISOString(),
         afb_debutdelaperiodeevaluee: debut.toISOString(),
         afb_findelaperiodeevaluee: fin.toISOString(),
-        afb_noteglobale: 0,
+        afb_noteglobale: Math.max(0, Math.min(100, Number(noteGlobale) || 0)),
         afb_notemaximalepossible: 100,
         afb_niveauderisquecalcule: 0, // Faible (initial, avant notation)
         afb_statutdelevaluation: 747010002, // Brouillon
@@ -276,14 +367,14 @@ export default function Evaluations() {
         'afb_evaluateur@odata.bind': `/afb_utilisateurinternes(${evaluateurId})`,
       } as unknown as Parameters<typeof createEval.mutateAsync>[0]);
 
-      notifySuccess('Évaluation lancée', {
-        description: `${ref} · ${partenaireNom} — créée dans Dataverse (brouillon).`,
+      notifySuccess(t('Évaluation lancée'), {
+        description: `${ref} · ${partenaireNom} — ${t('créée dans Dataverse (brouillon).')}`,
       });
       setNewOpen(false);
       resetForm();
     } catch (e) {
-      notifySuccess('Création impossible', {
-        description: e instanceof Error ? e.message : 'Erreur Dataverse lors de la création de l’évaluation.',
+      notifySuccess(t('Création impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse lors de la création de l’évaluation.'),
       });
       throw e;
     }
@@ -298,7 +389,7 @@ export default function Evaluations() {
       key: 'type',
       header: 'Type',
       render: (e) => (
-        <Badge appearance="tint" color={typeColor(e.typeEval)} size="small">
+        <Badge appearance="tint" color={typeColor(e.typeEval)} size="small" style={{ whiteSpace: 'nowrap' }}>
           {e.typeEval}
         </Badge>
       ),
@@ -324,7 +415,7 @@ export default function Evaluations() {
       key: 'statut',
       header: 'Statut',
       render: (e) => (
-        <Badge appearance="tint" color={statutColor(e.statut)} size="small">
+        <Badge appearance="tint" color={statutColor(e.statut)} size="small" style={{ whiteSpace: 'nowrap' }}>
           {e.statut}
         </Badge>
       ),
@@ -337,7 +428,7 @@ export default function Evaluations() {
       align: 'right',
       render: (e) => (
         <div className={styles.rowActions} onClick={(ev) => ev.stopPropagation()}>
-          <Tooltip content="Voir l'évaluation" relationship="label">
+          <Tooltip content={t('Voir l\'évaluation')} relationship="label">
             <Button size="small" appearance="subtle" icon={<Eye20Regular />} onClick={() => open(e)} />
           </Tooltip>
         </div>
@@ -360,24 +451,24 @@ export default function Evaluations() {
                 const ok = exportToCsv(
                   `evaluations-${new Date().toISOString().slice(0, 10)}.csv`,
                   filtered.map((e) => ({
-                    Référence: e.id,
-                    Partenaire: e.partenaire,
-                    Type: e.typeEval,
-                    Score: `${e.score}/${e.scoreMax}`,
-                    Statut: e.statut,
-                    Évaluateur: e.evaluateur,
-                    Date: e.date,
+                    [t('Référence')]: e.id,
+                    [t('Partenaire')]: e.partenaire,
+                    [t('Type')]: e.typeEval,
+                    [t('Score')]: `${e.score}/${e.scoreMax}`,
+                    [t('Statut')]: e.statut,
+                    [t('Évaluateur')]: e.evaluateur,
+                    [t('Date')]: e.date,
                   })),
                 );
-                notifySuccess(ok ? 'Export généré' : 'Aucune donnée', {
-                  description: ok ? `${filtered.length} évaluations exportées (CSV).` : 'Aucune évaluation à exporter.',
+                notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+                  description: ok ? `${filtered.length} ${t('évaluations exportées (CSV).')}` : t('Aucune évaluation à exporter.'),
                 });
               }}
             >
-              Export
+              {t('Export')}
             </Button>
             <Button icon={<Add20Regular />} appearance="primary" onClick={() => setNewOpen(true)}>
-              Nouvelle évaluation
+              {t('Nouvelle évaluation')}
             </Button>
           </>
         }
@@ -387,22 +478,22 @@ export default function Evaluations() {
         <div className={styles.kpi} onClick={() => { setTypeFilter(''); setStatutFilter(''); }}>
           <div className={styles.kpiLabel}>{evalKpis.total.label}</div>
           <div className={styles.kpiValue}>{evalKpis.total.value}</div>
-          <div className={styles.kpiMeta}>cumul depuis janvier</div>
+          <div className={styles.kpiMeta}>{t('cumul depuis janvier')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Conforme')}>
           <div className={styles.kpiLabel}>{evalKpis.conformes.label}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{evalKpis.conformes.value}</div>
-          <div className={styles.kpiMeta}>{evalKpis.conformes.pct}% du total</div>
+          <div className={styles.kpiMeta}>{evalKpis.conformes.pct}% {t('du total')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('À améliorer')}>
           <div className={styles.kpiLabel}>{evalKpis.ameliorer.label}</div>
           <div className={styles.kpiValue} style={{ color: '#B45309' }}>{evalKpis.ameliorer.value}</div>
-          <div className={styles.kpiMeta}>{evalKpis.ameliorer.pct}% du total</div>
+          <div className={styles.kpiMeta}>{evalKpis.ameliorer.pct}% {t('du total')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Non conforme')}>
           <div className={styles.kpiLabel}>{evalKpis.nonConformes.label}</div>
-          <div className={styles.kpiValue} style={{ color: '#E30613' }}>{evalKpis.nonConformes.value}</div>
-          <div className={styles.kpiMeta}>{evalKpis.nonConformes.pct}% — escalade</div>
+          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{evalKpis.nonConformes.value}</div>
+          <div className={styles.kpiMeta}>{evalKpis.nonConformes.pct}% {t('— escalade')}</div>
         </div>
       </div>
 
@@ -417,17 +508,17 @@ export default function Evaluations() {
             <div className={styles.donutLegend}>
               <div className={styles.legendRow}>
                 <span className={styles.legendDot} style={{ backgroundColor: '#15803D' }} />
-                <span className={styles.legendLabel}>Conformes</span>
+                <span className={styles.legendLabel}>{t('Conformes')}</span>
                 <span className={styles.legendValue}>{evalKpis.conformes.value}</span>
               </div>
               <div className={styles.legendRow}>
                 <span className={styles.legendDot} style={{ backgroundColor: '#B45309' }} />
-                <span className={styles.legendLabel}>À améliorer</span>
+                <span className={styles.legendLabel}>{t('À améliorer')}</span>
                 <span className={styles.legendValue}>{evalKpis.ameliorer.value}</span>
               </div>
               <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{ backgroundColor: '#E30613' }} />
-                <span className={styles.legendLabel}>Non conformes</span>
+                <span className={styles.legendDot} style={{ backgroundColor: '#c8102e' }} />
+                <span className={styles.legendLabel}>{t('Non conformes')}</span>
                 <span className={styles.legendValue}>{evalKpis.nonConformes.value}</span>
               </div>
             </div>
@@ -438,7 +529,7 @@ export default function Evaluations() {
           flush
           title={
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <ClipboardCheckmark20Regular /> Dernières évaluations
+              <ClipboardCheckmark20Regular /> {t('Dernières évaluations')}
             </span>
           }
           subtitle={`${filtered.length} sur ${evaluations.length}`}
@@ -468,9 +559,9 @@ export default function Evaluations() {
       <DetailDrawer
         open={openEval !== null}
         onOpenChange={(o) => !o && setOpenEval(null)}
-        eyebrow={`Évaluation · ${openEval?.id ?? ''}`}
+        eyebrow={`${t('Évaluation')} · ${openEval?.id ?? ''}`}
         title={openEval?.partenaire ?? ''}
-        subtitle={openEval ? `${openEval.typeEval} · évalué par ${openEval.evaluateur}` : ''}
+        subtitle={openEval ? `${openEval.typeEval} · ${t('évalué par')} ${openEval.evaluateur}` : ''}
         size="large"
         statusBadges={
           openEval ? (
@@ -488,39 +579,60 @@ export default function Evaluations() {
           ) : null
         }
         tabs={[
-          { id: 'synthese', label: 'Synthèse' },
-          { id: 'sections', label: 'Réponses' },
-          { id: 'ecarts', label: 'Écarts', alertCount: openEval && openEval.statut !== 'Conforme' ? 3 : 0 },
-          { id: 'historique', label: 'Historique' },
+          { id: 'synthese', label: t('Synthèse') },
+          { id: 'sections', label: t('Réponses') },
+          { id: 'ecarts', label: t('Écarts'), alertCount: openEval && openEval.statut !== 'Conforme' ? 3 : 0 },
+          { id: 'historique', label: t('Historique') },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         footer={
           openEval ? (
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
-              <Button
-                appearance="outline"
-                icon={<Edit20Regular />}
-                onClick={() =>
-                  notifyInfo('Modification des réponses', {
-                    description: 'Ouverture du formulaire en mode édition — les modifications seront tracées dans l’historique.',
-                  })
-                }
-              >
-                Modifier les réponses
-              </Button>
-              <Button
-                appearance="primary"
-                icon={<ArrowDownload20Regular />}
-                onClick={() => {
-                  window.print();
-                  notifySuccess('Impression de la fiche', {
-                    description: 'Utilisez « Enregistrer au format PDF » dans la boîte d’impression.',
-                  });
-                }
-                }
-              >
-                Export PDF
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%', flexWrap: 'wrap' }}>
+              {!isValidated(openEval) ? (
+                <Button appearance="primary" icon={<CheckmarkCircle20Regular />} onClick={validateEval}>
+                  {t('Valider l\'évaluation')}
+                </Button>
+              ) : (
+                <>
+                  {openEval.publie ? (
+                    <Button
+                      appearance="subtle"
+                      icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+                      disabled
+                    >
+                      {t('Publié au tiers')}
+                    </Button>
+                  ) : (
+                    <Button appearance="primary" icon={<Send20Regular />} onClick={pushEval}>
+                      {t('Pousser au partenaire')}
+                    </Button>
+                  )}
+                  <Button
+                    appearance="outline"
+                    icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+                    onClick={() => decide(0, t('Maintenir'))}
+                  >
+                    {t('Maintenir')}
+                  </Button>
+                  <Button
+                    appearance="outline"
+                    icon={<ShieldCheckmark20Regular style={{ color: '#B45309' }} />}
+                    onClick={() => decide(1, t('Sous surveillance'))}
+                  >
+                    {t('Sous surveillance')}
+                  </Button>
+                  <Button
+                    appearance="outline"
+                    icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
+                    onClick={() => decide(2, t('Annuler'))}
+                  >
+                    {t('Annuler le partenariat')}
+                  </Button>
+                </>
+              )}
+              <Button appearance="subtle" icon={<ArrowDownload20Regular />} onClick={() => window.print()}>
+                {t('Export PDF')}
               </Button>
             </div>
           ) : null
@@ -530,7 +642,7 @@ export default function Evaluations() {
           <>
             {activeTab === 'synthese' && (
               <>
-                <DrawerSection title="Score global" description={`Pondération par section — score maximal théorique ${openEval.scoreMax}`}>
+                <DrawerSection title={t('Score global')} description={`${t('Pondération par section — score maximal théorique')} ${openEval.scoreMax}`}>
                   <div className={styles.bigScore}>
                     <div className={styles.bigScoreNumber} style={{ color: scoreColor(openEval.score) }}>
                       {Math.round((openEval.score / openEval.scoreMax) * 100)}%
@@ -547,22 +659,22 @@ export default function Evaluations() {
                         />
                       </div>
                       <div style={{ marginTop: '8px', fontSize: '13px', color: '#767676' }}>
-                        {openEval.score} points sur {openEval.scoreMax} — statut {' '}
+                        {openEval.score} {t('points sur')} {openEval.scoreMax} {t('— statut')} {' '}
                         <strong style={{ color: scoreColor(openEval.score) }}>{openEval.statut}</strong>
                       </div>
                     </div>
                   </div>
                 </DrawerSection>
 
-                <DrawerSection title="Informations">
+                <DrawerSection title={t('Informations')}>
                   <FieldGrid
                     items={[
-                      { label: 'Référence', value: openEval.id, mono: true },
-                      { label: 'Partenaire', value: openEval.partenaire },
-                      { label: 'Type', value: openEval.typeEval },
-                      { label: 'Évaluateur', value: openEval.evaluateur },
-                      { label: 'Date', value: openEval.date },
-                      { label: 'Échéance', value: 'Semestrielle' },
+                      { label: t('Référence'), value: openEval.id, mono: true },
+                      { label: t('Partenaire'), value: openEval.partenaire },
+                      { label: t('Type'), value: openEval.typeEval },
+                      { label: t('Évaluateur'), value: openEval.evaluateur },
+                      { label: t('Date'), value: openEval.date },
+                      { label: t('Échéance'), value: t('Semestrielle') },
                     ]}
                   />
                 </DrawerSection>
@@ -570,13 +682,13 @@ export default function Evaluations() {
             )}
 
             {activeTab === 'sections' && (
-              <DrawerSection title="Détail par section">
+              <DrawerSection title={t('Détail par section')}>
                 {[
-                  { name: 'Continuité opérationnelle', score: 18, max: 20 },
-                  { name: 'Sécurité des données', score: 16, max: 20 },
-                  { name: 'Engagement de service (SLA)', score: 19, max: 20 },
-                  { name: 'Reporting', score: 14, max: 20 },
-                  { name: 'Conformité réglementaire', score: 17, max: 20 },
+                  { name: t('Continuité opérationnelle'), score: 18, max: 20 },
+                  { name: t('Sécurité des données'), score: 16, max: 20 },
+                  { name: t('Engagement de service (SLA)'), score: 19, max: 20 },
+                  { name: t('Reporting'), score: 14, max: 20 },
+                  { name: t('Conformité réglementaire'), score: 17, max: 20 },
                 ].map((s) => (
                   <div key={s.name} className={styles.sectionRow}>
                     <span className={styles.sectionRowName}>{s.name}</span>
@@ -593,30 +705,30 @@ export default function Evaluations() {
 
             {activeTab === 'ecarts' && (
               <DrawerSection
-                title="Écarts identifiés"
-                description="Points nécessitant un plan d'action — suivi par le chargé de relation."
+                title={t('Écarts identifiés')}
+                description={t('Points nécessitant un plan d\'action — suivi par le chargé de relation.')}
               >
                 {openEval.statut === 'Conforme' ? (
                   <div style={{ fontSize: '13px', color: '#767676', padding: '20px', textAlign: 'center' }}>
-                    Aucun écart identifié — évaluation conforme.
+                    {t('Aucun écart identifié — évaluation conforme.')}
                   </div>
                 ) : (
                   <>
                     <div className={styles.ecart}>
                       <span className={styles.ecartDot} />
                       <div>
-                        <div className={styles.ecartTitle}>Reporting mensuel incomplet</div>
+                        <div className={styles.ecartTitle}>{t('Reporting mensuel incomplet')}</div>
                         <div className={styles.ecartDetail}>
-                          Indicateurs de qualité manquants sur les 2 derniers trimestres. Plan d'action requis sous 30 jours.
+                          {t('Indicateurs de qualité manquants sur les 2 derniers trimestres. Plan d\'action requis sous 30 jours.')}
                         </div>
                       </div>
                     </div>
                     <div className={styles.ecart}>
                       <span className={styles.ecartDot} />
                       <div>
-                        <div className={styles.ecartTitle}>Politique de sauvegarde non documentée</div>
+                        <div className={styles.ecartTitle}>{t('Politique de sauvegarde non documentée')}</div>
                         <div className={styles.ecartDetail}>
-                          Demander la fourniture du PCA/PRA mis à jour 2026 et la justification des tests de restauration.
+                          {t('Demander la fourniture du PCA/PRA mis à jour 2026 et la justification des tests de restauration.')}
                         </div>
                       </div>
                     </div>
@@ -624,9 +736,9 @@ export default function Evaluations() {
                       <div className={styles.ecart}>
                         <span className={styles.ecartDot} />
                         <div>
-                          <div className={styles.ecartTitle}>Non-respect des engagements SLA Q1</div>
+                          <div className={styles.ecartTitle}>{t('Non-respect des engagements SLA Q1')}</div>
                           <div className={styles.ecartDetail}>
-                            Taux de disponibilité 97.4% contre 99.5% engagé. Escalade comité conformité requise.
+                            {t('Taux de disponibilité 97.4% contre 99.5% engagé. Escalade comité conformité requise.')}
                           </div>
                         </div>
                       </div>
@@ -637,12 +749,12 @@ export default function Evaluations() {
             )}
 
             {activeTab === 'historique' && (
-              <DrawerSection title="Historique de l'évaluation">
+              <DrawerSection title={t('Historique de l\'évaluation')}>
                 <DrawerTimeline
                   events={[
-                    { when: openEval.date, title: 'Évaluation finalisée', detail: `Par ${openEval.evaluateur} — statut ${openEval.statut}` },
-                    { when: '20/04/2026', title: 'Réponses soumises par le tiers', detail: 'Toutes les sections complétées' },
-                    { when: '05/04/2026', title: 'Évaluation lancée', detail: `Questionnaire affecté avec échéance 30 jours` },
+                    { when: openEval.date, title: t('Évaluation finalisée'), detail: `${t('Par')} ${openEval.evaluateur} ${t('— statut')} ${openEval.statut}` },
+                    { when: '20/04/2026', title: t('Réponses soumises par le tiers'), detail: t('Toutes les sections complétées') },
+                    { when: '05/04/2026', title: t('Évaluation lancée'), detail: t('Questionnaire affecté avec échéance 30 jours') },
                   ]}
                 />
               </DrawerSection>
@@ -655,23 +767,23 @@ export default function Evaluations() {
       <FormDialog
         open={newOpen}
         onOpenChange={(o) => { if (!o) resetForm(); setNewOpen(o); }}
-        eyebrow="Évaluations"
-        title="Lancer une nouvelle évaluation"
-        subtitle="Affectez un questionnaire à un partenaire et définissez le périmètre. L'invitation est envoyée immédiatement."
+        eyebrow={t('Évaluations')}
+        title={t('Lancer une nouvelle évaluation')}
+        subtitle={t('Affectez un questionnaire à un partenaire et définissez le périmètre. L\'invitation est envoyée immédiatement.')}
         size="large"
-        steps={[{ label: 'Choix' }, { label: 'Configuration' }]}
+        steps={[{ label: t('Choix') }, { label: t('Configuration') }]}
         validateStep={(s) => (s === 0 ? stepOneValid : true)}
-        submitLabel="Lancer l'évaluation"
+        submitLabel={t('Lancer l\'évaluation')}
         onSubmit={submitNew}
       >
         {(step) => (
           <>
             {step === 0 && (
-              <FormSection title="Partenaire et questionnaire">
+              <FormSection title={t('Partenaire et questionnaire')}>
                 <FieldRow>
-                  <Field label="Partenaire à évaluer" required>
+                  <Field label={t('Partenaire à évaluer')} required>
                     <Dropdown
-                      placeholder="Sélectionner un tiers"
+                      placeholder={t('Sélectionner un tiers')}
                       value={tiersData?.find((t) => t.afb_tiersid === tiersId)?.afb_nomdupartenaire ?? ''}
                       selectedOptions={tiersId ? [tiersId] : []}
                       onOptionSelect={(_, d) => d.optionValue && setTiersId(d.optionValue)}
@@ -685,17 +797,17 @@ export default function Evaluations() {
                   </Field>
                 </FieldRow>
                 <FieldRow cols={2}>
-                  <Field label="Type d'évaluation" required>
+                  <Field label={t('Type d\'évaluation')} required>
                     <RadioGroup value={typeEval} onChange={(_, d) => setTypeEval(d.value as 'SLA' | 'OPS' | 'RISK' | 'EXT')}>
-                      <Radio value="SLA" label="SLA — Niveau de service" />
-                      <Radio value="OPS" label="OPS — Opérations" />
-                      <Radio value="RISK" label="RISK — Risques" />
-                      <Radio value="EXT" label="EXT — Externalisation" />
+                      <Radio value="SLA" label={t('SLA — Niveau de service')} />
+                      <Radio value="OPS" label={t('OPS — Opérations')} />
+                      <Radio value="RISK" label={t('RISK — Risques')} />
+                      <Radio value="EXT" label={t('EXT — Externalisation')} />
                     </RadioGroup>
                   </Field>
-                  <Field label="Grille d'évaluation" required>
+                  <Field label={t('Grille d\'évaluation')} required>
                     <Dropdown
-                      placeholder="Sélectionner une grille"
+                      placeholder={t('Sélectionner une grille')}
                       value={grilleData?.find((g) => g.afb_grilleevaluationid === grilleId)?.afb_libelleenfrancais ?? ''}
                       selectedOptions={grilleId ? [grilleId] : []}
                       onOptionSelect={(_, d) => d.optionValue && setGrilleId(d.optionValue)}
@@ -709,9 +821,9 @@ export default function Evaluations() {
                   </Field>
                 </FieldRow>
                 <FieldRow>
-                  <Field label="Évaluateur (DCONF)" required>
+                  <Field label={t('Évaluateur (DCONF)')} required>
                     <Dropdown
-                      placeholder="Sélectionner un évaluateur"
+                      placeholder={t('Sélectionner un évaluateur')}
                       value={userData?.find((u) => u.afb_utilisateurinterneid === evaluateurId)?.afb_nomcomplet ?? ''}
                       selectedOptions={evaluateurId ? [evaluateurId] : []}
                       onOptionSelect={(_, d) => d.optionValue && setEvaluateurId(d.optionValue)}
@@ -729,20 +841,20 @@ export default function Evaluations() {
 
             {step === 1 && (
               <>
-                <FormSection title="Périmètre temporel">
+                <FormSection title={t('Périmètre temporel')}>
                   <FieldRow cols={2}>
-                    <Field label="Périodicité" required>
+                    <Field label={t('Périodicité')} required>
                       <Dropdown
                         value={periode}
                         selectedOptions={[periode]}
                         onOptionSelect={(_, d) => setPeriode((d.optionValue ?? 'semestrielle') as 'semestrielle' | 'annuelle' | 'ad-hoc')}
                       >
-                        <Option value="semestrielle">Semestrielle</Option>
-                        <Option value="annuelle">Annuelle</Option>
-                        <Option value="ad-hoc">Ad-hoc — événement déclenchant</Option>
+                        <Option value="semestrielle">{t('Semestrielle')}</Option>
+                        <Option value="annuelle">{t('Annuelle')}</Option>
+                        <Option value="ad-hoc">{t('Ad-hoc — événement déclenchant')}</Option>
                       </Dropdown>
                     </Field>
-                    <Field label="Date limite de réponse">
+                    <Field label={t('Date limite de réponse')}>
                       <Input
                         type="date"
                         value={dateLimite}
@@ -751,25 +863,38 @@ export default function Evaluations() {
                     </Field>
                   </FieldRow>
                 </FormSection>
-                <FormSection title="Contexte (optionnel)">
-                  <Field label="Note interne pour l'évaluateur">
+                <FormSection title={t('Notation')}>
+                  <Field label={t('Score global attribué par l\'évaluateur (sur 100)')} required>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={noteGlobale}
+                      onChange={(_, d) => setNoteGlobale(d.value)}
+                      placeholder={t('Ex. 85 — détermine le statut (≥80 Conforme, ≥60 À améliorer, sinon Non conforme)')}
+                    />
+                  </Field>
+                </FormSection>
+                <FormSection title={t('Contexte (optionnel)')}>
+                  <Field label={t('Avis / note pour le partenaire et l\'évaluateur')}>
                     <Textarea
                       value={contexte}
                       onChange={(_, d) => setContexte(d.value)}
                       rows={3}
-                      placeholder="Éléments contextuels, périmètre spécifique à approfondir, suite à incident…"
+                      placeholder={t('Éléments contextuels, avis communiqué au partenaire, points à approfondir…')}
                     />
                   </Field>
                 </FormSection>
-                <FormSection title="Récapitulatif">
+                <FormSection title={t('Récapitulatif')}>
                   <FieldGrid
                     items={[
-                      { label: 'Partenaire', value: tiersData?.find((t) => t.afb_tiersid === tiersId)?.afb_nomdupartenaire ?? '—' },
-                      { label: 'Type', value: typeEval },
-                      { label: 'Grille', value: grilleData?.find((g) => g.afb_grilleevaluationid === grilleId)?.afb_libelleenfrancais ?? '—' },
-                      { label: 'Évaluateur', value: userData?.find((u) => u.afb_utilisateurinterneid === evaluateurId)?.afb_nomcomplet ?? '—' },
-                      { label: 'Périodicité', value: periode },
-                      { label: 'Échéance', value: dateLimite || 'Libre' },
+                      { label: t('Partenaire'), value: tiersData?.find((ti) => ti.afb_tiersid === tiersId)?.afb_nomdupartenaire ?? '—' },
+                      { label: t('Type'), value: typeEval },
+                      { label: t('Grille'), value: grilleData?.find((g) => g.afb_grilleevaluationid === grilleId)?.afb_libelleenfrancais ?? '—' },
+                      { label: t('Évaluateur'), value: userData?.find((u) => u.afb_utilisateurinterneid === evaluateurId)?.afb_nomcomplet ?? '—' },
+                      { label: t('Périodicité'), value: periode },
+                      { label: t('Échéance'), value: dateLimite || t('Libre') },
+                      { label: t('Score attribué'), value: noteGlobale ? `${noteGlobale}/100` : '—' },
                     ]}
                   />
                 </FormSection>

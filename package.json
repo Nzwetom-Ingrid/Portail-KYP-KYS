@@ -53,6 +53,7 @@
     "embla-carousel-react": "^8.6.0",
     "i18next": "^23.15.0",
     "input-otp": "^1.4.2",
+    "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
     "react-day-picker": "^10.0.1",

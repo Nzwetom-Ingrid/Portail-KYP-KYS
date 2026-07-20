@@ -21,7 +21,8 @@ import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { RisqueBadge, SLABadge } from '@/components/common/StatusBadge';
 import { type ValidationDecision } from '@/lib/mockData';
-import { dossiersKypKys } from '@/lib/dataverse/entityHooks';
+import { dossiersKypKys, tiers as tiersHooks, utilisateursInternes } from '@/lib/dataverse/entityHooks';
+import { getCurrentUser } from '@/lib/auth/currentUserRef';
 import { toValidationDecision } from '@/lib/dataverse/validationMappers';
 import { exportToCsv } from '@/lib/exportCsv';
 import {
@@ -32,6 +33,7 @@ import {
 } from '@/components/common/DetailDrawer';
 import { ConfirmActionDialog, type ConfirmIntent } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -142,8 +144,8 @@ const useStyles = makeStyles({
     color: '#FFFFFF',
   },
   stepDotActive: {
-    borderTopColor: '#E30613', borderRightColor: '#E30613', borderBottomColor: '#E30613', borderLeftColor: '#E30613',
-    color: '#E30613',
+    borderTopColor: '#c8102e', borderRightColor: '#c8102e', borderBottomColor: '#c8102e', borderLeftColor: '#c8102e',
+    color: '#c8102e',
   },
 });
 
@@ -175,32 +177,55 @@ function statutColor(s: ValidationDecision['statut']) {
   return 'warning';
 }
 
+// Complétude : plus le taux est élevé, mieux c'est → vert pour un taux haut.
 function scoreColor(score: number) {
-  if (score >= 75) return '#E30613';
+  if (score >= 80) return '#15803D';
   if (score >= 50) return '#B45309';
-  return '#15803D';
+  return '#c8102e';
 }
 
 function scoreLabel(score: number) {
-  if (score >= 75) return 'Élevé';
-  if (score >= 50) return 'Modéré';
-  return 'Faible';
+  if (score >= 80) return 'élevée';
+  if (score >= 50) return 'partielle';
+  return 'faible';
 }
 
 export default function ValidationsDCONF() {
   const styles = useStyles();
+  const { t } = useT();
   const { notifySuccess, notifyWarning, notifyInfo } = useNotifications();
   const [search, setSearch] = useState('');
   const [niveauFilter, setNiveauFilter] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
+  const [slaFilter, setSlaFilter] = useState('');
   const [openVal, setOpenVal] = useState<ValidationDecision | null>(null);
   const [activeTab, setActiveTab] = useState('synthese');
   const [confirmIntent, setConfirmIntent] = useState<ConfirmIntent | null>(null);
 
   // Dossiers réels depuis Dataverse (afb_dossierkypkys) vus comme décisions de validation.
   const { data: rawDossiers, isLoading, error } = dossiersKypKys.useList({ top: 200 });
-  const validations = useMemo(() => (rawDossiers ?? []).map(toValidationDecision), [rawDossiers]);
+  const { data: rawTiers } = tiersHooks.useList({ top: 500 });
+  const { data: rawUsers } = utilisateursInternes.useList({ top: 500 });
   const updateDossier = dossiersKypKys.useUpdate();
+
+  // Résolveurs : entité contrôlée (tiers), risque/niveau (risque du tiers), soumis par (chargé de relation).
+  const resolvers = useMemo(() => {
+    const tiersById = new Map<string, { nom?: string; risqueNum?: number; chargeGuid?: string }>();
+    for (const t of rawTiers ?? [])
+      tiersById.set(t.afb_tiersid, {
+        nom: t.afb_nomdupartenaire,
+        risqueNum: t.afb_niveauderisque ?? undefined,
+        chargeGuid: t._afb_chargederelation_value,
+      });
+    const usersById = new Map<string, string>();
+    for (const u of rawUsers ?? []) usersById.set(u.afb_utilisateurinterneid, u.afb_nomcomplet);
+    return { tiersById, usersById };
+  }, [rawTiers, rawUsers]);
+
+  const validations = useMemo(
+    () => (rawDossiers ?? []).map((d) => toValidationDecision(d, resolvers)),
+    [rawDossiers, resolvers],
+  );
   const guidByRef = useMemo(
     () =>
       new Map(
@@ -213,6 +238,7 @@ export default function ValidationsDCONF() {
     return validations.filter((v) => {
       if (niveauFilter && v.niveau !== niveauFilter) return false;
       if (statutFilter && v.statut !== statutFilter) return false;
+      if (slaFilter === 'Dépassé' && v.sla !== 'Dépassé') return false;
       if (search) {
         const q = search.toLowerCase();
         if (!v.entite.toLowerCase().includes(q) && !v.dossier.toLowerCase().includes(q) && !v.id.toLowerCase().includes(q))
@@ -220,36 +246,40 @@ export default function ValidationsDCONF() {
       }
       return true;
     });
-  }, [validations, search, niveauFilter, statutFilter]);
+  }, [validations, search, niveauFilter, statutFilter, slaFilter]);
 
   const kpis = [
     {
-      label: 'En attente',
+      label: t('En attente'),
       value: validations.filter((v) => v.statut === 'En attente').length,
-      meta: 'à arbitrer',
+      meta: t('à arbitrer'),
       color: '#B45309',
-      filter: () => setStatutFilter('En attente'),
+      pressed: statutFilter === 'En attente',
+      filter: () => setStatutFilter((cur) => (cur === 'En attente' ? '' : 'En attente')),
     },
     {
-      label: 'Niveau Critique',
+      label: t('Niveau Critique'),
       value: validations.filter((v) => v.niveau === 'Critique').length,
-      meta: 'double validation N+2',
-      color: '#E30613',
-      filter: () => setNiveauFilter('Critique'),
+      meta: t('double validation N+2'),
+      color: '#c8102e',
+      pressed: niveauFilter === 'Critique',
+      filter: () => setNiveauFilter((cur) => (cur === 'Critique' ? '' : 'Critique')),
     },
     {
-      label: 'SLA dépassé',
+      label: t('SLA dépassé'),
       value: validations.filter((v) => v.sla === 'Dépassé').length,
-      meta: 'escalade automatique',
-      color: '#A50410',
-      filter: () => undefined,
+      meta: t('escalade automatique'),
+      color: '#a30f24',
+      pressed: slaFilter === 'Dépassé',
+      filter: () => setSlaFilter((cur) => (cur === 'Dépassé' ? '' : 'Dépassé')),
     },
     {
-      label: 'Validés ce mois',
+      label: t('Validés ce mois'),
       value: validations.filter((v) => v.statut === 'Validé').length,
-      meta: 'archivés',
+      meta: t('archivés'),
       color: '#15803D',
-      filter: () => setStatutFilter('Validé'),
+      pressed: statutFilter === 'Validé',
+      filter: () => setStatutFilter((cur) => (cur === 'Validé' ? '' : 'Validé')),
     },
   ];
 
@@ -266,32 +296,53 @@ export default function ValidationsDCONF() {
         if (guid) {
           await updateDossier.mutateAsync({
             id: guid,
-            changes: { afb_statutdudossier: 0, afb_datededernierevalidation: new Date().toISOString() },
+            // afb_statutappel = 'traite' → clôt un éventuel appel : le flux notifie
+            // par e-mail le demandeur (afb_demandeurappel) du résultat.
+            changes: {
+              afb_statutdudossier: 0,
+              afb_datededernierevalidation: new Date().toISOString(),
+              afb_statutappel: 'traite',
+            } as unknown as Parameters<typeof updateDossier.mutateAsync>[0]['changes'],
           });
         }
-        notifySuccess('Décision validée', {
-          description: `${openVal.id} · ${openVal.entite} — décision opposable, archivage 10 ans.`,
+        notifySuccess(t('Décision validée'), {
+          description: `${openVal.id} · ${openVal.entite}${t(' — décision opposable, archivage 10 ans.')}`,
         });
       } else if (confirmIntent === 'reject') {
         if (guid) {
           await updateDossier.mutateAsync({
             id: guid,
-            changes: { afb_statutdudossier: 747010002, ...(motif ? { afb_commentairedconf: motif } : {}) },
+            changes: {
+              afb_statutdudossier: 747010002,
+              ...(motif ? { afb_commentairedconf: motif } : {}),
+              afb_statutappel: 'traite',
+            } as unknown as Parameters<typeof updateDossier.mutateAsync>[0]['changes'],
           });
         }
-        notifyWarning('Décision rejetée', {
-          description: `${openVal.id} · Motif : ${motif} — le tiers a été notifié.`,
+        notifyWarning(t('Décision rejetée'), {
+          description: `${openVal.id}${t(' · Motif : ')}${motif}${t(' — le tiers a été notifié.')}`,
         });
       } else if (confirmIntent === 'warn') {
         if (guid) {
-          await updateDossier.mutateAsync({ id: guid, changes: { afb_statutdudossier: 747010001 } }); // Suspendu (escaladé)
+          // Appel à validation : on passe le dossier en « escaladé », on trace le
+          // demandeur (e-mail de l'utilisateur connecté) et on marque l'appel
+          // « demande » → le flux notifie le RCSI par e-mail.
+          await updateDossier.mutateAsync({
+            id: guid,
+            changes: {
+              afb_statutdudossier: 747010001,
+              afb_demandeurappel: getCurrentUser().email || '',
+              afb_statutappel: 'demande',
+              ...(motif ? { afb_motifappel: motif } : {}),
+            } as unknown as Parameters<typeof updateDossier.mutateAsync>[0]['changes'],
+          });
         }
-        notifyInfo('Escalade au RCSI', {
-          description: `${openVal.id} — escalade hiérarchique déclenchée. Notification envoyée.`,
+        notifyInfo(t('Appel à validation envoyé'), {
+          description: `${openVal.id}${t(' — le RCSI va être notifié par e-mail.')}`,
         });
       }
     } catch (e) {
-      notifyWarning('Action impossible', { description: e instanceof Error ? e.message : 'Erreur Dataverse.' });
+      notifyWarning(t('Action impossible'), { description: e instanceof Error ? e.message : t('Erreur Dataverse.') });
       throw e;
     }
     setConfirmIntent(null);
@@ -332,7 +383,7 @@ export default function ValidationsDCONF() {
     { key: 'risque', header: 'Risque', render: (v) => <RisqueBadge risque={v.risque} /> },
     {
       key: 'score',
-      header: 'Score composite',
+      header: 'Complétude',
       render: (v) => (
         <span className={styles.scoreCell}>
           <span className={styles.scoreBar}>
@@ -363,10 +414,10 @@ export default function ValidationsDCONF() {
       align: 'right',
       render: (v) => (
         <div className={styles.rowActions} onClick={(e) => e.stopPropagation()}>
-          <Tooltip content="Voir le dossier" relationship="label">
+          <Tooltip content={t('Voir le dossier')} relationship="label">
             <Button size="small" appearance="subtle" icon={<Eye20Regular />} onClick={() => open(v)} />
           </Tooltip>
-          <Tooltip content="Valider" relationship="label">
+          <Tooltip content={t('Valider')} relationship="label">
             <Button
               size="small"
               appearance="subtle"
@@ -378,11 +429,11 @@ export default function ValidationsDCONF() {
               }}
             />
           </Tooltip>
-          <Tooltip content="Rejeter" relationship="label">
+          <Tooltip content={t('Rejeter')} relationship="label">
             <Button
               size="small"
               appearance="subtle"
-              icon={<DismissCircle20Regular style={{ color: '#E30613' }} />}
+              icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
               disabled={v.statut === 'Validé' || v.statut === 'Rejeté'}
               onClick={() => {
                 setOpenVal(v);
@@ -391,7 +442,7 @@ export default function ValidationsDCONF() {
             />
           </Tooltip>
           {v.niveau !== 'Standard' && (
-            <Tooltip content="Escalader au RCSI" relationship="label">
+            <Tooltip content={t('Demander la validation au RCSI')} relationship="label">
               <Button
                 size="small"
                 appearance="subtle"
@@ -412,8 +463,8 @@ export default function ValidationsDCONF() {
     <div>
       <PageHeader
         eyebrow="Pilotage · DCONF"
-        title="Validations DCONF"
-        subtitle="File de validation hiérarchique de la Direction Conformité — arbitrage Standard, Élevé et Critique."
+        title="Validation"
+        subtitle="Validation hiérarchique de second niveau — un responsable confirme les décisions avant qu'elles ne soient effectives."
         actions={
           <Button
             icon={<ArrowDownload20Regular />}
@@ -434,12 +485,12 @@ export default function ValidationsDCONF() {
                   Statut: v.statut,
                 })),
               );
-              notifySuccess(ok ? 'Export généré' : 'Aucune donnée', {
-                description: ok ? `${filtered.length} validations exportées (CSV).` : 'Aucune validation à exporter.',
+              notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+                description: ok ? `${filtered.length}${t(' validations exportées (CSV).')}` : t('Aucune validation à exporter.'),
               });
             }}
           >
-            Export
+            {t('Export')}
           </Button>
         }
       />
@@ -449,6 +500,9 @@ export default function ValidationsDCONF() {
           <div
             key={k.label}
             className={styles.kpi}
+            role="button"
+            tabIndex={0}
+            aria-pressed={k.pressed}
             style={{ borderLeftColor: k.color }}
             onClick={k.filter}
           >
@@ -475,17 +529,17 @@ export default function ValidationsDCONF() {
         flush
         title={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <ShieldCheckmark20Regular /> File de validation
+            <ShieldCheckmark20Regular /> {t('File de validation')}
           </span>
         }
         subtitle={`${filtered.length} sur ${validations.length} décisions — triées par priorité SLA`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#C20012', fontSize: '13px' }}>
-            Erreur de chargement depuis Dataverse : {error.message}
+          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+            {t('Erreur de chargement depuis Dataverse : ')}{error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>Chargement des décisions…</div>
+          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des décisions…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -501,7 +555,7 @@ export default function ValidationsDCONF() {
       <DetailDrawer
         open={openVal !== null && confirmIntent === null}
         onOpenChange={(o) => !o && setOpenVal(null)}
-        eyebrow={`Décision · ${openVal?.id ?? ''}`}
+        eyebrow={`${t('Décision · ')}${openVal?.id ?? ''}`}
         title={openVal?.entite ?? ''}
         subtitle={openVal?.dossier}
         size="large"
@@ -519,9 +573,9 @@ export default function ValidationsDCONF() {
           ) : null
         }
         tabs={[
-          { id: 'synthese', label: 'Synthèse' },
-          { id: 'hierarchie', label: 'Hiérarchie' },
-          { id: 'historique', label: 'Historique' },
+          { id: 'synthese', label: t('Synthèse') },
+          { id: 'hierarchie', label: t('Hiérarchie') },
+          { id: 'historique', label: t('Historique') },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -530,14 +584,14 @@ export default function ValidationsDCONF() {
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
               {openVal.niveau !== 'Standard' && (
                 <Button appearance="subtle" onClick={() => setConfirmIntent('warn')}>
-                  Escalader au RCSI
+                  {t('Demander la validation au RCSI')}
                 </Button>
               )}
               <Button appearance="outline" onClick={() => setConfirmIntent('reject')}>
-                Rejeter
+                {t('Rejeter')}
               </Button>
               <Button appearance="primary" onClick={() => setConfirmIntent('validate')}>
-                Valider la décision
+                {t('Valider la décision')}
               </Button>
             </div>
           ) : null
@@ -547,13 +601,14 @@ export default function ValidationsDCONF() {
           <>
             {activeTab === 'synthese' && (
               <>
-                <DrawerSection title="Score composite" description="Pondération : KYC/AML 40% · Éthique 30% · Fiscal 30%">
+                <DrawerSection title={t('Complétude du dossier')} description={t("Part des pièces requises fournies — proxy du score d'instruction.")}>
                   <div className={styles.bigScore}>
                     <div
                       className={styles.bigScoreNumber}
                       style={{ color: scoreColor(openVal.scoreComposite) }}
                     >
                       {openVal.scoreComposite}
+                      <span style={{ fontSize: '18px' }}>%</span>
                     </div>
                     <div style={{ flex: 1 }}>
                       <div className={styles.bigScoreBar}>
@@ -567,37 +622,41 @@ export default function ValidationsDCONF() {
                         />
                       </div>
                       <div style={{ marginTop: '8px', fontSize: '13px', color: '#767676' }}>
-                        Niveau de risque <strong style={{ color: scoreColor(openVal.scoreComposite) }}>{scoreLabel(openVal.scoreComposite)}</strong> —{' '}
-                        validation hiérarchique requise selon Art. 41-48 R-2023/01.
+                        {t('Complétude')} <strong style={{ color: scoreColor(openVal.scoreComposite) }}>{t(scoreLabel(openVal.scoreComposite))}</strong> —{' '}
+                        {t('validation hiérarchique niveau ')}{openVal.niveau}{t(' (Art. 41-48 R-2023/01).')}
                       </div>
                     </div>
                   </div>
                   <FieldGrid
                     items={[
-                      { label: 'KYC / AML', value: <span style={{ color: scoreColor(85), fontWeight: 600 }}>85 / 100</span> },
-                      { label: 'Éthique & gouvernance', value: <span style={{ fontWeight: 600 }}>74 / 100</span> },
-                      { label: 'Fiscal & transparence', value: <span style={{ fontWeight: 600 }}>68 / 100</span> },
+                      { label: t('Taux de complétude'), value: <span style={{ color: scoreColor(openVal.scoreComposite), fontWeight: 600 }}>{openVal.scoreComposite}%</span> },
+                      { label: t('Risque du tiers'), value: openVal.risque },
+                      { label: t('Niveau de validation'), value: openVal.niveau },
                     ]}
                   />
                 </DrawerSection>
 
-                <DrawerSection title="Identification du dossier">
+                <DrawerSection title={t('Identification du dossier')}>
                   <FieldGrid
                     items={[
-                      { label: 'Référence', value: openVal.id, mono: true },
-                      { label: 'Type', value: openVal.type },
-                      { label: 'Niveau', value: openVal.niveau },
-                      { label: 'Risque', value: openVal.risque },
-                      { label: 'Soumis par', value: openVal.soumisPar },
-                      { label: 'Soumis le', value: openVal.soumisLe },
+                      { label: t('Référence'), value: openVal.id, mono: true },
+                      { label: t('Entité'), value: openVal.entite },
+                      { label: t('Type'), value: openVal.type },
+                      { label: t('Statut'), value: openVal.statut },
+                      { label: t('Soumis par'), value: openVal.soumisPar },
+                      { label: t('Soumis le'), value: openVal.soumisLe },
+                      { label: t('SLA'), value: openVal.sla },
                     ]}
                   />
                 </DrawerSection>
 
-                <DrawerSection title="Note de l’analyste">
+                <DrawerSection
+                  title={t('Avis / commentaire DCONF')}
+                  description={t('Dernière réponse consignée sur le dossier — visible par le partenaire dans son espace.')}
+                >
                   <Field>
                     <Textarea
-                      defaultValue="Dossier complet conformément au questionnaire AML AFB révisé. Wolfsberg signé en mars 2026. UBO validés. Pas de match screening. Convention SLA en cours de signature électronique."
+                      value={openVal.commentaire ?? t('Aucun commentaire consigné pour ce dossier.')}
                       rows={4}
                       readOnly
                       appearance="filled-darker"
@@ -609,18 +668,18 @@ export default function ValidationsDCONF() {
 
             {activeTab === 'hierarchie' && (
               <DrawerSection
-                title="Schéma de validation hiérarchique"
-                description={`Niveau ${openVal.niveau} — schéma imposé par le workflow, sans court-circuit possible.`}
+                title={t('Schéma de validation hiérarchique')}
+                description={`${t('Niveau ')}${openVal.niveau}${t(' — schéma imposé par le workflow, sans court-circuit possible.')}`}
               >
                 <div className={styles.hierarchy}>
                   <div className={`${styles.hierarchyStep} ${styles.hierarchyDone}`}>
                     <span className={`${styles.stepDot} ${styles.stepDotDone}`}>✓</span>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#15803D' }}>
-                        Analyste DCONF — {openVal.soumisPar}
+                        {t('Analyste DCONF — ')}{openVal.soumisPar}
                       </div>
                       <div style={{ fontSize: '12px', color: '#15803D' }}>
-                        Pré-instruction validée le {openVal.soumisLe}
+                        {t('Pré-instruction validée le ')}{openVal.soumisLe}
                       </div>
                     </div>
                   </div>
@@ -628,14 +687,14 @@ export default function ValidationsDCONF() {
                     <span className={`${styles.stepDot} ${openVal.statut === 'En attente' ? styles.stepDotActive : ''}`}>2</span>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>
-                        Chargé de conformité DCONF
+                        {t('Chargé de conformité DCONF')}
                       </div>
                       <div style={{ fontSize: '12px', color: '#767676' }}>
-                        Décision sur le score composite, validation ou rejet
+                        {t('Décision sur le score composite, validation ou rejet')}
                       </div>
                     </div>
                     <Badge appearance="filled" color={openVal.statut === 'En attente' ? 'warning' : 'subtle'} size="small">
-                      En cours
+                      {t('En cours')}
                     </Badge>
                   </div>
                   {(openVal.niveau === 'Élevé' || openVal.niveau === 'Critique') && (
@@ -643,14 +702,14 @@ export default function ValidationsDCONF() {
                       <span className={styles.stepDot}>3</span>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>
-                          RCSI — Responsable Conformité
+                          {t('RCSI — Responsable Conformité')}
                         </div>
                         <div style={{ fontSize: '12px', color: '#767676' }}>
-                          Second regard requis pour ce niveau
+                          {t('Second regard requis pour ce niveau')}
                         </div>
                       </div>
                       <Badge appearance="tint" color="subtle" size="small">
-                        À venir
+                        {t('À venir')}
                       </Badge>
                     </div>
                   )}
@@ -659,14 +718,14 @@ export default function ValidationsDCONF() {
                       <span className={styles.stepDot}>4</span>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>
-                          Comité conformité — Art. 41-48 R-2023/01
+                          {t('Comité conformité — Art. 41-48 R-2023/01')}
                         </div>
                         <div style={{ fontSize: '12px', color: '#767676' }}>
-                          Validation finale obligatoire pour correspondants bancaires transfrontaliers
+                          {t('Validation finale obligatoire pour correspondants bancaires transfrontaliers')}
                         </div>
                       </div>
                       <Badge appearance="tint" color="subtle" size="small">
-                        À venir
+                        {t('À venir')}
                       </Badge>
                     </div>
                   )}
@@ -675,28 +734,25 @@ export default function ValidationsDCONF() {
             )}
 
             {activeTab === 'historique' && (
-              <DrawerSection title="Journal des décisions">
+              <DrawerSection title={t('Journal des décisions')}>
                 <DrawerTimeline
                   events={[
+                    ...(openVal.statut === 'Validé' || openVal.statut === 'Rejeté'
+                      ? [{
+                          when: '—',
+                          title: `${t('Décision : ')}${openVal.statut}`,
+                          detail: openVal.commentaire ?? t('Décision de conformité (DCONF)'),
+                        }]
+                      : []),
                     {
                       when: openVal.soumisLe,
-                      title: 'Dossier soumis pour validation',
-                      detail: `Par ${openVal.soumisPar} — score composite ${openVal.scoreComposite}`,
+                      title: t('Dossier soumis pour validation'),
+                      detail: `${t('Par ')}${openVal.soumisPar}${t(' — complétude ')}${openVal.scoreComposite}%`,
                     },
                     {
-                      when: '12/05/2026 11:08',
-                      title: 'Screening exécuté',
-                      detail: 'Sources ONU / OFAC / UE / PPE — aucun match',
-                    },
-                    {
-                      when: '10/05/2026 14:45',
-                      title: 'Pré-instruction DCONF',
-                      detail: 'Complétude vérifiée — 18/19 pièces requises fournies',
-                    },
-                    {
-                      when: '08/05/2026 09:00',
-                      title: 'Dossier ouvert',
-                      detail: `Création de la fiche dans le référentiel`,
+                      when: '—',
+                      title: t('Complétude du dossier'),
+                      detail: `${openVal.scoreComposite}${t('% des pièces requises fournies')}`,
                     },
                   ]}
                 />
@@ -711,23 +767,23 @@ export default function ValidationsDCONF() {
         open={confirmIntent === 'validate' && openVal !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="validate"
-        title="Valider cette décision ?"
-        description="La validation est horodatée, opposable au régulateur et archivée 10 ans (Art. 38 R-2023/01). Elle déclenche l’activation de la relation."
-        confirmLabel="Confirmer la validation"
+        title={t('Valider cette décision ?')}
+        description={t('La validation est horodatée, opposable au régulateur et archivée 10 ans (Art. 38 R-2023/01). Elle déclenche l’activation de la relation.')}
+        confirmLabel={t('Confirmer la validation')}
         entityRef={openVal?.id}
-        helperNote={openVal?.niveau === 'Critique' ? 'Décision critique — le dossier sera également transmis au comité de conformité.' : undefined}
+        helperNote={openVal?.niveau === 'Critique' ? t('Décision critique — le dossier sera également transmis au comité de conformité.') : undefined}
         onConfirm={() => onConfirm()}
       />
       <ConfirmActionDialog
         open={confirmIntent === 'reject' && openVal !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="reject"
-        title="Rejeter cette décision ?"
-        description="Le rejet est opposable et notifié au tiers. Le motif sera archivé."
-        confirmLabel="Confirmer le rejet"
+        title={t('Rejeter cette décision ?')}
+        description={t('Le rejet est opposable et notifié au tiers. Le motif sera archivé.')}
+        confirmLabel={t('Confirmer le rejet')}
         requireMotif
-        motifLabel="Motif du rejet"
-        motifPlaceholder="Score composite insuffisant, pièces non concordantes, absence de Wolfsberg…"
+        motifLabel={t('Motif du rejet')}
+        motifPlaceholder={t('Score composite insuffisant, pièces non concordantes, absence de Wolfsberg…')}
         entityRef={openVal?.id}
         onConfirm={onConfirm}
       />
@@ -735,12 +791,12 @@ export default function ValidationsDCONF() {
         open={confirmIntent === 'warn' && openVal !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="warn"
-        title="Escalader au RCSI ?"
-        description="L’escalade transmet le dossier au Responsable Conformité pour second regard. Le statut passe en En cours."
-        confirmLabel="Escalader"
+        title={t('Demander la validation au RCSI ?')}
+        description={t('Vous n’avez pas l’habilitation pour valider seul ce niveau : le dossier est transmis au RCSI (Responsable Conformité) qui reçoit une notification par e-mail. Vous serez notifié par e-mail de sa décision.')}
+        confirmLabel={t('Envoyer l’appel')}
         requireMotif
-        motifLabel="Justification de l’escalade"
-        motifPlaceholder="Doute sur la cohérence du dossier, score composite à la limite, élément déclenchant…"
+        motifLabel={t('Motif de l’appel (transmis au RCSI)')}
+        motifPlaceholder={t('Doute sur la cohérence du dossier, score composite à la limite, élément déclenchant…')}
         entityRef={openVal?.id}
         onConfirm={onConfirm}
       />

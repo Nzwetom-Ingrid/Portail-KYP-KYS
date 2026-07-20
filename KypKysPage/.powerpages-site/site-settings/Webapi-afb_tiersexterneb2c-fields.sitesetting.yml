@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_tiersexterneb2c. Limited to the identity-resolution columns (no '*') because this table holds external-identity metadata.
+id: 4afb2001-2001-4001-8001-200100100202
+name: Webapi/afb_tiersexterneb2c/fields
+value: afb_emaildauthentification,afb_identifiantb2c,afb_typedorganisation,afb_statutducompte,afb_nomdutiers

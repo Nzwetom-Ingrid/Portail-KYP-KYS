@@ -105,7 +105,7 @@ export function RiskDistribution({ counts }: RiskDistributionProps = {}) {
   const rows = [
     { label: 'Low',    count: low.count,    color: '#15803D', gradient: 'linear-gradient(90deg, #15803D 0%, #22A856 100%)' },
     { label: 'Medium', count: medium.count, color: '#B45309', gradient: 'linear-gradient(90deg, #B45309 0%, #D97706 100%)' },
-    { label: 'High',   count: high.count,   color: '#C20012', gradient: 'linear-gradient(90deg, #C20012 0%, #ED4C58 100%)' },
+    { label: 'High',   count: high.count,   color: '#c8102e', gradient: 'linear-gradient(90deg, #c8102e 0%, #d8324a 100%)' },
   ];
 
   return (

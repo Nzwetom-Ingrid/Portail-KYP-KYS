@@ -1,6 +1,7 @@
 import { makeStyles, Input, Dropdown, Option } from '@fluentui/react-components';
 import { Search20Regular } from '@fluentui/react-icons';
 import type { ReactNode } from 'react';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   bar: {
@@ -16,7 +17,7 @@ const useStyles = makeStyles({
     marginBottom: '20px',
     transition: 'border-color 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms',
     ':focus-within': {
-      borderTopColor: 'rgba(227, 6, 19, 0.16)', borderRightColor: 'rgba(227, 6, 19, 0.16)', borderBottomColor: 'rgba(227, 6, 19, 0.16)', borderLeftColor: 'rgba(227, 6, 19, 0.16)',
+      borderTopColor: 'rgba(200, 16, 46, 0.16)', borderRightColor: 'rgba(200, 16, 46, 0.16)', borderBottomColor: 'rgba(200, 16, 46, 0.16)', borderLeftColor: 'rgba(200, 16, 46, 0.16)',
       boxShadow: '0 2px 6px rgba(20, 20, 20, 0.05), 0 16px 40px -22px rgba(20, 20, 20, 0.16)',
     },
   },
@@ -70,13 +71,14 @@ export function FilterBar({
   trailing,
 }: FilterBarProps) {
   const styles = useStyles();
+  const { t } = useT();
   return (
     <div className={styles.bar}>
       {onSearchChange !== undefined && (
         <Input
           className={styles.searchField}
           contentBefore={<Search20Regular style={{ color: '#737373' }} />}
-          placeholder={searchPlaceholder}
+          placeholder={t(searchPlaceholder)}
           value={search ?? ''}
           onChange={(_, data) => onSearchChange(data.value)}
         />
@@ -86,14 +88,14 @@ export function FilterBar({
           <Dropdown
             key={f.key}
             className={styles.dropdown}
-            placeholder={f.label}
-            value={f.options.find((o) => o.value === f.value)?.label ?? f.label}
+            placeholder={t(f.label)}
+            value={t(f.options.find((o) => o.value === f.value)?.label ?? f.label)}
             selectedOptions={[f.value]}
             onOptionSelect={(_, data) => f.onChange(data.optionValue ?? '')}
           >
             {f.options.map((o) => (
-              <Option key={o.value} value={o.value}>
-                {o.label}
+              <Option key={o.value} value={o.value} text={t(o.label)}>
+                {t(o.label)}
               </Option>
             ))}
           </Dropdown>

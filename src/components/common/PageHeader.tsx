@@ -1,5 +1,6 @@
 import { makeStyles } from '@fluentui/react-components';
 import type { ReactNode } from 'react';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   root: {
@@ -21,14 +22,14 @@ const useStyles = makeStyles({
     gap: '7px',
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#C20012',
+    color: '#c8102e',
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
     marginBottom: '12px',
     padding: '4px 12px',
-    backgroundColor: 'rgba(227, 6, 19, 0.06)',
+    backgroundColor: 'rgba(200, 16, 46, 0.06)',
     borderRadius: '999px',
-    border: '1px solid rgba(227, 6, 19, 0.14)',
+    border: '1px solid rgba(200, 16, 46, 0.14)',
   },
   title: {
     fontSize: '33px',
@@ -63,12 +64,13 @@ interface PageHeaderProps {
 
 export function PageHeader({ eyebrow, title, subtitle, actions }: PageHeaderProps) {
   const styles = useStyles();
+  const { t } = useT();
   return (
     <div className={styles.root}>
       <div className={styles.titleBlock}>
-        {eyebrow && <div className={styles.eyebrow}>{eyebrow}</div>}
-        <h1 className={styles.title}>{title}</h1>
-        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+        {eyebrow && <div className={styles.eyebrow}>{t(eyebrow)}</div>}
+        <h1 className={styles.title}>{t(title)}</h1>
+        {subtitle && <p className={styles.subtitle}>{typeof subtitle === 'string' ? t(subtitle) : subtitle}</p>}
       </div>
       {actions && <div className={styles.actions}>{actions}</div>}
     </div>

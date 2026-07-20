@@ -19,6 +19,24 @@ export interface Dossier {
   dateCreation: string;
   pays?: string;
   charge?: string;
+  /** Commentaire / réponse DCONF consigné sur le dossier (afb_commentairedconf). */
+  commentaire?: string;
+  /** E-mail de contact principal enregistré sur le tiers (afb_emailcontactprincipal). */
+  email?: string;
+  /** GUID du tiers lié (afb_nomdutiers) — pour charger ses documents & onboarding. */
+  tiersId?: string;
+  /** Fiche d'onboarding déclarée par le partenaire (issue du tiers lié). */
+  onboarding?: {
+    formeJuridique?: string;
+    rccm?: string;
+    ville?: string;
+    adresse?: string;
+    telephone?: string;
+    swift?: string;
+    secteur?: string;
+  };
+  /** Liste JSON des pièces requises personnalisée (tiers.afb_documentsrequis). */
+  requiredDocsJson?: string;
 }
 
 // ============================================================================
@@ -146,6 +164,14 @@ export interface UBO {
   ppe: boolean;
   dateNaissance: string;
   validation: 'Validé' | 'En attente' | 'À revoir';
+  // Détails réels (fiche / drawer)
+  typeEntite?: string;
+  moral?: boolean;
+  paysResidence?: string;
+  partIndirecte?: number;
+  screening?: string;
+  validePar?: string;
+  dateValidation?: string;
 }
 
 export const mockUBOs: UBO[] = [
@@ -162,6 +188,7 @@ export const mockUBOs: UBO[] = [
 // ============================================================================
 export interface ScreeningAlert {
   id: string;
+  recordId?: string; // GUID afb_resultatscreeningid — pour les mutations (décisions)
   cible: string;
   typeCible: 'Personne physique' | 'Personne morale';
   source: 'ONU' | 'OFAC' | 'UE' | 'PPE' | 'Interpol';
@@ -184,9 +211,9 @@ export const mockScreeningAlerts: ScreeningAlert[] = [
 
 export const mockScreeningSources = [
   { source: 'ONU', count: 1, color: '#1A1A1A' },
-  { source: 'OFAC', count: 1, color: '#E30613' },
+  { source: 'OFAC', count: 1, color: '#c8102e' },
   { source: 'UE', count: 2, color: '#767676' },
-  { source: 'PPE', count: 2, color: '#A50410' },
+  { source: 'PPE', count: 2, color: '#a30f24' },
   { source: 'Interpol', count: 1, color: '#C8C8C8' },
 ];
 
@@ -202,6 +229,11 @@ export interface Evaluation {
   statut: 'Conforme' | 'À améliorer' | 'Non conforme';
   evaluateur: string;
   date: string;
+  recordId?: string;   // GUID afb_evaluationpartenaireid — pour les mutations
+  tiersId?: string;    // GUID du tiers évalué — pour la décision de partenariat
+  statutEval?: string; // libellé du statut (Brouillon / En revue / Validée / Rejetée)
+  decision?: string;   // libellé décision partenariat (Maintenir / Sous surveillance / Annuler)
+  publie?: boolean;    // publiée au tiers (push) — afb_datedevalidation renseignée
 }
 
 export const mockEvaluations: Evaluation[] = [
@@ -312,7 +344,7 @@ export interface Utilisateur {
   nom: string;
   prenom: string;
   email: string;
-  role: 'Super Admin' | 'Admin Direction' | 'Chargé conformité' | 'Analyste' | 'Visiteur';
+  role: 'Super Admin' | 'Admin Direction' | 'Chargé conformité' | 'Chargé de relation' | 'Visiteur';
   direction: Direction;
   statut: 'Actif' | 'Inactif' | 'Suspendu';
   derniereConnexion: string;
@@ -323,13 +355,13 @@ export interface Utilisateur {
 export const mockUtilisateurs: Utilisateur[] = [
   { id: 'USR-001', nom: 'Mbarga', prenom: 'Jean-Marie', email: 'jm.mbarga@afriland.cm', role: 'Chargé conformité', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 09:42', dossiersTraites: 142, creeLe: '2023-04-12' },
   { id: 'USR-002', nom: 'Nguele', prenom: 'Anastasie', email: 'a.nguele@afriland.cm', role: 'Chargé conformité', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 08:15', dossiersTraites: 98, creeLe: '2023-06-20' },
-  { id: 'USR-003', nom: 'Eyenga', prenom: 'Christelle', email: 'c.eyenga@afriland.cm', role: 'Analyste', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-16 17:22', dossiersTraites: 56, creeLe: '2024-01-08' },
+  { id: 'USR-003', nom: 'Eyenga', prenom: 'Christelle', email: 'c.eyenga@afriland.cm', role: 'Chargé de relation', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-16 17:22', dossiersTraites: 56, creeLe: '2024-01-08' },
   { id: 'USR-004', nom: 'Bilong', prenom: 'Paul', email: 'p.bilong@afriland.cm', role: 'Admin Direction', direction: 'DMG', statut: 'Actif', derniereConnexion: '2026-05-17 10:01', dossiersTraites: 0, creeLe: '2022-11-15' },
   { id: 'USR-005', nom: 'Atangana', prenom: 'Sylvie', email: 's.atangana@afriland.cm', role: 'Super Admin', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 07:58', dossiersTraites: 0, creeLe: '2021-09-01' },
   { id: 'USR-006', nom: 'Ngono', prenom: 'Roger', email: 'r.ngono@afriland.cm', role: 'Visiteur', direction: 'COMEX', statut: 'Actif', derniereConnexion: '2026-05-15 14:33', dossiersTraites: 0, creeLe: '2024-09-22' },
   { id: 'USR-007', nom: 'Kemajou', prenom: 'Marc', email: 'm.kemajou@afriland.cm', role: 'Chargé conformité', direction: 'TRESO', statut: 'Inactif', derniereConnexion: '2026-03-12 11:04', dossiersTraites: 31, creeLe: '2023-10-30' },
   { id: 'USR-008', nom: 'Owono', prenom: 'Bertrand', email: 'b.owono@afriland.cm', role: 'Admin Direction', direction: 'TRESO', statut: 'Actif', derniereConnexion: '2026-05-17 09:11', dossiersTraites: 0, creeLe: '2022-02-18' },
-  { id: 'USR-009', nom: 'Foning', prenom: 'Béatrice', email: 'b.foning@afriland.cm', role: 'Analyste', direction: 'DCONF', statut: 'Suspendu', derniereConnexion: '2026-04-22 16:45', dossiersTraites: 12, creeLe: '2025-02-03' },
+  { id: 'USR-009', nom: 'Foning', prenom: 'Béatrice', email: 'b.foning@afriland.cm', role: 'Chargé de relation', direction: 'DCONF', statut: 'Suspendu', derniereConnexion: '2026-04-22 16:45', dossiersTraites: 12, creeLe: '2025-02-03' },
 ];
 
 // ============================================================================

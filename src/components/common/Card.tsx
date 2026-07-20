@@ -1,5 +1,6 @@
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
 import type { ReactNode } from 'react';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   card: {
@@ -16,7 +17,7 @@ const useStyles = makeStyles({
   interactive: {
     cursor: 'pointer',
     ':hover': {
-      borderTopColor: 'rgba(227, 6, 19, 0.16)', borderRightColor: 'rgba(227, 6, 19, 0.16)', borderBottomColor: 'rgba(227, 6, 19, 0.16)', borderLeftColor: 'rgba(227, 6, 19, 0.16)',
+      borderTopColor: 'rgba(200, 16, 46, 0.16)', borderRightColor: 'rgba(200, 16, 46, 0.16)', borderBottomColor: 'rgba(200, 16, 46, 0.16)', borderLeftColor: 'rgba(200, 16, 46, 0.16)',
       boxShadow: '0 4px 14px rgba(20, 20, 20, 0.06), 0 28px 60px -26px rgba(20, 20, 20, 0.24)',
       transform: 'translateY(-2px)',
     },
@@ -91,6 +92,7 @@ export function Card({
   onClick,
 }: CardProps) {
   const styles = useStyles();
+  const { t } = useT();
   return (
     <div
       className={mergeClasses(styles.card, onClick && styles.interactive, className)}
@@ -112,8 +114,8 @@ export function Card({
           )}
         >
           <div className={styles.titleBlock}>
-            {title && <span className={styles.title}>{title}</span>}
-            {subtitle && <span className={styles.subtitle}>{subtitle}</span>}
+            {title && <span className={styles.title}>{typeof title === 'string' ? t(title) : title}</span>}
+            {subtitle && <span className={styles.subtitle}>{typeof subtitle === 'string' ? t(subtitle) : subtitle}</span>}
           </div>
           {actions && <div className={styles.actions}>{actions}</div>}
         </div>

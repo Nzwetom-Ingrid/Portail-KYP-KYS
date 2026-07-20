@@ -24,14 +24,14 @@ const useStyles = makeStyles({
     ':hover': {
       transform: 'translateY(-3px)',
       boxShadow: '0 4px 14px rgba(20, 20, 20, 0.06), 0 28px 60px -26px rgba(20, 20, 20, 0.22)',
-      borderTopColor: 'rgba(227, 6, 19, 0.14)', borderRightColor: 'rgba(227, 6, 19, 0.14)', borderBottomColor: 'rgba(227, 6, 19, 0.14)', borderLeftColor: 'rgba(227, 6, 19, 0.14)',
+      borderTopColor: 'rgba(200, 16, 46, 0.14)', borderRightColor: 'rgba(200, 16, 46, 0.14)', borderBottomColor: 'rgba(200, 16, 46, 0.14)', borderLeftColor: 'rgba(200, 16, 46, 0.14)',
     },
     ':active': {
       transform: 'translateY(0)',
     },
     ':focus-visible': {
       outline: 'none',
-      boxShadow: '0 0 0 3px rgba(227, 6, 19, 0.16), 0 4px 12px -2px rgba(15, 15, 15, 0.06)',
+      boxShadow: '0 0 0 3px rgba(200, 16, 46, 0.16), 0 4px 12px -2px rgba(15, 15, 15, 0.06)',
     },
     '::before': {
       content: '""',
@@ -64,7 +64,7 @@ const useStyles = makeStyles({
   },
   cardCritical: {
     '::before': {
-      backgroundColor: '#E30613',
+      backgroundColor: '#c8102e',
     },
   },
   cardWarning: {
@@ -95,7 +95,7 @@ const useStyles = makeStyles({
     fontVariantNumeric: 'tabular-nums',
   },
   valueCritical: {
-    color: '#C20012',
+    color: '#c8102e',
   },
   meta: {
     display: 'flex',
@@ -139,7 +139,7 @@ const useStyles = makeStyles({
     gap: '3px',
     fontSize: '11px',
     fontWeight: 600,
-    color: '#C20012',
+    color: '#c8102e',
     opacity: 0,
     transform: 'translateX(-4px)',
     transition: 'opacity 240ms cubic-bezier(0.16, 1, 0.3, 1), transform 240ms cubic-bezier(0.16, 1, 0.3, 1)',

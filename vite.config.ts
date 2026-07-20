@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import * as path from 'path';
 
 
@@ -16,7 +15,6 @@ export default defineConfig({
   },
 
   plugins: [
-    TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
     react(),
     tailwindcss(),
   ],
@@ -32,7 +30,9 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
-
+    // Inline les images (logo ~258 Ko) en base64 dans le bundle : évite les requêtes
+    // de fichiers séparés qui ne sont pas servis derrière le proxy du Code App déployé.
+    assetsInlineLimit: 512 * 1024,
   }
 
 });

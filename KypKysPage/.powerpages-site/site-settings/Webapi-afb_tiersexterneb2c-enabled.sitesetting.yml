@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_tiersexterneb2c (identity link e-mail B2C -> tiers).
+id: 4afb2001-2001-4001-8001-200100100201
+name: Webapi/afb_tiersexterneb2c/enabled
+value: 'true'

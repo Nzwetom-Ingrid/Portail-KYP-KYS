@@ -1,0 +1,4 @@
+description: Fields exposed via the Web API for table afb_ubo (comma-separated, * for all).
+id: 4afb2001-2001-4001-8001-200100100102
+name: Webapi/afb_ubo/fields
+value: '*'

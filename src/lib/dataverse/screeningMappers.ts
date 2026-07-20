@@ -1,17 +1,27 @@
 /**
  * Conversion de la table Dataverse `afb_resultatscreening` vers le type
- * d'affichage `ScreeningAlert`. La table stocke tous les résultats (y compris
- * négatifs) ; le `statut` de traitement n'est pas porté → défaut « Nouveau ».
+ * d'affichage `ScreeningAlert`. La table n'a pas de champ « décision analyste »
+ * dédié : la décision est portée par le résultat lui-même (afb_resultatducontrole).
+ * Reclasser un match en faux positif = passer le résultat à « Négatif » ;
+ * confirmer = « Match positif ». Le `statut` d'affichage en est dérivé.
  */
 import type { Afb_resultatscreenings } from '@/generated/models/Afb_resultatscreeningsModel';
 import type { ScreeningAlert } from '@/lib/mockData';
 
+/** Résultat Dataverse (libellé) → statut de traitement affiché. */
+const RESULT_TO_STATUT: Record<string, ScreeningAlert['statut']> = {
+  Matchpositif: 'Confirmé',
+  Matchfaible: 'En revue',
+  N_gatif: 'Faux positif', // négatif = match écarté / dossier propre
+  ErreurAPI: 'Nouveau',
+};
+
 /** Couleurs par source, pour la carte de répartition. */
 export const SOURCE_COLORS: Record<ScreeningAlert['source'], string> = {
-  OFAC: '#E30613', // rouge Afriland — sanctions principales
+  OFAC: '#c8102e', // rouge Afriland — sanctions principales
   ONU: '#1A1A1A', // noir
   UE: '#767676', // gris moyen
-  PPE: '#A50410', // rouge profond
+  PPE: '#a30f24', // rouge profond
   Interpol: '#C8C8C8', // gris clair
 };
 
@@ -39,13 +49,14 @@ export function toScreeningAlert(r: Afb_resultatscreenings): ScreeningAlert {
 
   return {
     id: r.afb_identifiantducontrole || r.afb_resultatscreeningid,
+    recordId: r.afb_resultatscreeningid,
     cible: r.afb_nomdutiersname ?? '—',
     typeCible: isPhysique ? 'Personne physique' : 'Personne morale',
     source: pickSource(r.afb_listesinterrogees),
     match,
     score,
     detecteLe: frDate(r.afb_datedexecution),
-    statut: 'Nouveau',
+    statut: RESULT_TO_STATUT[r.afb_resultatducontrolename ?? ''] ?? 'Nouveau',
     charge: r.owneridname ?? '—',
   };
 }

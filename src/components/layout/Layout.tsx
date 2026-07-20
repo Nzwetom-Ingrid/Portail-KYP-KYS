@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { makeStyles } from '@fluentui/react-components';
 import { Header } from './Header';
 import { Navigation } from './Navigation';
+import { useResolveCurrentRole } from '@/lib/auth/useResolveCurrentRole';
 
 const useStyles = makeStyles({
   root: {
@@ -38,6 +39,8 @@ const useStyles = makeStyles({
 
 export function Layout() {
   const styles = useStyles();
+  // Détecte l'utilisateur connecté et applique son rôle réel au store (masquage UI).
+  useResolveCurrentRole();
   return (
     <div className={styles.root}>
       <Navigation />

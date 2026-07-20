@@ -62,7 +62,9 @@ async function call(method, path, body) {
     Accept: 'application/json',
     'OData-MaxVersion': '4.0',
     'OData-Version': '4.0',
-    Prefer: 'odata.include-annotations="*"',
+    // return=representation : demande à Dataverse de renvoyer l'enregistrement
+    // créé/modifié (sinon un POST deep-insert peut répondre 204 sans corps).
+    Prefer: 'odata.include-annotations="*",return=representation',
   }
   if (body !== undefined) headers['Content-Type'] = 'application/json; charset=utf-8'
 
@@ -75,10 +77,19 @@ async function call(method, path, body) {
     if (method !== 'GET') throw e
   }
 
+  // Anti-cache : Power Pages / le navigateur peuvent resservir une lecture mise
+  // en cache après une écriture (données périmées plusieurs minutes). On force
+  // une réponse fraîche à chaque requête.
+  if (method === 'GET') {
+    headers['Cache-Control'] = 'no-cache'
+    headers['Pragma'] = 'no-cache'
+  }
+
   const res = await fetch(`/_api/${path}`, {
     method,
     headers,
     credentials: 'include',
+    cache: 'no-store',
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
@@ -86,7 +97,13 @@ async function call(method, path, body) {
     const text = await res.text().catch(() => '')
     throw new Error(`Dataverse ${method} /_api/${path} → ${res.status} ${text.slice(0, 300)}`)
   }
-  if (res.status === 204) return null
+  // 204 No Content (ou corps vide) : si l'en-tête OData-EntityId est présent
+  // (POST/deep-insert), on renvoie l'ID créé sous { id } pour l'appelant.
+  if (res.status === 204) {
+    const entityId = res.headers.get('OData-EntityId') || res.headers.get('odata-entityid')
+    const m = entityId && entityId.match(/\(([^)]+)\)/)
+    return m ? { id: m[1] } : null
+  }
 
   const ct = res.headers.get('content-type') || ''
   return ct.includes('application/json') ? res.json() : res.text()
@@ -111,6 +128,18 @@ export const dv = {
     return await call('POST', set, data)
   },
 
+  /**
+   * POST /_api/{set}({id})/{nav} — crée un enregistrement DANS la collection de
+   * navigation d'un parent (deep-insert). Contourne le contrôle d'« association »
+   * de la Web API Power Pages (erreur 90040106) : le rattachement au parent passe
+   * par l'URL, pas par un @odata.bind — Power Pages applique alors Create sur
+   * l'enfant plutôt qu'AppendTo sur le parent.
+   */
+  createIn: async (set, id, nav, data) => {
+    if (!USE_DATAVERSE) return data
+    return await call('POST', `${set}(${id})/${nav}`, data)
+  },
+
   /** PATCH /_api/{set}({id}) */
   update: (set, id, data) => call('PATCH', `${set}(${id})`, data),
 
@@ -131,8 +160,13 @@ export async function getCurrentUser() {
         contactId: g.contactId || g.userId || g.id,
         firstName: g.firstName,
         lastName: g.lastName,
+        fullName: g.fullName || g.fullname,
         userName: g.userName,
         identityName: g.identityName,
+        // L'e-mail B2C sert de clé de jointure vers afb_tiersexterneb2c.
+        // Selon la config Power Pages il peut figurer sur l'un de ces champs ;
+        // à défaut, getCurrentUserEmail() le récupère sur le Contact.
+        email: g.email || g.emailAddress || g.userName,
       }
       return cachedUser
     }
@@ -153,5 +187,34 @@ export async function getCurrentUser() {
   }
 
   cachedUser = null
+  return null
+}
+
+/**
+ * E-mail de l'utilisateur connecté — clé de jointure vers afb_tiersexterneb2c.
+ * 1) depuis le profil/globals Power Pages ; 2) à défaut, sur le Contact lié.
+ */
+let cachedEmail
+export async function getCurrentUserEmail() {
+  if (cachedEmail !== undefined) return cachedEmail
+  const user = await getCurrentUser()
+  // Un e-mail valide contient un « @ » (userName peut être un GUID sinon).
+  if (user?.email && user.email.includes('@')) {
+    cachedEmail = user.email
+    return cachedEmail
+  }
+  // Repli : lire emailaddress1 sur le Contact Power Pages
+  if (user?.contactId && USE_DATAVERSE) {
+    try {
+      const c = await call('GET', `contacts(${user.contactId})?$select=emailaddress1`)
+      if (c?.emailaddress1) {
+        cachedEmail = c.emailaddress1
+        return cachedEmail
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  cachedEmail = null
   return null
 }

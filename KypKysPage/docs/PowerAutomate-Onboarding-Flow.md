@@ -15,6 +15,53 @@ Ce flow automatise les étapes 1 → 3 du workflow d'entrée en relation :
 
 ---
 
+## ⚠️ ADDENDUM (mise à jour schéma réel) — à lire avant d'implémenter
+
+> Le corps détaillé plus bas a été écrit AVANT le réalignement du portail sur le
+> vrai schéma Dataverse (modèles générés `src/generated`). Deux corrections sont
+> **obligatoires** pour que la communication portail ↔ Power App fonctionne.
+
+**1. Noms de colonnes `afb_tiers` réels** (le déclencheur et les expressions doivent les utiliser) :
+
+| Ancien (doc ci-dessous) | Réel (à utiliser) |
+|-------------------------|-------------------|
+| `afb_nom`               | `afb_nomdupartenaire` |
+| `afb_email`             | `afb_emailcontactprincipal` |
+| `afb_rep_email`         | *(pas de champ représentant ; utiliser l'e-mail du contact principal)* |
+| `afb_statut` (texte)    | `afb_statutdutiers` (choix : 0 Partenaireactif, 1 Cible…) |
+
+**2. Étape CRITIQUE manquante — créer le lien d'identité `afb_tiersexterneb2c`.**
+
+Le portail (`getCurrentTiers`) ne résout PAS le tiers via un lookup `contact.afb_Tiers`,
+mais via la table **`afb_tiersexterneb2c`** (`afb_emaildauthentification` → lookup
+`afb_nomdutiers`). **Sans cette ligne, le partenaire connecté n'est rattaché à aucun
+tiers et le portail reste vide.** Ajouter cette action après la création de la fiche :
+
+**Action — `Add a new row` (afb_tiersexterneb2c)** :
+
+| Champ | Valeur |
+|-------|--------|
+| Table name | Tiers Externe B2C (`afb_tiersexterneb2c`) |
+| `afb_emaildauthentification` | e-mail d'invitation du partenaire (= login B2C) |
+| `afb_identifiantb2c` | `@{variables('varInvitationCode')}` (ou l'OID B2C une fois connu) |
+| `afb_typedorganisation` | `0` Banque corresp. / `1` EMF / `2` Fournisseur (selon le tiers) |
+| `afb_statutducompte` | `0` (Actif) |
+| `afb_datedinvitation` | `@{utcNow()}` |
+| `afb_datedecreation` | `@{utcNow()}` |
+| `afb_nombredetentativesechouees` | `0` |
+| **`afb_nomdutiers@odata.bind`** | `afb_tierses(@{triggerOutputs()?['body/afb_tiersid']})` |
+
+> Le `afb_typedorganisation` détermine côté portail si le tiers est « KYS » (Fournisseur)
+> ou « KYP » (autres) — cf. `mapTiers` dans `portal.js`.
+
+> **Voie sécurisée recommandée** : créer aussi le lookup `contact.afb_Tiers` et le
+> renseigner ici (`item/afb_Tiers@odata.bind = afb_tierses(<id du tiers>)`). Le portail
+> le lit en PRIORITÉ (lecture de SA seule fiche, sans lecture globale), et la ligne
+> `afb_tiersexterneb2c` devient un simple repli. Procédure :
+> `docs/GUIDE-Deploiement-Flux-et-Securite.md` § 5.
+
+---
+
 ## Schéma d'orchestration
 
 ```

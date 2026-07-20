@@ -8,7 +8,7 @@ import {
   MenuItem,
   MenuDivider,
 } from '@fluentui/react-components';
-import { ChevronDown16Regular } from '@fluentui/react-icons';
+import { ChevronDown16Regular, ArrowUndo16Regular } from '@fluentui/react-icons';
 import { useRoleStore } from '@/store/roleStore';
 import { DEMO_ROLES } from '@/types/roles';
 
@@ -36,9 +36,13 @@ const useStyles = makeStyles({
     },
     ':focus-visible': {
       outline: 'none',
-      borderTopColor: '#C20012', borderRightColor: '#C20012', borderBottomColor: '#C20012', borderLeftColor: '#C20012',
-      boxShadow: '0 0 0 3px rgba(227, 6, 19, 0.18)',
+      borderTopColor: '#c8102e', borderRightColor: '#c8102e', borderBottomColor: '#c8102e', borderLeftColor: '#c8102e',
+      boxShadow: '0 0 0 3px rgba(200, 16, 46, 0.18)',
     },
+  },
+  triggerStatic: {
+    cursor: 'default',
+    ':hover': { transform: 'none', boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)', backgroundColor: '#FFFFFF' },
   },
   userInfo: {
     display: 'flex',
@@ -59,9 +63,12 @@ const useStyles = makeStyles({
     marginTop: '1px',
     letterSpacing: '0.02em',
   },
+  impersonating: {
+    color: '#c8102e',
+    fontWeight: 600,
+  },
   chevron: {
     color: '#737373',
-    transition: 'transform 200ms cubic-bezier(0.16, 1, 0.3, 1)',
   },
   popoverSurface: {
     minWidth: '300px',
@@ -78,6 +85,17 @@ const useStyles = makeStyles({
     letterSpacing: '0.10em',
     padding: '10px 12px 6px',
   },
+  returnItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 12px',
+    width: '100%',
+    borderRadius: '8px',
+    color: '#c8102e',
+    fontSize: '13px',
+    fontWeight: 600,
+  },
   menuItem: {
     display: 'flex',
     flexDirection: 'column',
@@ -86,8 +104,6 @@ const useStyles = makeStyles({
     padding: '10px 12px',
     width: '100%',
     borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'background-color 160ms',
   },
   menuItemLabel: {
     fontSize: '13px',
@@ -102,10 +118,10 @@ const useStyles = makeStyles({
   activeBadge: {
     width: '8px',
     height: '8px',
-    backgroundColor: '#C20012',
+    backgroundColor: '#c8102e',
     borderRadius: '50%',
     marginLeft: 'auto',
-    boxShadow: '0 0 0 3px rgba(194, 0, 18, 0.18)',
+    boxShadow: '0 0 0 3px rgba(200, 16, 46, 0.18)',
   },
 });
 
@@ -118,25 +134,48 @@ function getInitials(label: string) {
 
 export function RoleSwitcher() {
   const styles = useStyles();
-  const currentRole = useRoleStore(s => s.currentRole);
-  const setRole = useRoleStore(s => s.setRole);
+  const currentRole = useRoleStore((s) => s.currentRole);
+  const realRoleId = useRoleStore((s) => s.realRoleId);
+  const setRole = useRoleStore((s) => s.setRole);
+  const identity = useRoleStore((s) => s.identity);
 
+  // Seul un utilisateur RÉELLEMENT Super Admin peut visualiser l'app en tant
+  // qu'un autre rôle. Le menu reste dispo MÊME pendant l'impersonation, pour
+  // pouvoir revenir (contrairement à avant, où quitter Super Admin bloquait).
+  const canImpersonate = realRoleId === 'super-admin';
+  const impersonating = currentRole.id !== realRoleId;
+  const realRole = DEMO_ROLES.find((r) => r.id === realRoleId) ?? currentRole;
+
+  const roleName = currentRole.label.split('·')[0].trim();
+  const direction = identity.direction ?? currentRole.direction ?? 'Externe';
+
+  // Utilisateur non-admin : affichage figé — son NOM, et son RÔLE en dessous.
+  // Aucun menu déroulant (pas d'impersonation possible).
+  if (!canImpersonate) {
+    const displayName = identity.fullName || roleName;
+    return (
+      <div className={`${styles.trigger} ${styles.triggerStatic}`} aria-label="Profil utilisateur">
+        <Avatar name={displayName} initials={getInitials(displayName)} size={32} color="brand" />
+        <div className={styles.userInfo}>
+          <span className={styles.userName}>{displayName}</span>
+          <span className={styles.userRole}>{`${roleName}${direction ? ` · ${direction}` : ''}`}</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Super Admin : menu de bascule entre les rôles réels de l'app (+ retour).
   return (
     <Menu>
       <MenuTrigger disableButtonEnhancement>
         <button type="button" className={styles.trigger} aria-label="Changer de rôle">
-          <Avatar
-            name={currentRole.label}
-            initials={getInitials(currentRole.label)}
-            size={32}
-            color="brand"
-          />
+          <Avatar name={roleName} initials={getInitials(roleName)} size={32} color="brand" />
           <div className={styles.userInfo}>
-            <span className={styles.userName}>
-              {currentRole.label.split('·')[0].trim()}
-            </span>
-            <span className={styles.userRole}>
-              {currentRole.direction ?? 'Externe'} · Niveau {currentRole.level}
+            <span className={styles.userName}>{roleName}</span>
+            <span className={impersonating ? `${styles.userRole} ${styles.impersonating}` : styles.userRole}>
+              {impersonating
+                ? `Vue en tant que · Niveau ${currentRole.level}`
+                : `${direction} · Niveau ${currentRole.level}`}
             </span>
           </div>
           <ChevronDown16Regular className={styles.chevron} />
@@ -144,24 +183,31 @@ export function RoleSwitcher() {
       </MenuTrigger>
 
       <MenuPopover className={styles.popoverSurface}>
-        <div className={styles.menuLabel}>Changer de rôle (démo)</div>
         <MenuList>
-          {DEMO_ROLES.map((role, idx) => {
+          {impersonating && (
+            <>
+              <MenuItem onClick={() => setRole(realRoleId)}>
+                <div className={styles.returnItem}>
+                  <ArrowUndo16Regular />
+                  Revenir à mon rôle ({realRole.label.split('·')[0].trim()})
+                </div>
+              </MenuItem>
+              <MenuDivider />
+            </>
+          )}
+          <div className={styles.menuLabel}>Voir l'app en tant que</div>
+          {DEMO_ROLES.map((role) => {
             const isActive = role.id === currentRole.id;
             return (
-              <div key={role.id}>
-                {idx === 1 && <MenuDivider />}
-                {idx === 5 && <MenuDivider />}
-                <MenuItem onClick={() => setRole(role.id)}>
-                  <div className={styles.menuItem}>
-                    <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                      <span className={styles.menuItemLabel}>{role.label}</span>
-                      {isActive && <span className={styles.activeBadge} />}
-                    </div>
-                    <span className={styles.menuItemDesc}>{role.description}</span>
+              <MenuItem key={role.id} onClick={() => setRole(role.id)}>
+                <div className={styles.menuItem}>
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <span className={styles.menuItemLabel}>{role.label}</span>
+                    {isActive && <span className={styles.activeBadge} />}
                   </div>
-                </MenuItem>
-              </div>
+                  <span className={styles.menuItemDesc}>{role.description}</span>
+                </div>
+              </MenuItem>
             );
           })}
         </MenuList>

@@ -33,14 +33,14 @@ const useStyles = makeStyles({
   },
   badge: {
     fontSize: '10.5px',
-    backgroundColor: '#C20012',
+    backgroundColor: '#c8102e',
     color: '#FFFFFF',
     padding: '3px 10px',
     borderRadius: '999px',
     fontWeight: 700,
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
-    boxShadow: '0 1px 2px rgba(194, 0, 18, 0.20)',
+    boxShadow: '0 1px 2px rgba(200, 16, 46, 0.20)',
   },
   subtitle: {
     fontSize: '12px',
@@ -80,11 +80,11 @@ const useStyles = makeStyles({
   bar: {
     width: '100%',
     maxWidth: '28px',
-    background: 'linear-gradient(180deg, #ED4C58 0%, #C20012 100%)',
+    background: 'linear-gradient(180deg, #d8324a 0%, #c8102e 100%)',
     borderRadius: '8px 8px 2px 2px',
     transition: 'height 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms',
     minHeight: '4px',
-    boxShadow: '0 1px 3px rgba(194, 0, 18, 0.20)',
+    boxShadow: '0 1px 3px rgba(200, 16, 46, 0.20)',
   },
   barLabel: {
     fontSize: '10.5px',
@@ -103,7 +103,7 @@ const useStyles = makeStyles({
     alignItems: 'flex-start',
   },
   calloutIcon: {
-    color: '#C20012',
+    color: '#c8102e',
     flexShrink: 0,
     marginTop: '1px',
   },

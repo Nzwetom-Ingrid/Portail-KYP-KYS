@@ -16,17 +16,25 @@ import SignIn from './components/SignIn'
 import MonEspace from './pages/MonEspace'
 import Onboarding from './pages/Onboarding'
 import Questionnaires from './pages/Questionnaires'
+import UBO from './pages/UBO'
+import Evaluations from './pages/Evaluations'
 import Documents from './pages/Documents'
+import DocumentsRecus from './pages/DocumentsRecus'
 import { USE_DATAVERSE } from './config/dataverse'
 import { getCurrentUser } from './services/dataverse'
+import { getCurrentUserProfile } from './services/portal'
+import { useIdleTimer } from './hooks/useIdleTimer'
 
 export default function App() {
   const [view, setView] = useState('espace')
   const [menuOpen, setMenuOpen] = useState(false)
   const [toast, setToast] = useState(null)
+  // Recherche globale (barre du Topbar) : filtre la liste de la page courante.
+  const [search, setSearch] = useState('')
   // Gate d'auth : 'loading' | 'authenticated' | 'anonymous'.
   // En local (mock), on considère l'utilisateur déjà authentifié.
   const [auth, setAuth] = useState(USE_DATAVERSE ? 'loading' : 'authenticated')
+  const [profile, setProfile] = useState(null)
 
   useEffect(() => {
     if (!USE_DATAVERSE) return // mode local : pas d'authentification Power Pages
@@ -42,6 +50,16 @@ export default function App() {
     return () => { cancelled = true }
   }, [])
 
+  // Profil affiché dans l'en-tête (nom réel de la personne connectée).
+  useEffect(() => {
+    if (auth !== 'authenticated') return
+    let cancelled = false
+    getCurrentUserProfile()
+      .then((p) => { if (!cancelled) setProfile(p) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [auth])
+
   const notify = useCallback((message) => {
     setToast(message)
   }, [])
@@ -52,8 +70,21 @@ export default function App() {
     return () => clearTimeout(t)
   }, [toast])
 
+  // Déconnexion auto après 15 min d'inactivité (poste partagé / non surveillé).
+  // En mode Dataverse : logout réel Power Pages → le prochain visiteur retombe
+  // sur l'écran de connexion. En local (mock) : on rebascule sur <SignIn />.
+  const handleIdle = useCallback(() => {
+    if (USE_DATAVERSE) {
+      window.location.href = '/Account/Login/LogOff?returnUrl=%2F'
+    } else {
+      setAuth('anonymous')
+    }
+  }, [])
+  useIdleTimer(15 * 60 * 1000, handleIdle, auth === 'authenticated')
+
   const navigate = (next) => {
     setView(next)
+    setSearch('') // nouvelle page → on repart d'une recherche vide
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -86,12 +117,15 @@ export default function App() {
       />
 
       <div className="main">
-        <Topbar view={view} onMenu={() => setMenuOpen((o) => !o)} onNotify={notify} />
+        <Topbar view={view} onMenu={() => setMenuOpen((o) => !o)} onNotify={notify} profile={profile} search={search} onSearch={setSearch} />
 
         {view === 'espace' && <MonEspace onNavigate={navigate} notify={notify} />}
         {view === 'onboarding' && <Onboarding notify={notify} />}
-        {view === 'questionnaires' && <Questionnaires notify={notify} />}
-        {view === 'documents' && <Documents notify={notify} />}
+        {view === 'questionnaires' && <Questionnaires notify={notify} search={search} />}
+        {view === 'ubo' && <UBO notify={notify} search={search} />}
+        {view === 'evaluations' && <Evaluations notify={notify} search={search} />}
+        {view === 'documents' && <Documents notify={notify} search={search} />}
+        {view === 'documents-recus' && <DocumentsRecus notify={notify} search={search} />}
       </div>
 
       {toast && (

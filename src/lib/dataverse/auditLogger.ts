@@ -7,6 +7,7 @@
  * bloquer l'opération métier.
  */
 import { Afb_journalauditsService } from '@/generated/services/Afb_journalauditsService';
+import { getCurrentUser } from '@/lib/auth/currentUserRef';
 
 const ACTION_CODE = { create: 0, update: 1, delete: 747010003 } as const;
 const ACTION_LABEL = { create: 'Création', update: 'Modification', delete: 'Suppression' } as const;
@@ -21,12 +22,17 @@ export async function logAudit(params: {
   // Ne pas journaliser le journal lui-même (évite toute récursion).
   if (params.entity === 'afb_journalaudit') return;
   try {
+    // Auteur de l'action = utilisateur connecté (si sa fiche est connue).
+    const auteurId = getCurrentUser().utilisateurInterneId;
     await Afb_journalauditsService.create({
       afb_identifiantdujournal: `LOG-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       afb_horodatage: new Date().toISOString(),
       afb_entitemodifiee: `${ACTION_LABEL[params.action]} · ${params.entity}`,
       afb_guiddelenregistrement: params.recordId ?? '',
       afb_typedaction: ACTION_CODE[params.action],
+      ...(auteurId
+        ? { 'afb_auteurdelamodification@odata.bind': `/afb_utilisateurinternes(${auteurId})` }
+        : {}),
     } as unknown as Parameters<typeof Afb_journalauditsService.create>[0]);
   } catch {
     // Silencieux : la traçabilité ne doit jamais casser l'action utilisateur.

@@ -28,7 +28,8 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { type UBO } from '@/lib/mockData';
-import { ubo as uboHooks, tiers as tiersHooks } from '@/lib/dataverse/entityHooks';
+import { ubo as uboHooks, tiers as tiersHooks, utilisateursInternes } from '@/lib/dataverse/entityHooks';
+import { useRoleStore } from '@/store/roleStore';
 import { toUBO } from '@/lib/dataverse/uboMappers';
 import { exportToCsv } from '@/lib/exportCsv';
 
@@ -43,6 +44,7 @@ import {
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { ConfirmActionDialog, type ConfirmIntent } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -76,7 +78,7 @@ const useStyles = makeStyles({
     height: '36px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#E30613',
+    color: '#c8102e',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -89,7 +91,7 @@ const useStyles = makeStyles({
     height: '52px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#E30613',
+    color: '#c8102e',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -108,7 +110,7 @@ const useStyles = makeStyles({
     overflow: 'hidden',
     marginTop: '4px',
   },
-  partFill: { height: '100%', backgroundColor: '#E30613', borderRadius: '999px' },
+  partFill: { height: '100%', backgroundColor: '#c8102e', borderRadius: '999px' },
   partCellValue: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
   uboHeader: {
@@ -142,7 +144,7 @@ const useStyles = makeStyles({
   pct: {
     fontSize: '12px',
     fontWeight: 700,
-    color: '#E30613',
+    color: '#c8102e',
     backgroundColor: '#FEF2F3',
     padding: '3px 8px',
     borderRadius: '999px',
@@ -191,21 +193,36 @@ function validationColor(v: UBO['validation']) {
 }
 
 export default function UBOPage() {
+  const { t } = useT();
   const styles = useStyles();
+  const can = useRoleStore(s => s.can);
   const { notifySuccess, notifyWarning, notifyInfo } = useNotifications();
 
   // Bénéficiaires effectifs réels depuis Dataverse (afb_ubo).
   const { data: rawUbos, isLoading, error } = uboHooks.useList({ top: 200 });
-  const ubos = useMemo(() => (rawUbos ?? []).map(toUBO), [rawUbos]);
 
   // Création d'UBO rattachée à un tiers parent existant.
   const createUbo = uboHooks.useCreate();
   const updateUbo = uboHooks.useUpdate();
   const { data: tiersData } = tiersHooks.useList({ top: 200 });
+  const { data: usersData } = utilisateursInternes.useList({ top: 500 });
+
+  // Résolveurs de lookups (entité contrôlée = tiers parent, valideur = utilisateur interne).
+  const resolvers = useMemo(() => {
+    const tiersById = new Map<string, string>();
+    for (const t of tiersData ?? []) tiersById.set(t.afb_tiersid, t.afb_nomdupartenaire);
+    const usersById = new Map<string, string>();
+    for (const u of usersData ?? []) usersById.set(u.afb_utilisateurinterneid, u.afb_nomcomplet);
+    return { tiersById, usersById };
+  }, [tiersData, usersData]);
+
+  const ubos = useMemo(() => (rawUbos ?? []).map((u) => toUBO(u, resolvers)), [rawUbos, resolvers]);
 
   const [search, setSearch] = useState('');
   const [validationFilter, setValidationFilter] = useState('');
   const [natureFilter, setNatureFilter] = useState('');
+  const [ppeFilter, setPpeFilter] = useState(false);
+  const [seuilFilter, setSeuilFilter] = useState(false);
   const [openUbo, setOpenUbo] = useState<UBO | null>(null);
   const [activeTab, setActiveTab] = useState('identite');
   const [confirmIntent, setConfirmIntent] = useState<ConfirmIntent | null>(null);
@@ -227,13 +244,15 @@ export default function UBOPage() {
     return ubos.filter((u) => {
       if (validationFilter && u.validation !== validationFilter) return false;
       if (natureFilter && u.natureControle !== natureFilter) return false;
+      if (ppeFilter && !u.ppe) return false;
+      if (seuilFilter && u.partPct < 25) return false;
       if (search) {
         const q = search.toLowerCase();
         if (!u.nom.toLowerCase().includes(q) && !u.partenaire.toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [ubos, search, validationFilter, natureFilter]);
+  }, [ubos, search, validationFilter, natureFilter, ppeFilter, seuilFilter]);
 
   const kpis = {
     total: ubos.length,
@@ -273,20 +292,20 @@ export default function UBOPage() {
         'afb_tiersparent@odata.bind': `/afb_tierses(${tiersParentId})`,
       } as unknown as Parameters<typeof createUbo.mutateAsync>[0]);
 
-      notifySuccess('Bénéficiaire effectif ajouté', {
-        description: `${uboNom} — ${uboPart}% sur ${entiteCtrl}.${screenImmediate ? ' Screening à lancer.' : ''}`,
+      notifySuccess(t('Bénéficiaire effectif ajouté'), {
+        description: `${uboNom} — ${uboPart}% ${t('sur')} ${entiteCtrl}.${screenImmediate ? ` ${t('Screening à lancer.')}` : ''}`,
       });
       if (uboPpe) {
-        notifyWarning('Statut PPE déclaré', {
-          description: 'Vigilance renforcée activée — validation RCSI requise.',
+        notifyWarning(t('Statut PPE déclaré'), {
+          description: t('Vigilance renforcée activée — validation RCSI requise.'),
           timeout: 7000,
         });
       }
       setNewUboOpen(false);
       resetForm();
     } catch (e) {
-      notifyWarning('Création impossible', {
-        description: e instanceof Error ? e.message : 'Erreur Dataverse lors de la création du bénéficiaire.',
+      notifyWarning(t('Création impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse lors de la création du bénéficiaire.'),
       });
       throw e;
     }
@@ -300,29 +319,29 @@ export default function UBOPage() {
           id: openUbo.id,
           changes: { afb_statutdevalidation: 0, afb_datedevalidation: new Date().toISOString() },
         });
-        notifySuccess('Bénéficiaire validé', {
-          description: `${openUbo.nom} — décision horodatée et archivée 10 ans (Art. 38 R-2023/01).`,
+        notifySuccess(t('Bénéficiaire validé'), {
+          description: `${openUbo.nom} — ${t('décision horodatée et archivée 10 ans (Art. 38 R-2023/01).')}`,
         });
       } else if (confirmIntent === 'reject') {
         await updateUbo.mutateAsync({
           id: openUbo.id,
           changes: { afb_statutdevalidation: 747010001 },
         });
-        notifyWarning('Bénéficiaire rejeté', {
-          description: `${openUbo.nom} — motif : ${motif}. La relation reste bloquée.`,
+        notifyWarning(t('Bénéficiaire rejeté'), {
+          description: `${openUbo.nom} — ${t('motif :')} ${motif}. ${t('La relation reste bloquée.')}`,
         });
       } else if (confirmIntent === 'warn') {
         await updateUbo.mutateAsync({
           id: openUbo.id,
           changes: { afb_statutdevalidation: 2 }, // Non vérifié → complément demandé
         });
-        notifyInfo('Demande de complément envoyée', {
-          description: `Le tiers a été notifié pour fournir les justificatifs sur ${openUbo.nom}.`,
+        notifyInfo(t('Demande de complément envoyée'), {
+          description: `${t('Le tiers a été notifié pour fournir les justificatifs sur')} ${openUbo.nom}.`,
         });
       }
     } catch (e) {
-      notifyWarning('Action impossible', {
-        description: e instanceof Error ? e.message : 'Erreur Dataverse.',
+      notifyWarning(t('Action impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse.'),
       });
       throw e;
     }
@@ -340,7 +359,7 @@ export default function UBOPage() {
           <div className={styles.personMeta}>
             <span className={styles.personName}>{u.nom}</span>
             <span className={styles.personSub}>
-              {u.nationalite} · Né(e) {u.dateNaissance}
+              {u.nationalite} · {t('Né(e)')} {u.dateNaissance}
             </span>
           </div>
         </div>
@@ -374,10 +393,12 @@ export default function UBOPage() {
       render: (u) =>
         u.ppe ? (
           <Badge appearance="filled" color="danger" size="small">
-            PPE
+            {t('Oui')}
           </Badge>
         ) : (
-          <span style={{ color: '#C8C8C8' }}>—</span>
+          <Badge appearance="tint" color="subtle" size="small">
+            {t('Non')}
+          </Badge>
         ),
     },
     {
@@ -395,10 +416,10 @@ export default function UBOPage() {
       align: 'right',
       render: (u) => (
         <div className={styles.rowActions} onClick={(e) => e.stopPropagation()}>
-          <Tooltip content="Voir la fiche" relationship="label">
+          <Tooltip content={t('Voir la fiche')} relationship="label">
             <Button size="small" appearance="subtle" icon={<Eye20Regular />} onClick={() => open(u)} />
           </Tooltip>
-          <Tooltip content="Valider" relationship="label">
+          <Tooltip content={t('Valider')} relationship="label">
             <Button
               size="small"
               appearance="subtle"
@@ -410,11 +431,11 @@ export default function UBOPage() {
               }}
             />
           </Tooltip>
-          <Tooltip content="Rejeter" relationship="label">
+          <Tooltip content={t('Rejeter')} relationship="label">
             <Button
               size="small"
               appearance="subtle"
-              icon={<DismissCircle20Regular style={{ color: '#E30613' }} />}
+              icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
               disabled={u.validation === 'Validé'}
               onClick={() => {
                 setOpenUbo(u);
@@ -427,7 +448,9 @@ export default function UBOPage() {
     },
   ];
 
-  const ppeCount = ubos.filter((u) => u.ppe).length;
+  // Fiches nécessitant une revue : à revoir, ou PPE non encore validée.
+  const reviewList = ubos.filter((u) => u.validation === 'À revoir' || (u.ppe && u.validation !== 'Validé'));
+  const reviewNames = reviewList.slice(0, 3).map((u) => `${u.nom}${u.ppe ? ` ${t('(PPE)')}` : ''}`).join(', ');
 
   return (
     <div>
@@ -454,75 +477,88 @@ export default function UBOPage() {
                     Validation: u.validation,
                   })),
                 );
-                notifySuccess(ok ? 'Export généré' : 'Aucune donnée', {
-                  description: ok ? `${filtered.length} UBO exportés (CSV).` : 'Aucun UBO à exporter.',
+                notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+                  description: ok ? `${filtered.length} ${t('UBO exportés (CSV).')}` : t('Aucun UBO à exporter.'),
                 });
               }}
             >
-              Export
+              {t('Export')}
             </Button>
-            <Button icon={<Add20Regular />} appearance="primary" onClick={() => setNewUboOpen(true)}>
-              Nouveau bénéficiaire
-            </Button>
+            {can('partners.create') && (
+              <Button icon={<Add20Regular />} appearance="primary" onClick={() => setNewUboOpen(true)}>
+                {t('Nouveau bénéficiaire')}
+              </Button>
+            )}
           </>
         }
       />
 
       <div className={styles.kpiRow}>
-        <div className={styles.kpi} onClick={() => { setValidationFilter(''); setNatureFilter(''); }}>
-          <div className={styles.kpiLabel}>Bénéficiaires</div>
+        <div className={styles.kpi} onClick={() => { setValidationFilter(''); setNatureFilter(''); setPpeFilter(false); setSeuilFilter(false); }}>
+          <div className={styles.kpiLabel}>{t('Bénéficiaires')}</div>
           <div className={styles.kpiValue}>{kpis.total}</div>
-          <div className={styles.kpiMeta}>identifiés</div>
+          <div className={styles.kpiMeta}>{t('identifiés')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setValidationFilter('Validé')}>
-          <div className={styles.kpiLabel}>Validés</div>
+          <div className={styles.kpiLabel}>{t('Validés')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>
             {kpis.valides}
           </div>
-          <div className={styles.kpiMeta}>fiches conformes</div>
+          <div className={styles.kpiMeta}>{t('fiches conformes')}</div>
         </div>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>PPE</div>
-          <div className={styles.kpiValue} style={{ color: '#E30613' }}>
+        <div
+          className={styles.kpi}
+          role="button"
+          tabIndex={0}
+          aria-pressed={ppeFilter}
+          onClick={() => setPpeFilter((cur) => !cur)}
+        >
+          <div className={styles.kpiLabel}>{t('PPE')}</div>
+          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>
             {kpis.ppe}
           </div>
-          <div className={styles.kpiMeta}>due diligence renforcée</div>
+          <div className={styles.kpiMeta}>{t('due diligence renforcée')}</div>
         </div>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>Au-delà du seuil 25%</div>
+        <div
+          className={styles.kpi}
+          role="button"
+          tabIndex={0}
+          aria-pressed={seuilFilter}
+          onClick={() => setSeuilFilter((cur) => !cur)}
+        >
+          <div className={styles.kpiLabel}>{t('Au-delà du seuil 25%')}</div>
           <div className={styles.kpiValue}>{kpis.seuil25}</div>
-          <div className={styles.kpiMeta}>contrôle effectif</div>
+          <div className={styles.kpiMeta}>{t('contrôle effectif')}</div>
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          gap: '12px',
-          padding: '14px 18px',
-          backgroundColor: '#FEF2F3',
-          border: '1px solid #FCE4E6',
-          borderRadius: '12px',
-          marginBottom: '16px',
-        }}
-      >
-        <Warning20Filled style={{ color: '#E30613', marginTop: '2px' }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#A50410' }}>
-            {ppeCount} fiches UBO nécessitent une revue
-          </div>
-          <div style={{ fontSize: '12px', color: '#767676', marginTop: '2px' }}>
-            Marie-Claire Ndong (PPE) et Adama Diop — vérifier les justificatifs et la chaîne de détention indirecte.
-          </div>
-        </div>
-        <Button
-          appearance="subtle"
-          size="small"
-          onClick={() => setValidationFilter('À revoir')}
+      {reviewList.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            gap: '12px',
+            padding: '14px 18px',
+            backgroundColor: '#FEF2F3',
+            border: '1px solid #FCE4E6',
+            borderRadius: '12px',
+            marginBottom: '16px',
+          }}
         >
-          Voir les fiches
-        </Button>
-      </div>
+          <Warning20Filled style={{ color: '#c8102e', marginTop: '2px' }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#a30f24' }}>
+              {reviewList.length} {t('fiche')}{reviewList.length > 1 ? 's' : ''} {t('UBO nécessite')}
+              {reviewList.length > 1 ? 'nt' : ''} {t('une revue')}
+            </div>
+            <div style={{ fontSize: '12px', color: '#767676', marginTop: '2px' }}>
+              {reviewNames} — {t('vérifier les justificatifs et la chaîne de détention.')}
+            </div>
+          </div>
+          <Button appearance="subtle" size="small" onClick={() => setValidationFilter('À revoir')}>
+            {t('Voir les fiches')}
+          </Button>
+        </div>
+      )}
 
       <FilterBar
         search={search}
@@ -538,17 +574,17 @@ export default function UBOPage() {
         flush
         title={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <PeopleTeam20Regular /> Liste des bénéficiaires
+            <PeopleTeam20Regular /> {t('Liste des bénéficiaires')}
           </span>
         }
-        subtitle={`${filtered.length} sur ${ubos.length} bénéficiaires`}
+        subtitle={`${filtered.length} ${t('sur')} ${ubos.length} ${t('bénéficiaires')}`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#C20012', fontSize: '13px' }}>
-            Erreur de chargement depuis Dataverse : {error.message}
+          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+            {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>Chargement des bénéficiaires…</div>
+          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des bénéficiaires…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -564,9 +600,9 @@ export default function UBOPage() {
       <DetailDrawer
         open={openUbo !== null && confirmIntent === null}
         onOpenChange={(o) => !o && setOpenUbo(null)}
-        eyebrow="Bénéficiaire effectif"
+        eyebrow={t('Bénéficiaire effectif')}
         title={openUbo?.nom ?? ''}
-        subtitle={openUbo ? `${openUbo.partenaire} · ${openUbo.partPct.toFixed(1)}% de détention` : ''}
+        subtitle={openUbo ? `${openUbo.partenaire} · ${openUbo.partPct.toFixed(1)}% ${t('de détention')}` : ''}
         size="large"
         statusBadges={
           openUbo ? (
@@ -576,7 +612,7 @@ export default function UBOPage() {
               </Badge>
               {openUbo.ppe && (
                 <Badge appearance="filled" color="danger" size="small">
-                  PPE
+                  {t('PPE')}
                 </Badge>
               )}
               <Badge appearance="tint" color="brand" size="small">
@@ -586,10 +622,10 @@ export default function UBOPage() {
           ) : null
         }
         tabs={[
-          { id: 'identite', label: 'Identité' },
-          { id: 'chaine', label: 'Chaîne de détention', count: 3 },
-          { id: 'screening', label: 'Screening', alertCount: openUbo?.ppe ? 1 : 0 },
-          { id: 'historique', label: 'Historique' },
+          { id: 'identite', label: t('Identité') },
+          { id: 'chaine', label: t('Chaîne de détention'), count: 2 },
+          { id: 'screening', label: t('Screening'), alertCount: openUbo?.ppe ? 1 : 0 },
+          { id: 'historique', label: t('Historique') },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -597,13 +633,13 @@ export default function UBOPage() {
           openUbo && openUbo.validation !== 'Validé' ? (
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
               <Button appearance="subtle" onClick={() => setConfirmIntent('warn')}>
-                Demander complément
+                {t('Demander complément')}
               </Button>
               <Button appearance="outline" onClick={() => setConfirmIntent('reject')}>
-                Rejeter
+                {t('Rejeter')}
               </Button>
               <Button appearance="primary" onClick={() => setConfirmIntent('validate')}>
-                Valider le bénéficiaire
+                {t('Valider le bénéficiaire')}
               </Button>
             </div>
           ) : null
@@ -616,155 +652,152 @@ export default function UBOPage() {
               <div className={styles.uboHeaderMeta}>
                 <span className={styles.uboHeaderName}>{openUbo.nom}</span>
                 <span className={styles.uboHeaderSub}>
-                  {openUbo.nationalite} · Né(e) {openUbo.dateNaissance}
+                  {openUbo.nationalite} · {t('Né(e)')} {openUbo.dateNaissance}
                 </span>
               </div>
             </div>
 
             {activeTab === 'identite' && (
               <>
-                <DrawerSection title="Identification personnelle">
+                <DrawerSection title={openUbo.moral ? t('Identification de l’entité') : t('Identification personnelle')}>
                   <FieldGrid
                     items={[
-                      { label: 'Nom complet', value: openUbo.nom },
-                      { label: 'Nationalité', value: openUbo.nationalite },
-                      { label: 'Date de naissance', value: openUbo.dateNaissance },
-                      { label: 'Pièce d’identité', value: 'Passeport CMR — n° 21A 8842' },
-                      { label: 'Pays de résidence', value: 'Cameroun' },
-                      { label: 'Adresse', value: 'Bonapriso, Douala', full: true },
+                      { label: openUbo.moral ? t('Raison sociale') : t('Nom complet'), value: openUbo.nom },
+                      { label: t('Type'), value: openUbo.typeEntite ?? '—' },
+                      { label: openUbo.moral ? t('Pays d’incorporation') : t('Nationalité'), value: openUbo.nationalite },
+                      { label: openUbo.moral ? t('Date de constitution') : t('Date de naissance'), value: openUbo.dateNaissance },
+                      { label: t('Pays de résidence fiscale'), value: openUbo.paysResidence ?? '—' },
+                      { label: t('Nature du contrôle'), value: openUbo.natureControle },
                     ]}
                   />
                 </DrawerSection>
                 <DrawerSection
-                  title="Statut PPE"
-                  description={openUbo.ppe ? 'Vigilance renforcée — Art. 41-48 R-2023/01' : 'Aucun statut PPE déclaré.'}
+                  title={t('Détention & décision')}
+                  description={t('Détention déclarée et avis de conformité (visible par le partenaire dans son espace).')}
                 >
-                  {openUbo.ppe ? (
-                    <div
-                      style={{
-                        padding: '12px 14px',
-                        backgroundColor: '#FEF2F3',
-                        border: '1px solid #FCE4E6',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        color: '#A50410',
-                      }}
-                    >
-                      Position politique : ancien ministre — fin de fonction 2019. Période de vigilance prolongée
-                      jusqu’en 2024 (cycle 5 ans), <strong>actuellement levée</strong>. Maintenir la déclaration au
-                      titre du contrôle effectif.
-                    </div>
-                  ) : (
-                    <FieldGrid items={[{ label: 'Déclaration sur l’honneur', value: 'Signée le 22/03/2026' }]} />
-                  )}
+                  <FieldGrid
+                    items={[
+                      { label: t('Entité contrôlée'), value: openUbo.partenaire },
+                      { label: t('% détention directe'), value: `${openUbo.partPct.toFixed(1)}%` },
+                      { label: t('% détention indirecte'), value: `${(openUbo.partIndirecte ?? 0).toFixed(1)}%` },
+                      { label: t('Statut de validation'), value: openUbo.validation },
+                      { label: t('Validé par'), value: openUbo.validePar ?? '—' },
+                      { label: t('Date de validation'), value: openUbo.dateValidation ?? '—' },
+                    ]}
+                  />
+                </DrawerSection>
+                <DrawerSection
+                  title={t('Statut PPE')}
+                  description={openUbo.ppe ? t('Vigilance renforcée — Art. 41-48 R-2023/01') : t('Aucun statut PPE déclaré.')}
+                >
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      backgroundColor: openUbo.ppe ? '#FEF2F3' : '#F0FDF4',
+                      border: `1px solid ${openUbo.ppe ? '#FCE4E6' : '#BBF7D0'}`,
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: openUbo.ppe ? '#a30f24' : '#15803D',
+                    }}
+                  >
+                    {openUbo.ppe
+                      ? t('Personne politiquement exposée déclarée. Vigilance renforcée requise : origine des fonds, validation RCSI et revue périodique du statut.')
+                      : t('Bénéficiaire déclaré non-PPE — vigilance standard.')}
+                  </div>
                 </DrawerSection>
               </>
             )}
 
             {activeTab === 'chaine' && (
               <DrawerSection
-                title="Chaîne de détention"
-                description="Propagation automatique des pourcentages — seuil paramétré : 10% (Wolfsberg)."
+                title={t('Chaîne de détention')}
+                description={t('Détention déclarée du bénéficiaire sur l’entité contrôlée.')}
               >
                 <div className={styles.chainNode}>
-                  <Branch20Regular style={{ color: '#E30613' }} />
+                  <Branch20Regular style={{ color: '#c8102e' }} />
                   <div>
                     <div className={styles.chainNodeName}>{openUbo.partenaire}</div>
-                    <div className={styles.chainNodeSub}>Entité contrôlée</div>
+                    <div className={styles.chainNodeSub}>{t('Entité contrôlée')}</div>
                   </div>
                 </div>
                 <div className={styles.chainNodeIndent}>
                   <div className={styles.chainNode}>
                     <div>
-                      <div className={styles.chainNodeName}>Holdings International Ltd.</div>
-                      <div className={styles.chainNodeSub}>Personne morale · Jersey</div>
-                    </div>
-                    <span className={styles.pct}>62% direct</span>
-                  </div>
-                  <div className={styles.chainNodeIndent}>
-                    <div className={styles.chainNode}>
-                      <div>
-                        <div className={styles.chainNodeName}>{openUbo.nom}</div>
-                        <div className={styles.chainNodeSub}>Personne physique · {openUbo.nationalite}</div>
+                      <div className={styles.chainNodeName}>{openUbo.nom}</div>
+                      <div className={styles.chainNodeSub}>
+                        {openUbo.typeEntite} · {openUbo.nationalite}
                       </div>
-                      <span className={styles.pct}>{(openUbo.partPct).toFixed(1)}% effectif</span>
                     </div>
+                    <span className={styles.pct}>
+                      {openUbo.natureControle === 'Indirect'
+                        ? `${(openUbo.partIndirecte ?? 0).toFixed(1)}% ${t('indirect')}`
+                        : `${openUbo.partPct.toFixed(1)}% ${t('direct')}`}
+                    </span>
                   </div>
                 </div>
-                <div
-                  style={{
-                    marginTop: '14px',
-                    fontSize: '12px',
-                    color: '#767676',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Calcul : 62% × {(openUbo.partPct / 0.62).toFixed(1)}% = {openUbo.partPct.toFixed(1)}% effectif. Au-delà du seuil
-                  paramétré pour ce type de partenaire — bénéficiaire à déclarer et screener.
+                <div style={{ marginTop: '14px', fontSize: '12px', color: '#767676', lineHeight: 1.5 }}>
+                  {openUbo.partPct >= 25
+                    ? t('Au-delà du seuil COBAC 25 % — bénéficiaire effectif à déclarer et à screener.')
+                    : openUbo.partPct >= 10
+                      ? t('Au-delà du seuil Wolfsberg 10 % — à documenter dans la chaîne de détention.')
+                      : t('En-deçà des seuils réglementaires (COBAC 25 % / Wolfsberg 10 %).')}
                 </div>
               </DrawerSection>
             )}
 
             {activeTab === 'screening' && (
-              <>
-                <DrawerSection
-                  title="Screening sanctions"
-                  description="Interrogation quotidienne automatique — 03h00 Douala."
-                >
-                  {['ONU', 'OFAC', 'UE', 'Interpol'].map((src) => (
-                    <div key={src} className={styles.screeningSource}>
-                      <ShieldCheckmark20Regular style={{ color: '#15803D' }} />
-                      <strong style={{ fontSize: '13px', color: '#15803D' }}>{src}</strong>
-                      <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#767676' }}>
-                        Aucun match — vérifié il y a 6h
+              <DrawerSection
+                title={t('Screening & PPE')}
+                description={t('Dernier résultat de contrôle enregistré sur ce bénéficiaire.')}
+              >
+                {(() => {
+                  const hit = openUbo.screening ? /match|positif|hit|alerte|sanction/i.test(openUbo.screening) : false;
+                  return (
+                    <div className={`${styles.screeningSource} ${hit ? styles.screeningSourceFail : ''}`}>
+                      {hit ? (
+                        <Warning20Filled style={{ color: '#c8102e' }} />
+                      ) : (
+                        <ShieldCheckmark20Regular style={{ color: openUbo.screening ? '#15803D' : '#767676' }} />
+                      )}
+                      <strong style={{ fontSize: '13px', color: hit ? '#a30f24' : '#15803D' }}>{t('Sanctions')}</strong>
+                      <span style={{ marginLeft: 'auto', fontSize: '12px', color: hit ? '#a30f24' : '#767676' }}>
+                        {openUbo.screening ?? t('Screening non encore exécuté')}
                       </span>
                     </div>
-                  ))}
-                </DrawerSection>
-                <DrawerSection title="Screening PPE">
-                  <div
-                    className={`${styles.screeningSource} ${openUbo.ppe ? styles.screeningSourceFail : ''}`}
-                  >
-                    {openUbo.ppe ? (
-                      <>
-                        <Warning20Filled style={{ color: '#E30613' }} />
-                        <strong style={{ fontSize: '13px', color: '#A50410' }}>PPE actif</strong>
-                        <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#A50410' }}>
-                          Match score 92 — Dow Jones PEP
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheckmark20Regular style={{ color: '#15803D' }} />
-                        <strong style={{ fontSize: '13px', color: '#15803D' }}>Pas de match PPE</strong>
-                        <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#767676' }}>
-                          Dow Jones / WorldCheck — il y a 6h
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </DrawerSection>
-              </>
+                  );
+                })()}
+                <div className={`${styles.screeningSource} ${openUbo.ppe ? styles.screeningSourceFail : ''}`}>
+                  {openUbo.ppe ? (
+                    <Warning20Filled style={{ color: '#c8102e' }} />
+                  ) : (
+                    <ShieldCheckmark20Regular style={{ color: '#15803D' }} />
+                  )}
+                  <strong style={{ fontSize: '13px', color: openUbo.ppe ? '#a30f24' : '#15803D' }}>{t('PPE')}</strong>
+                  <span style={{ marginLeft: 'auto', fontSize: '12px', color: openUbo.ppe ? '#a30f24' : '#767676' }}>
+                    {openUbo.ppe ? t('Personne politiquement exposée') : t('Aucun statut PPE')}
+                  </span>
+                </div>
+              </DrawerSection>
             )}
 
             {activeTab === 'historique' && (
-              <DrawerSection title="Événements du dossier UBO">
+              <DrawerSection title={t('Événements du dossier UBO')}>
                 <DrawerTimeline
                   events={[
+                    ...(openUbo.dateValidation
+                      ? [{
+                          when: openUbo.dateValidation,
+                          title: `${t('Bénéficiaire')} ${openUbo.validation.toLowerCase()}`,
+                          detail: openUbo.validePar ? `${t('Décision —')} ${openUbo.validePar}` : t('Décision de conformité (DCONF)'),
+                        }]
+                      : []),
+                    ...(openUbo.screening
+                      ? [{ when: '—', title: t('Dernier screening'), detail: openUbo.screening }]
+                      : []),
                     {
-                      when: 'Aujourd’hui 03h12',
-                      title: 'Screening quotidien exécuté',
-                      detail: openUbo.ppe ? 'Match PPE confirmé — vigilance renforcée' : 'Aucun match — sources OK',
-                    },
-                    {
-                      when: '12/05/2026 14:22',
-                      title: 'Pièce d’identité validée',
-                      detail: 'Passeport CMR contrôlé — Sarah Bell (DCONF)',
-                    },
-                    {
-                      when: '02/05/2026 09:08',
-                      title: 'Bénéficiaire déclaré par le tiers',
-                      detail: `Saisie depuis l’espace partenaire — ${openUbo.partPct.toFixed(1)}%`,
+                      when: '—',
+                      title: t('Bénéficiaire déclaré par le tiers'),
+                      detail: `${openUbo.partenaire} — ${openUbo.natureControle} · ${openUbo.partPct.toFixed(1)}%`,
                     },
                   ]}
                 />
@@ -779,23 +812,23 @@ export default function UBOPage() {
         open={confirmIntent === 'validate' && openUbo !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="validate"
-        title="Valider ce bénéficiaire effectif ?"
-        description="La validation est horodatée et archivée 10 ans (Art. 38 R-2023/01). Elle n’est plus modifiable après enregistrement."
-        confirmLabel="Confirmer la validation"
+        title={t('Valider ce bénéficiaire effectif ?')}
+        description={t('La validation est horodatée et archivée 10 ans (Art. 38 R-2023/01). Elle n’est plus modifiable après enregistrement.')}
+        confirmLabel={t('Confirmer la validation')}
         entityRef={openUbo?.nom}
-        helperNote="La relation pourra être activée une fois tous les UBO de la chaîne validés."
+        helperNote={t('La relation pourra être activée une fois tous les UBO de la chaîne validés.')}
         onConfirm={() => onConfirm()}
       />
       <ConfirmActionDialog
         open={confirmIntent === 'reject' && openUbo !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="reject"
-        title="Rejeter ce bénéficiaire effectif ?"
-        description="Le rejet bloque l’activation de la relation tant que le UBO n’est pas vérifié ou retiré de la chaîne."
-        confirmLabel="Confirmer le rejet"
+        title={t('Rejeter ce bénéficiaire effectif ?')}
+        description={t('Le rejet bloque l’activation de la relation tant que le UBO n’est pas vérifié ou retiré de la chaîne.')}
+        confirmLabel={t('Confirmer le rejet')}
         requireMotif
-        motifLabel="Motif du rejet"
-        motifPlaceholder="Pièce d’identité non concordante, structure de détention non documentée…"
+        motifLabel={t('Motif du rejet')}
+        motifPlaceholder={t('Pièce d’identité non concordante, structure de détention non documentée…')}
         entityRef={openUbo?.nom}
         onConfirm={onConfirm}
       />
@@ -803,12 +836,12 @@ export default function UBOPage() {
         open={confirmIntent === 'warn' && openUbo !== null}
         onOpenChange={(o) => !o && setConfirmIntent(null)}
         intent="warn"
-        title="Demander un complément au tiers ?"
-        description="Le tiers sera notifié par e-mail avec le détail des éléments à fournir."
-        confirmLabel="Envoyer la demande"
+        title={t('Demander un complément au tiers ?')}
+        description={t('Le tiers sera notifié par e-mail avec le détail des éléments à fournir.')}
+        confirmLabel={t('Envoyer la demande')}
         requireMotif
-        motifLabel="Éléments demandés"
-        motifPlaceholder="Pièce d’identité à jour, CV signé, justificatif de résidence…"
+        motifLabel={t('Éléments demandés')}
+        motifPlaceholder={t('Pièce d’identité à jour, CV signé, justificatif de résidence…')}
         entityRef={openUbo?.nom}
         onConfirm={onConfirm}
       />
@@ -820,22 +853,22 @@ export default function UBOPage() {
           if (!o) resetForm();
           setNewUboOpen(o);
         }}
-        eyebrow="Référentiel UBO"
-        title="Ajouter un bénéficiaire effectif"
-        subtitle="Déclare un nouveau UBO et déclenche automatiquement le screening sanctions / PPE."
+        eyebrow={t('Référentiel UBO')}
+        title={t('Ajouter un bénéficiaire effectif')}
+        subtitle={t('Déclare un nouveau UBO et déclenche automatiquement le screening sanctions / PPE.')}
         size="large"
-        submitLabel="Ajouter et screener"
+        submitLabel={t('Ajouter et screener')}
         submitDisabled={uboNom.trim().length < 3 || tiersParentId === '' || !uboPart}
         onSubmit={submitNewUbo}
       >
         <FormSection
-          title="Entité contrôlée"
-          description="Sélectionnez le partenaire dont le bénéficiaire détient une part."
+          title={t('Entité contrôlée')}
+          description={t('Sélectionnez le partenaire dont le bénéficiaire détient une part.')}
         >
           <FieldRow>
-            <Field label="Partenaire / Cible" required hint="Tiers parent (Dataverse)">
+            <Field label={t('Partenaire / Cible')} required hint={t('Tiers parent (Dataverse)')}>
               <Dropdown
-                placeholder="Sélectionner un tiers"
+                placeholder={t('Sélectionner un tiers')}
                 value={tiersData?.find((t) => t.afb_tiersid === tiersParentId)?.afb_nomdupartenaire ?? ''}
                 selectedOptions={tiersParentId ? [tiersParentId] : []}
                 onOptionSelect={(_, d) => {
@@ -852,44 +885,44 @@ export default function UBOPage() {
               </Dropdown>
             </Field>
           </FieldRow>
-          <Field label="Nature du bénéficiaire" required>
+          <Field label={t('Nature du bénéficiaire')} required>
             <RadioGroup
               value={natureUbo}
               onChange={(_, d) => setNatureUbo(d.value as 'physique' | 'morale')}
               layout="horizontal"
             >
-              <Radio value="physique" label="Personne physique (UBO direct ou effectif)" />
-              <Radio value="morale" label="Personne morale (chaîne indirecte)" />
+              <Radio value="physique" label={t('Personne physique (UBO direct ou effectif)')} />
+              <Radio value="morale" label={t('Personne morale (chaîne indirecte)')} />
             </RadioGroup>
           </Field>
         </FormSection>
 
-        <FormSection title="Identité du bénéficiaire">
+        <FormSection title={t('Identité du bénéficiaire')}>
           <FieldRow cols={2}>
-            <Field label={natureUbo === 'physique' ? 'Nom complet' : 'Raison sociale'} required>
+            <Field label={natureUbo === 'physique' ? t('Nom complet') : t('Raison sociale')} required>
               <Input
                 value={uboNom}
                 onChange={(_, d) => setUboNom(d.value)}
                 placeholder={natureUbo === 'physique' ? 'James Wilson' : 'Holdings International Ltd.'}
               />
             </Field>
-            <Field label={natureUbo === 'physique' ? 'Nationalité' : 'Pays d’incorporation'} required>
+            <Field label={natureUbo === 'physique' ? t('Nationalité') : t('Pays d’incorporation')} required>
               <Input
                 value={uboNationalite}
                 onChange={(_, d) => setUboNationalite(d.value)}
-                placeholder={natureUbo === 'physique' ? 'Britannique' : 'Jersey'}
+                placeholder={natureUbo === 'physique' ? t('Britannique') : t('Jersey')}
               />
             </Field>
           </FieldRow>
           <FieldRow cols={2}>
-            <Field label={natureUbo === 'physique' ? 'Date de naissance' : 'Date de constitution'}>
+            <Field label={natureUbo === 'physique' ? t('Date de naissance') : t('Date de constitution')}>
               <Input
                 type="date"
                 value={uboDateNaiss}
                 onChange={(_, d) => setUboDateNaiss(d.value)}
               />
             </Field>
-            <Field label="% de détention" required hint="Sur l’entité contrôlée sélectionnée">
+            <Field label={t('% de détention')} required hint={t('Sur l’entité contrôlée sélectionnée')}>
               <Input
                 type="number"
                 value={uboPart}
@@ -900,24 +933,24 @@ export default function UBOPage() {
           </FieldRow>
         </FormSection>
 
-        <FormSection title="Vigilance et risques">
+        <FormSection title={t('Vigilance et risques')}>
           <FieldRow cols={2}>
-            <Field label="Nature du contrôle" required>
+            <Field label={t('Nature du contrôle')} required>
               <Dropdown
                 value={uboNatureCtrl}
                 selectedOptions={[uboNatureCtrl]}
                 onOptionSelect={(_, d) => setUboNatureCtrl((d.optionValue ?? 'Direct') as 'Direct' | 'Indirect' | 'Effectif')}
               >
-                <Option value="Direct">Direct</Option>
-                <Option value="Indirect">Indirect</Option>
-                <Option value="Effectif">Effectif</Option>
+                <Option value="Direct">{t('Direct')}</Option>
+                <Option value="Indirect">{t('Indirect')}</Option>
+                <Option value="Effectif">{t('Effectif')}</Option>
               </Dropdown>
             </Field>
-            <Field label="Personne politiquement exposée (PPE)">
+            <Field label={t('Personne politiquement exposée (PPE)')}>
               <Switch
                 checked={uboPpe}
                 onChange={(_, d) => setUboPpe(d.checked)}
-                label={uboPpe ? 'Oui — vigilance renforcée' : 'Non'}
+                label={uboPpe ? t('Oui — vigilance renforcée') : t('Non')}
               />
             </Field>
           </FieldRow>
@@ -925,7 +958,7 @@ export default function UBOPage() {
             <Switch
               checked={screenImmediate}
               onChange={(_, d) => setScreenImmediate(d.checked)}
-              label="Lancer immédiatement le screening (ONU, OFAC, UE, Interpol, PPE)"
+              label={t('Lancer immédiatement le screening (ONU, OFAC, UE, Interpol, PPE)')}
             />
           </Field>
         </FormSection>

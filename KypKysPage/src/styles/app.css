@@ -361,11 +361,19 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  padding: 4px 11px;
+  padding: 4px 10px;
   border-radius: var(--r-pill);
   background: var(--surface-2);
   color: var(--ink-soft);
   line-height: 1.4;
+}
+/* Dans les tableaux : aligne le TEXTE du badge sur l'en-tête de colonne
+   (compense le padding interne du badge, qui décalait les colonnes badge
+   par rapport aux colonnes texte). */
+/* Dans les tableaux : le bord gauche de la pastille s'aligne sur l'en-tête de
+   colonne (pas de marge négative qui la ferait déborder à gauche). */
+.doc-table td > .badge {
+  margin-left: 0;
 }
 .badge .dot-i {
   width: 7px;
@@ -994,6 +1002,14 @@
   gap: 12px;
   align-items: flex-start;
 }
+.q-card__head > .badge {
+  flex-shrink: 0;        /* le badge ne se comprime pas */
+  white-space: nowrap;   /* « À compléter » ne passe pas à la ligne */
+  align-self: flex-start;
+}
+.q-card__head h3 {
+  overflow-wrap: anywhere; /* le titre long n'écrase pas le badge */
+}
 .q-card__icon {
   width: 44px;
   height: 44px;
@@ -1040,6 +1056,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-top: auto; /* pousse le pied en bas → footers alignés entre cartes */
 }
 .q-card__foot small {
   font-size: 12px;

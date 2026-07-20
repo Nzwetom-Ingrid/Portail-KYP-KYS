@@ -1,5 +1,6 @@
 import { makeStyles } from '@fluentui/react-components';
 import type { ReactNode } from 'react';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   wrapper: {
@@ -55,7 +56,7 @@ const useStyles = makeStyles({
     ':focus-visible': {
       outline: 'none',
       backgroundColor: '#FDF0F1',
-      boxShadow: 'inset 3px 0 0 #C20012',
+      boxShadow: 'inset 3px 0 0 #c8102e',
     },
   },
   empty: {
@@ -84,8 +85,9 @@ interface DataTableProps<T> {
 
 export function DataTable<T>({ columns, rows, rowKey, emptyMessage = 'Aucun résultat', onRowClick }: DataTableProps<T>) {
   const styles = useStyles();
+  const { t } = useT();
   if (rows.length === 0) {
-    return <div className={styles.empty}>{emptyMessage}</div>;
+    return <div className={styles.empty}>{t(emptyMessage)}</div>;
   }
   return (
     <div className={styles.wrapper}>
@@ -98,7 +100,7 @@ export function DataTable<T>({ columns, rows, rowKey, emptyMessage = 'Aucun rés
                 className={`${styles.th} ${c.align === 'right' ? styles.thRight : ''}`}
                 style={c.width ? { width: c.width } : undefined}
               >
-                {c.header}
+                {t(c.header)}
               </th>
             ))}
           </tr>

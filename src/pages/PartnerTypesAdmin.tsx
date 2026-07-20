@@ -26,6 +26,8 @@ import {
 import { usePartnerTypes } from '@/hooks/usePartnerTypes';
 import { partnerTypes } from '@/lib/dataverse/entityHooks';
 import { getFamilleLabel, type PartnerType } from '@/lib/dataverse/types';
+import { FilterBar } from '@/components/common/FilterBar';
+import { exportToCsv } from '@/lib/exportCsv';
 
 /** Famille du formulaire (BC, EMF…) → valeur de choix Dataverse afb_familledinstitution. */
 const FAMILLE_FORM_TO_DV: Record<string, number> = {
@@ -43,6 +45,7 @@ import {
 } from '@/components/common/DetailDrawer';
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   container: { padding: '32px' },
@@ -129,12 +132,14 @@ const DEFAULT_CHECKLIST = [
 ];
 
 export default function PartnerTypesAdmin() {
+  const { t } = useT();
   const styles = useStyles();
   const { data, isLoading, error } = usePartnerTypes();
   const createType = partnerTypes.useCreate();
   const updateType = partnerTypes.useUpdate();
   const { notifySuccess, notifyError } = useNotifications();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [openPt, setOpenPt] = useState<PartnerType | null>(null);
   const [activeTab, setActiveTab] = useState('identite');
   const [newOpen, setNewOpen] = useState(false);
@@ -202,20 +207,20 @@ export default function PartnerTypesAdmin() {
           id: editingId,
           changes: fields as unknown as Parameters<typeof updateType.mutateAsync>[0]['changes'],
         });
-        notifySuccess('Type de partenaire modifié', {
-          description: `${code} · ${libelleFR} — modifications enregistrées.`,
+        notifySuccess(t('Type de partenaire modifié'), {
+          description: `${code} · ${libelleFR} — ${t('modifications enregistrées.')}`,
         });
       } else {
         await createType.mutateAsync(fields as unknown as Parameters<typeof createType.mutateAsync>[0]);
-        notifySuccess('Type de partenaire créé', {
-          description: `${code} · ${libelleFR} — famille ${FAMILLE_OPTIONS.find((f) => f.value === famille)?.label}, seuil UBO ${seuilUbo}%.`,
+        notifySuccess(t('Type de partenaire créé'), {
+          description: `${code} · ${libelleFR} — ${t('famille')} ${FAMILLE_OPTIONS.find((f) => f.value === famille)?.label}, ${t('seuil UBO')} ${seuilUbo}%.`,
         });
       }
       setNewOpen(false);
       reset();
     } catch (e) {
-      notifyError(editingId ? 'Modification impossible' : 'Création impossible', {
-        description: e instanceof Error ? e.message : 'Erreur Dataverse.',
+      notifyError(editingId ? t('Modification impossible') : t('Création impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse.'),
       });
       throw e;
     }
@@ -224,8 +229,8 @@ export default function PartnerTypesAdmin() {
   const submitChecklist = async () => {
     await new Promise((r) => setTimeout(r, 600));
     const total = checklist.filter((c) => c.required).length;
-    notifySuccess('Checklist KYC mise à jour', {
-      description: `${openPt?.afb_libellefr ?? ''} — ${total} pièces requises · poids total ${checklist.reduce((s, c) => s + c.weight, 0)}.`,
+    notifySuccess(t('Checklist KYC mise à jour'), {
+      description: `${openPt?.afb_libellefr ?? ''} — ${total} ${t('pièces requises · poids total')} ${checklist.reduce((s, c) => s + c.weight, 0)}.`,
     });
     setEditChecklistOpen(false);
   };
@@ -238,28 +243,69 @@ export default function PartnerTypesAdmin() {
     setChecklist((cur) => cur.filter((c) => c.id !== id));
   };
 
+  // Lignes filtrées par la recherche (code + libellés FR/EN + famille).
+  const filtered = (data ?? []).filter((pt) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      pt.afb_code.toLowerCase().includes(q) ||
+      pt.afb_libellefr.toLowerCase().includes(q) ||
+      (pt.afb_libelleen ?? '').toLowerCase().includes(q) ||
+      getFamilleLabel(pt.afb_famille).toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.titleBlock}>
-          <h1 className={styles.title}>Référentiel — Types de partenaires</h1>
+          <h1 className={styles.title}>{t('Référentiel — Types de partenaires')}</h1>
           <p className={styles.subtitle}>
-            Typologies juridiques des tiers en relation d'affaires avec AFB (Guide AFB/PM 3.8/GU01 V1.2)
+            {t("Typologies juridiques des tiers en relation d'affaires avec AFB (Guide AFB/PM 3.8/GU01 V1.2)")}
           </p>
         </div>
         <div className={styles.actions}>
-          <Button icon={<ArrowDownload20Regular />} appearance="outline">Export</Button>
+          <Button
+            icon={<ArrowDownload20Regular />}
+            appearance="outline"
+            onClick={() => {
+              const ok = exportToCsv(
+                `types-partenaires-${new Date().toISOString().slice(0, 10)}.csv`,
+                (data ?? []).map((pt) => ({
+                  Code: pt.afb_code,
+                  'Libellé FR': pt.afb_libellefr,
+                  'Libellé EN': pt.afb_libelleen ?? '',
+                  Famille: getFamilleLabel(pt.afb_famille),
+                  'Seuil UBO': `${pt.afb_seuilubodefaut}%`,
+                  Actif: pt.afb_actif ? t('Actif') : t('Désactivé'),
+                })),
+              );
+              notifySuccess(ok ? t('Export généré') : t('Aucune donnée'), {
+                description: ok
+                  ? `${(data ?? []).length} ${t('types exportés (CSV).')}`
+                  : t('Aucun type à exporter.'),
+              });
+            }}
+          >
+            {t('Export')}
+          </Button>
           <Button icon={<Add20Regular />} appearance="primary" onClick={() => setNewOpen(true)}>
-            Nouveau type
+            {t('Nouveau type')}
           </Button>
         </div>
       </div>
+
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Rechercher un type (code, libellé)…"
+      />
 
       <div className={styles.card}>
         {isLoading && (
           <div className={styles.loadingBox}>
             <Spinner size="medium" />
-            <Text>Chargement des types depuis Dataverse...</Text>
+            <Text>{t('Chargement des types depuis Dataverse...')}</Text>
           </div>
         )}
 
@@ -267,7 +313,7 @@ export default function PartnerTypesAdmin() {
           <div style={{ padding: '24px' }}>
             <MessageBar intent="error">
               <MessageBarBody>
-                <MessageBarTitle>Erreur de chargement</MessageBarTitle>
+                <MessageBarTitle>{t('Erreur de chargement')}</MessageBarTitle>
                 {(error as Error).message}
               </MessageBarBody>
             </MessageBar>
@@ -279,17 +325,17 @@ export default function PartnerTypesAdmin() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th className={styles.th}>Code</th>
-                  <th className={styles.th}>Libellé FR</th>
-                  <th className={styles.th}>Libellé EN</th>
-                  <th className={styles.th}>Famille</th>
-                  <th className={styles.th}>Seuil UBO</th>
-                  <th className={styles.th}>Statut</th>
+                  <th className={styles.th}>{t('Code')}</th>
+                  <th className={styles.th}>{t('Libellé FR')}</th>
+                  <th className={styles.th}>{t('Libellé EN')}</th>
+                  <th className={styles.th}>{t('Famille')}</th>
+                  <th className={styles.th}>{t('Seuil UBO')}</th>
+                  <th className={styles.th}>{t('Statut')}</th>
                   <th className={styles.th} style={{ textAlign: 'right' }} />
                 </tr>
               </thead>
               <tbody>
-                {data.map((pt) => (
+                {filtered.map((pt) => (
                   <tr key={pt.afb_typedepartenaireid} className={styles.tr} onClick={() => open(pt)}>
                     <td className={`${styles.td} ${styles.codeCell}`}>{pt.afb_code}</td>
                     <td className={styles.td} style={{ fontWeight: 500, color: '#1A1A1A' }}>{pt.afb_libellefr}</td>
@@ -298,11 +344,11 @@ export default function PartnerTypesAdmin() {
                     <td className={styles.td}>{pt.afb_seuilubodefaut}%</td>
                     <td className={styles.td}>
                       <Badge appearance="tint" color={pt.afb_actif ? 'success' : 'danger'} size="small">
-                        {pt.afb_actif ? 'Actif' : 'Désactivé'}
+                        {pt.afb_actif ? t('Actif') : t('Désactivé')}
                       </Badge>
                     </td>
                     <td className={styles.td} style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                      <Tooltip content="Éditer" relationship="label">
+                      <Tooltip content={t('Éditer')} relationship="label">
                         <Button size="small" appearance="subtle" icon={<Edit20Regular />} onClick={() => open(pt)} />
                       </Tooltip>
                     </td>
@@ -312,7 +358,7 @@ export default function PartnerTypesAdmin() {
             </table>
             <div style={{ padding: '12px 20px' }}>
               <div className={styles.count}>
-                {data.length} type{data.length > 1 ? 's' : ''} chargé{data.length > 1 ? 's' : ''} depuis Dataverse
+                {filtered.length} {t('sur')} {data.length} {t('type')}{data.length > 1 ? 's' : ''} {t('chargé')}{data.length > 1 ? 's' : ''} {t('depuis Dataverse')}
               </div>
             </div>
           </>
@@ -323,7 +369,7 @@ export default function PartnerTypesAdmin() {
       <DetailDrawer
         open={openPt !== null && !editChecklistOpen}
         onOpenChange={(o) => !o && setOpenPt(null)}
-        eyebrow="Type de partenaire"
+        eyebrow={t('Type de partenaire')}
         title={openPt?.afb_libellefr ?? ''}
         subtitle={openPt?.afb_code}
         size="large"
@@ -331,19 +377,19 @@ export default function PartnerTypesAdmin() {
           openPt ? (
             <>
               <Badge appearance="filled" color={openPt.afb_actif ? 'success' : 'danger'} size="small">
-                {openPt.afb_actif ? 'Actif' : 'Désactivé'}
+                {openPt.afb_actif ? t('Actif') : t('Désactivé')}
               </Badge>
               <Badge appearance="tint" color="brand" size="small">
-                Seuil UBO {openPt.afb_seuilubodefaut}%
+                {t('Seuil UBO')} {openPt.afb_seuilubodefaut}%
               </Badge>
             </>
           ) : null
         }
         tabs={[
-          { id: 'identite', label: 'Identité' },
-          { id: 'checklist', label: 'Checklist KYC', count: DEFAULT_CHECKLIST.filter((c) => c.required).length },
-          { id: 'workflow', label: 'Workflow validation' },
-          { id: 'revue', label: 'Périodicité de revue' },
+          { id: 'identite', label: t('Identité') },
+          { id: 'checklist', label: t('Checklist KYC'), count: DEFAULT_CHECKLIST.filter((c) => c.required).length },
+          { id: 'workflow', label: t('Workflow validation') },
+          { id: 'revue', label: t('Périodicité de revue') },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -351,7 +397,7 @@ export default function PartnerTypesAdmin() {
           openPt ? (
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
               <Button appearance="primary" icon={<Edit20Regular />} onClick={() => openPt && startEdit(openPt)}>
-                Modifier le type
+                {t('Modifier le type')}
               </Button>
             </div>
           ) : null
@@ -360,15 +406,15 @@ export default function PartnerTypesAdmin() {
         {openPt && (
           <>
             {activeTab === 'identite' && (
-              <DrawerSection title="Définition">
+              <DrawerSection title={t('Définition')}>
                 <FieldGrid
                   items={[
-                    { label: 'Code', value: openPt.afb_code, mono: true },
-                    { label: 'Famille', value: getFamilleLabel(openPt.afb_famille) },
-                    { label: 'Libellé français', value: openPt.afb_libellefr },
-                    { label: 'Libellé anglais', value: openPt.afb_libelleen ?? '—' },
-                    { label: 'Seuil UBO par défaut', value: `${openPt.afb_seuilubodefaut}%` },
-                    { label: 'Statut', value: openPt.afb_actif ? 'Actif' : 'Désactivé' },
+                    { label: t('Code'), value: openPt.afb_code, mono: true },
+                    { label: t('Famille'), value: getFamilleLabel(openPt.afb_famille) },
+                    { label: t('Libellé français'), value: openPt.afb_libellefr },
+                    { label: t('Libellé anglais'), value: openPt.afb_libelleen ?? '—' },
+                    { label: t('Seuil UBO par défaut'), value: `${openPt.afb_seuilubodefaut}%` },
+                    { label: t('Statut'), value: openPt.afb_actif ? t('Actif') : t('Désactivé') },
                   ]}
                 />
               </DrawerSection>
@@ -376,8 +422,8 @@ export default function PartnerTypesAdmin() {
 
             {activeTab === 'checklist' && (
               <DrawerSection
-                title="Pièces requises pour ce type"
-                description="Liste contraignante des documents à fournir lors de l'entrée en relation. Les pièces non requises restent suggérées."
+                title={t('Pièces requises pour ce type')}
+                description={t("Liste contraignante des documents à fournir lors de l'entrée en relation. Les pièces non requises restent suggérées.")}
               >
                 <div style={{ marginBottom: '12px' }}>
                   <Button
@@ -386,22 +432,22 @@ export default function PartnerTypesAdmin() {
                     icon={<Edit20Regular />}
                     onClick={() => setEditChecklistOpen(true)}
                   >
-                    Éditer la checklist
+                    {t('Éditer la checklist')}
                   </Button>
                 </div>
                 {DEFAULT_CHECKLIST.map((c) => (
                   <div key={c.id} className={styles.checklistItem}>
-                    <Document20Regular style={{ color: c.required ? '#E30613' : '#C8C8C8' }} />
+                    <Document20Regular style={{ color: c.required ? '#c8102e' : '#C8C8C8' }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>{c.label}</div>
                       <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>
-                        Validité {c.validity} mois · poids {c.weight}/5
+                        {t('Validité')} {c.validity} {t('mois · poids')} {c.weight}/5
                       </div>
                     </div>
                     {c.required ? (
-                      <Badge appearance="filled" color="danger" size="small">Requis</Badge>
+                      <Badge appearance="filled" color="danger" size="small">{t('Requis')}</Badge>
                     ) : (
-                      <Badge appearance="tint" color="subtle" size="small">Optionnel</Badge>
+                      <Badge appearance="tint" color="subtle" size="small">{t('Optionnel')}</Badge>
                     )}
                   </div>
                 ))}
@@ -409,27 +455,27 @@ export default function PartnerTypesAdmin() {
             )}
 
             {activeTab === 'workflow' && (
-              <DrawerSection title="Schéma de validation hiérarchique">
+              <DrawerSection title={t('Schéma de validation hiérarchique')}>
                 <FieldGrid
                   items={[
-                    { label: 'Standard', value: 'Analyste → Chargé de conformité' },
-                    { label: 'Élevé', value: 'Analyste → Chargé → RCSI' },
-                    { label: 'Critique', value: 'Analyste → Chargé → RCSI → Comité (Art. 41-48)' },
-                    { label: 'SLA standard', value: '5 jours ouvrés' },
-                    { label: 'SLA critique', value: '10 jours ouvrés' },
+                    { label: t('Standard'), value: t('Analyste → Chargé de conformité') },
+                    { label: t('Élevé'), value: t('Analyste → Chargé → RCSI') },
+                    { label: t('Critique'), value: t('Analyste → Chargé → RCSI → Comité (Art. 41-48)') },
+                    { label: t('SLA standard'), value: t('5 jours ouvrés') },
+                    { label: t('SLA critique'), value: t('10 jours ouvrés') },
                   ]}
                 />
               </DrawerSection>
             )}
 
             {activeTab === 'revue' && (
-              <DrawerSection title="Revue périodique">
+              <DrawerSection title={t('Revue périodique')}>
                 <FieldGrid
                   items={[
-                    { label: 'Fréquence', value: 'Annuelle (12 mois)' },
-                    { label: 'Pré-remplissage', value: 'Activé — réponses N-1 reportées' },
-                    { label: 'Rappels', value: 'J-60, J-30, J-7 (e-mail + portail)' },
-                    { label: 'Escalade RCSI', value: 'À J+15 sans réponse' },
+                    { label: t('Fréquence'), value: t('Annuelle (12 mois)') },
+                    { label: t('Pré-remplissage'), value: t('Activé — réponses N-1 reportées') },
+                    { label: t('Rappels'), value: t('J-60, J-30, J-7 (e-mail + portail)') },
+                    { label: t('Escalade RCSI'), value: t('À J+15 sans réponse') },
                   ]}
                 />
               </DrawerSection>
@@ -442,20 +488,20 @@ export default function PartnerTypesAdmin() {
       <FormDialog
         open={newOpen}
         onOpenChange={(o) => { if (!o) reset(); setNewOpen(o); }}
-        eyebrow="Référentiel"
-        title={editingId ? 'Modifier le type de partenaire' : 'Créer un nouveau type de partenaire'}
-        subtitle="Le type définit la checklist KYC, le workflow de validation et le seuil UBO appliqués automatiquement aux nouveaux dossiers."
+        eyebrow={t('Référentiel')}
+        title={editingId ? t('Modifier le type de partenaire') : t('Créer un nouveau type de partenaire')}
+        subtitle={t('Le type définit la checklist KYC, le workflow de validation et le seuil UBO appliqués automatiquement aux nouveaux dossiers.')}
         size="large"
-        submitLabel={editingId ? 'Enregistrer les modifications' : 'Créer le type'}
+        submitLabel={editingId ? t('Enregistrer les modifications') : t('Créer le type')}
         submitDisabled={code.trim().length < 2 || libelleFR.trim().length < 3}
         onSubmit={submitNew}
       >
-        <FormSection title="Identité">
+        <FormSection title={t('Identité')}>
           <FieldRow cols={2}>
-            <Field label="Code" required hint="Code court technique, unique">
+            <Field label={t('Code')} required hint={t('Code court technique, unique')}>
               <Input value={code} onChange={(_, d) => setCode(d.value.toUpperCase())} placeholder="EMF_INT" />
             </Field>
-            <Field label="Famille" required>
+            <Field label={t('Famille')} required>
               <Dropdown
                 value={FAMILLE_OPTIONS.find((f) => f.value === famille)?.label}
                 selectedOptions={[famille]}
@@ -468,40 +514,40 @@ export default function PartnerTypesAdmin() {
             </Field>
           </FieldRow>
           <FieldRow cols={2}>
-            <Field label="Libellé français" required>
-              <Input value={libelleFR} onChange={(_, d) => setLibelleFR(d.value)} placeholder="EMF — Établissement de monnaie électronique international" />
+            <Field label={t('Libellé français')} required>
+              <Input value={libelleFR} onChange={(_, d) => setLibelleFR(d.value)} placeholder={t('EMF — Établissement de monnaie électronique international')} />
             </Field>
-            <Field label="Libellé anglais (optionnel)">
+            <Field label={t('Libellé anglais (optionnel)')}>
               <Input value={libelleEN} onChange={(_, d) => setLibelleEN(d.value)} placeholder="International EMI" />
             </Field>
           </FieldRow>
         </FormSection>
 
-        <FormSection title="Paramètres réglementaires">
+        <FormSection title={t('Paramètres réglementaires')}>
           <FieldRow cols={2}>
-            <Field label="Seuil UBO par défaut" required hint="COBAC R-2023/01 : 25% · Wolfsberg : 10%">
+            <Field label={t('Seuil UBO par défaut')} required hint={t('COBAC R-2023/01 : 25% · Wolfsberg : 10%')}>
               <Input type="number" value={seuilUbo} onChange={(_, d) => setSeuilUbo(d.value)} contentAfter="%" />
             </Field>
-            <Field label="Fréquence de revue" required>
+            <Field label={t('Fréquence de revue')} required>
               <Dropdown
-                value={revuePeriode === '6' ? 'Semestrielle' : revuePeriode === '12' ? 'Annuelle' : 'Bi-annuelle'}
+                value={revuePeriode === '6' ? t('Semestrielle') : revuePeriode === '12' ? t('Annuelle') : t('Bi-annuelle')}
                 selectedOptions={[revuePeriode]}
                 onOptionSelect={(_, d) => setRevuePeriode(d.optionValue ?? '12')}
               >
-                <Option value="6">Semestrielle (6 mois)</Option>
-                <Option value="12">Annuelle (12 mois)</Option>
-                <Option value="24">Bi-annuelle (24 mois)</Option>
+                <Option value="6">{t('Semestrielle (6 mois)')}</Option>
+                <Option value="12">{t('Annuelle (12 mois)')}</Option>
+                <Option value="24">{t('Bi-annuelle (24 mois)')}</Option>
               </Dropdown>
             </Field>
           </FieldRow>
         </FormSection>
 
-        <FormSection title="Activation">
+        <FormSection title={t('Activation')}>
           <Field>
             <Switch
               checked={actif}
               onChange={(_, d) => setActif(d.checked)}
-              label={actif ? 'Type actif — visible lors de la création de dossiers' : 'Type désactivé — masqué dans les sélections'}
+              label={actif ? t('Type actif — visible lors de la création de dossiers') : t('Type désactivé — masqué dans les sélections')}
             />
           </Field>
         </FormSection>
@@ -511,25 +557,25 @@ export default function PartnerTypesAdmin() {
       <FormDialog
         open={editChecklistOpen}
         onOpenChange={setEditChecklistOpen}
-        eyebrow="Checklist KYC"
-        title={openPt ? `Pièces requises — ${openPt.afb_libellefr}` : 'Checklist'}
-        subtitle="Définissez la liste contraignante des documents pour ce type de partenaire. Les pièces marquées requises bloquent la soumission du dossier si non fournies."
+        eyebrow={t('Checklist KYC')}
+        title={openPt ? `${t('Pièces requises —')} ${openPt.afb_libellefr}` : t('Checklist')}
+        subtitle={t('Définissez la liste contraignante des documents pour ce type de partenaire. Les pièces marquées requises bloquent la soumission du dossier si non fournies.')}
         size="xlarge"
-        submitLabel="Enregistrer la checklist"
+        submitLabel={t('Enregistrer la checklist')}
         onSubmit={submitChecklist}
       >
-        <FormSection title="Pièces de la checklist">
+        <FormSection title={t('Pièces de la checklist')}>
           {checklist.map((c) => (
             <div key={c.id} className={styles.checklistItem}>
               <Checkbox checked={c.required} onChange={() => toggleRequired(c.id)} />
-              <Document20Regular style={{ color: c.required ? '#E30613' : '#767676' }} />
+              <Document20Regular style={{ color: c.required ? '#c8102e' : '#767676' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>{c.label}</div>
                 <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>
-                  Validité {c.validity} mois · poids {c.weight}/5
+                  {t('Validité')} {c.validity} {t('mois · poids')} {c.weight}/5
                 </div>
               </div>
-              <Tooltip content="Supprimer cette pièce" relationship="label">
+              <Tooltip content={t('Supprimer cette pièce')} relationship="label">
                 <Button size="small" appearance="subtle" icon={<Delete20Regular />} onClick={() => removeItem(c.id)} />
               </Tooltip>
             </div>
@@ -544,7 +590,7 @@ export default function PartnerTypesAdmin() {
                   ...cur,
                   {
                     id: `custom_${Date.now()}`,
-                    label: 'Nouvelle pièce',
+                    label: t('Nouvelle pièce'),
                     required: false,
                     weight: 1,
                     validity: 12,
@@ -552,18 +598,18 @@ export default function PartnerTypesAdmin() {
                 ])
               }
             >
-              Ajouter une pièce
+              {t('Ajouter une pièce')}
             </Button>
           </div>
         </FormSection>
 
-        <FormSection title="Résumé">
+        <FormSection title={t('Résumé')}>
           <FieldGrid
             items={[
-              { label: 'Pièces totales', value: checklist.length },
-              { label: 'Pièces requises', value: checklist.filter((c) => c.required).length },
-              { label: 'Pièces optionnelles', value: checklist.filter((c) => !c.required).length },
-              { label: 'Poids cumulé', value: `${checklist.reduce((s, c) => s + c.weight, 0)}/40` },
+              { label: t('Pièces totales'), value: checklist.length },
+              { label: t('Pièces requises'), value: checklist.filter((c) => c.required).length },
+              { label: t('Pièces optionnelles'), value: checklist.filter((c) => !c.required).length },
+              { label: t('Poids cumulé'), value: `${checklist.reduce((s, c) => s + c.weight, 0)}/40` },
             ]}
           />
         </FormSection>

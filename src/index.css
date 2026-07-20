@@ -12,42 +12,42 @@
   color-scheme: light;
 
   /* Canvas gris froid très clair — détache les cartes blanches (réf. design) */
-  --bg:            #F4F5F7;
+  --bg:            #F7F8FA;
   --bg-image:
-    radial-gradient(1200px 620px at 50% -10%, rgba(227, 6, 19, 0.04), transparent 70%),
-    radial-gradient(1000px 640px at 100% 0%, rgba(30, 35, 55, 0.035), transparent 65%);
+    radial-gradient(1200px 620px at 50% -10%, rgba(200, 16, 46, 0.035), transparent 70%),
+    radial-gradient(1000px 640px at 100% 0%, rgba(30, 35, 55, 0.03), transparent 65%);
 
-  /* Accent rouge Afriland */
-  --accent:        #E30613;
-  --accent-dark:   #A50410;
-  --accent-light:  #F23645;
-  --accent-glow:   rgba(227, 6, 19, 0.18);
-  --accent-ring:   rgba(227, 6, 19, 0.28);
+  /* Accent rouge Afriland — teinte raffinée alignée sur le portail (#c8102e) */
+  --accent:        #c8102e;
+  --accent-dark:   #a30f24;
+  --accent-light:  #d8324a;
+  --accent-glow:   rgba(200, 16, 46, 0.16);
+  --accent-ring:   rgba(200, 16, 46, 0.26);
 
-  /* Texte */
-  --text:           #1A1A1A;
-  --text-secondary: #525252;
-  --text-muted:     #8A8A8A;
+  /* Texte — encre douce du portail */
+  --text:           #181a1e;
+  --text-secondary: #525660;
+  --text-muted:     #8b9099;
 
-  /* Statuts sémantiques */
-  --success: #15803D;
+  /* Statuts sémantiques (verts/rouges plus doux, réf. portail) */
+  --success: #1d9d6f;
   --warning: #B45309;
   --info:    #404040;
-  --danger:  #C20012;
+  --danger:  #d24545;
 
   /* Surfaces — cartes blanches flottantes à ombre douce diffuse */
-  --glass-bg:           rgba(255, 255, 255, 0.78);
-  --glass-border:       rgba(20, 20, 20, 0.07);
-  --glass-hover-bg:     rgba(255, 255, 255, 0.95);
-  --glass-hover-border: rgba(20, 20, 20, 0.12);
-  --glass-shadow:       0 1px 3px rgba(20, 20, 20, 0.04), 0 16px 40px -20px rgba(20, 20, 20, 0.14);
-  --glass-blur:         blur(14px);
-  --glass-red-bg:       rgba(227, 6, 19, 0.06);
-  --glass-red-border:   rgba(227, 6, 19, 0.18);
+  --glass-bg:           rgba(255, 255, 255, 0.94);
+  --glass-border:       rgba(24, 26, 30, 0.06);
+  --glass-hover-bg:     #ffffff;
+  --glass-hover-border: rgba(24, 26, 30, 0.11);
+  --glass-shadow:       0 1px 2px rgba(16, 40, 34, 0.05), 0 14px 34px -18px rgba(16, 40, 34, 0.12);
+  --glass-blur:         blur(8px);
+  --glass-red-bg:       rgba(200, 16, 46, 0.055);
+  --glass-red-border:   rgba(200, 16, 46, 0.16);
 
-  /* Ombres douces réutilisables */
-  --shadow-soft:        0 1px 3px rgba(20, 20, 20, 0.04), 0 10px 28px -16px rgba(20, 20, 20, 0.12);
-  --shadow-lift:        0 4px 14px rgba(20, 20, 20, 0.06), 0 24px 56px -24px rgba(20, 20, 20, 0.20);
+  /* Ombres douces réutilisables (teinte verte discrète, réf. portail) */
+  --shadow-soft:        0 1px 2px rgba(16, 40, 34, 0.05), 0 8px 24px -14px rgba(16, 40, 34, 0.11);
+  --shadow-lift:        0 4px 14px rgba(16, 40, 34, 0.06), 0 22px 50px -24px rgba(16, 40, 34, 0.16);
 
   /* Sidebar — rail charbon sombre permanent (réf. design), accent rouge */
   --sidebar-bg:     #1B1C22;
@@ -56,9 +56,9 @@
 
   /* Rayons généreux */
   --radius-sm:   10px;
-  --radius-md:   14px;
-  --radius-lg:   18px;
-  --radius-xl:   24px;
+  --radius-md:   16px;
+  --radius-lg:   22px;
+  --radius-xl:   26px;
   --radius-full: 9999px;
 
   /* Motion */
@@ -130,13 +130,13 @@
   --glass-hover-bg:     rgba(255, 255, 255, 0.08);
   --glass-hover-border: rgba(255, 255, 255, 0.16);
   --glass-shadow:       none;
-  --glass-red-bg:       rgba(227, 6, 19, 0.16);
-  --glass-red-border:   rgba(227, 6, 19, 0.42);
+  --glass-red-bg:       rgba(200, 16, 46, 0.16);
+  --glass-red-border:   rgba(200, 16, 46, 0.42);
   --accent-light:       #F87171;
 }
 /* Pastille active : rouge plein, ombre rouge nette sur fond sombre */
 .afb-rail a[aria-current="page"] {
-  box-shadow: 0 6px 18px -6px rgba(227, 6, 19, 0.55), 0 2px 6px -2px rgba(227, 6, 19, 0.45);
+  box-shadow: 0 6px 18px -6px rgba(200, 16, 46, 0.55), 0 2px 6px -2px rgba(200, 16, 46, 0.45);
 }
 
 * {

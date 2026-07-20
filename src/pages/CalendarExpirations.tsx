@@ -25,7 +25,12 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { type DocExpiration } from '@/lib/mockData';
-import { documents as documentsHooks } from '@/lib/dataverse/entityHooks';
+import {
+  documents as documentsHooks,
+  tiers as tiersHooks,
+  utilisateursInternes,
+  documentCategories,
+} from '@/lib/dataverse/entityHooks';
 import { toDocExpiration } from '@/lib/dataverse/documentMappers';
 import { exportToCsv } from '@/lib/exportCsv';
 import {
@@ -36,6 +41,7 @@ import {
 } from '@/components/common/DetailDrawer';
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
+import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   bucketRow: {
@@ -115,7 +121,7 @@ const useStyles = makeStyles({
   versionCurrent: {
     backgroundColor: '#FEF2F3',
     borderTopColor: '#FCE4E6', borderRightColor: '#FCE4E6', borderBottomColor: '#FCE4E6', borderLeftColor: '#FCE4E6',
-    color: '#A50410',
+    color: '#a30f24',
   },
   partnerOption: {
     display: 'flex',
@@ -157,7 +163,7 @@ function statutColor(s: DocExpiration['statut']) {
 }
 
 function daysColor(jours: number) {
-  if (jours < 0) return '#E30613';
+  if (jours < 0) return '#c8102e';
   if (jours <= 7) return '#B45309';
   if (jours <= 30) return '#404040';
   return '#15803D';
@@ -171,18 +177,57 @@ function daysLabel(jours: number) {
 
 export default function CalendarExpirations() {
   const styles = useStyles();
+  const { t } = useT();
   const { notifySuccess, notifyInfo } = useNotifications();
 
   // Documents réels depuis Dataverse (afb_document), limités à ceux qui expirent.
   const { data: rawDocs, isLoading, error } = documentsHooks.useList({ top: 300 });
+  const updateDoc = documentsHooks.useUpdate();
+  // Listes de référence pour résoudre partenaire / chargé / catégorie.
+  const { data: rawTiers } = tiersHooks.useList({ top: 500 });
+  const { data: rawUsers } = utilisateursInternes.useList({ top: 500 });
+  const { data: rawCats } = documentCategories.useList({ top: 200 });
+
+  const resolvers = useMemo(() => {
+    const tiersById = new Map<string, { nom?: string; chargeGuid?: string }>();
+    for (const t of rawTiers ?? [])
+      tiersById.set(t.afb_tiersid, { nom: t.afb_nomdupartenaire, chargeGuid: t._afb_chargederelation_value });
+    const usersById = new Map<string, string>();
+    for (const u of rawUsers ?? []) usersById.set(u.afb_utilisateurinterneid, u.afb_nomcomplet);
+    const categoryById = new Map<string, string>();
+    for (const c of rawCats ?? []) categoryById.set(c.afb_documentcategoryid, c.afb_libelle);
+    return { tiersById, usersById, categoryById };
+  }, [rawTiers, rawUsers, rawCats]);
+
   const expirations = useMemo(
-    () => (rawDocs ?? []).filter((d) => d.afb_datedexpiration).map(toDocExpiration),
-    [rawDocs],
+    () => (rawDocs ?? []).filter((d) => d.afb_datedexpiration).map((d) => toDocExpiration(d, resolvers)),
+    [rawDocs, resolvers],
   );
+
+  // Pose la date de relance manuelle sur le document → un flux Power Automate
+  // détecte ce changement et envoie l'e-mail de relance au tiers (+ trace).
+  // (afb_datederelancemanuelle = nouvelle colonne, hors modèle généré → cast.)
+  const markRelance = (id: string) =>
+    updateDoc.mutateAsync({
+      id,
+      changes: { afb_datederelancemanuelle: new Date().toISOString() },
+    } as unknown as Parameters<typeof updateDoc.mutateAsync>[0]);
+
+  const docsInBucket = (bucket: 'expired' | 'j7' | 'j30' | 'all'): DocExpiration[] =>
+    expirations.filter((d) =>
+      bucket === 'expired'
+        ? d.joursRestants < 0
+        : bucket === 'j7'
+          ? d.joursRestants >= 0 && d.joursRestants <= 7
+          : bucket === 'j30'
+            ? d.joursRestants > 7 && d.joursRestants <= 30
+            : true,
+    );
 
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [fenetreFilter, setFenetreFilter] = useState<'' | 'j30' | 'j60'>('');
   const [openDoc, setOpenDoc] = useState<DocExpiration | null>(null);
   const [activeTab, setActiveTab] = useState('detail');
   const [relanceOpen, setRelanceOpen] = useState(false);
@@ -190,9 +235,9 @@ export default function CalendarExpirations() {
   // form state — relance groupée
   const [filterBucket, setFilterBucket] = useState<'expired' | 'j7' | 'j30' | 'all'>('j30');
   const [templateMail, setTemplateMail] = useState('standard');
-  const [subjectMail, setSubjectMail] = useState('Renouvellement de documents — Afriland First Bank');
+  const [subjectMail, setSubjectMail] = useState(t('Renouvellement de documents — Afriland First Bank'));
   const [bodyMail, setBodyMail] = useState(
-    'Madame, Monsieur,\n\nCertaines pièces de votre dossier de conformité arrivent à expiration. Nous vous remercions de bien vouloir nous fournir les versions à jour avant la date indiquée.\n\nLa Direction Conformité',
+    t('Madame, Monsieur,\n\nCertaines pièces de votre dossier de conformité arrivent à expiration. Nous vous remercions de bien vouloir nous fournir les versions à jour avant la date indiquée.\n\nLa Direction Conformité'),
   );
   const [escalation, setEscalation] = useState(true);
 
@@ -200,46 +245,65 @@ export default function CalendarExpirations() {
     return expirations.filter((d) => {
       if (statutFilter && d.statut !== statutFilter) return false;
       if (typeFilter && d.typeDoc !== typeFilter) return false;
+      if (fenetreFilter === 'j30' && !(d.joursRestants > 7 && d.joursRestants <= 30)) return false;
+      if (fenetreFilter === 'j60' && !(d.joursRestants > 30 && d.joursRestants <= 60)) return false;
       if (search) {
         const q = search.toLowerCase();
         if (!d.partenaire.toLowerCase().includes(q) && !d.reference.toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [expirations, search, statutFilter, typeFilter]);
+  }, [expirations, search, statutFilter, typeFilter, fenetreFilter]);
 
   const buckets = [
     {
       key: 'expired',
-      label: 'Dépassés',
+      label: t('Dépassés'),
       count: expirations.filter((d) => d.joursRestants < 0).length,
-      color: '#E30613',
-      meta: 'relance immédiate',
-      onClick: () => setStatutFilter('Expiré'),
+      color: '#c8102e',
+      meta: t('relance immédiate'),
+      pressed: statutFilter === 'Expiré',
+      // Les deux familles de filtres (statut / fenêtre) s'excluent : on efface l'autre.
+      onClick: () => {
+        setFenetreFilter('');
+        setStatutFilter((cur) => (cur === 'Expiré' ? '' : 'Expiré'));
+      },
     },
     {
       key: 'j7',
       label: 'J-7',
       count: expirations.filter((d) => d.joursRestants >= 0 && d.joursRestants <= 7).length,
       color: '#B45309',
-      meta: 'à renouveler',
-      onClick: () => setStatutFilter('À renouveler'),
+      meta: t('à renouveler'),
+      pressed: statutFilter === 'À renouveler',
+      onClick: () => {
+        setFenetreFilter('');
+        setStatutFilter((cur) => (cur === 'À renouveler' ? '' : 'À renouveler'));
+      },
     },
     {
       key: 'j30',
       label: 'J-30',
       count: expirations.filter((d) => d.joursRestants > 7 && d.joursRestants <= 30).length,
       color: '#404040',
-      meta: 'à anticiper',
-      onClick: () => undefined,
+      meta: t('à anticiper'),
+      pressed: fenetreFilter === 'j30',
+      onClick: () => {
+        setStatutFilter('');
+        setFenetreFilter((cur) => (cur === 'j30' ? '' : 'j30'));
+      },
     },
     {
       key: 'j60',
       label: 'J-60',
       count: expirations.filter((d) => d.joursRestants > 30 && d.joursRestants <= 60).length,
       color: '#404040',
-      meta: 'à planifier',
-      onClick: () => undefined,
+      meta: t('à planifier'),
+      pressed: fenetreFilter === 'j60',
+      onClick: () => {
+        setStatutFilter('');
+        setFenetreFilter((cur) => (cur === 'j60' ? '' : 'j60'));
+      },
     },
   ];
   const maxBucket = Math.max(...buckets.map((b) => b.count), 1);
@@ -250,38 +314,46 @@ export default function CalendarExpirations() {
   };
 
   const relanceUnitaire = async (d: DocExpiration) => {
-    await new Promise((r) => setTimeout(r, 500));
-    notifySuccess('Relance envoyée', {
-      description: `${d.partenaire} — ${d.typeDoc} (${d.reference}) — e-mail envoyé au chargé ${d.charge}.`,
-    });
+    try {
+      await markRelance(d.id);
+      notifySuccess(t('Relance déclenchée'), {
+        description: `${d.partenaire} — ${d.typeDoc} (${d.reference}). ${t('Le tiers va recevoir l\'e-mail de relance.')}`,
+      });
+    } catch (e) {
+      notifyInfo(t('Relance impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse lors de la relance.'),
+      });
+    }
   };
 
   const submitRelanceGroupee = async () => {
-    await new Promise((r) => setTimeout(r, 900));
-    const count =
-      filterBucket === 'expired'
-        ? expirations.filter((d) => d.joursRestants < 0).length
-        : filterBucket === 'j7'
-          ? expirations.filter((d) => d.joursRestants >= 0 && d.joursRestants <= 7).length
-          : filterBucket === 'j30'
-            ? expirations.filter((d) => d.joursRestants > 7 && d.joursRestants <= 30).length
-            : expirations.length;
-    notifySuccess('Relance groupée envoyée', {
-      description: `${count} documents — e-mails envoyés. Notifications également déposées dans l'espace partenaire.`,
-      timeout: 7000,
-    });
-    if (escalation) {
-      notifyInfo('Escalade activée', {
-        description: 'Les relances sans réponse à J+7 escaladeront au chargé de relation.',
+    const docs = docsInBucket(filterBucket);
+    if (docs.length === 0) {
+      notifyInfo(t('Aucun document'), { description: t('Aucun document à relancer dans cette fenêtre.') });
+      return;
+    }
+    try {
+      await Promise.all(docs.map((d) => markRelance(d.id)));
+      notifySuccess(t('Relance groupée déclenchée'), {
+        description: `${docs.length} ${t('document(s) — les tiers concernés vont recevoir l\'e-mail de relance.')}`,
+        timeout: 7000,
+      });
+      if (escalation) {
+        notifyInfo(t('Escalade activée'), {
+          description: t('Les relances sans réponse à J+7 escaladeront au chargé de relation.'),
+        });
+      }
+      setRelanceOpen(false);
+    } catch (e) {
+      notifyInfo(t('Relance impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse lors de la relance groupée.'),
       });
     }
-    setRelanceOpen(false);
   };
 
+  // Version courante réelle (le versionnage complet est géré par le coffre SharePoint).
   const versions = (d: DocExpiration) => [
-    { version: 'v3', date: d.expireLe, status: 'current' as const, taille: '2.4 Mo', auteur: d.partenaire },
-    { version: 'v2', date: '14/06/2024', status: 'archived' as const, taille: '2.1 Mo', auteur: d.partenaire },
-    { version: 'v1', date: '12/05/2022', status: 'archived' as const, taille: '1.8 Mo', auteur: d.partenaire },
+    { version: t('Version actuelle'), date: d.expireLe, status: 'current' as const, taille: '—', auteur: d.partenaire },
   ];
 
   const columns: Column<DocExpiration>[] = [
@@ -314,10 +386,10 @@ export default function CalendarExpirations() {
       align: 'right',
       render: (d) => (
         <div className={styles.rowActions} onClick={(e) => e.stopPropagation()}>
-          <Tooltip content="Voir le document" relationship="label">
+          <Tooltip content={t('Voir le document')} relationship="label">
             <Button size="small" appearance="subtle" icon={<Eye20Regular />} onClick={() => open(d)} />
           </Tooltip>
-          <Tooltip content="Relancer" relationship="label">
+          <Tooltip content={t('Relancer')} relationship="label">
             <Button size="small" appearance="subtle" icon={<Send20Regular />} onClick={() => relanceUnitaire(d)} />
           </Tooltip>
         </div>
@@ -350,15 +422,15 @@ export default function CalendarExpirations() {
                     Chargé: d.charge,
                   })),
                 );
-                notifySuccess(ok ? 'Calendrier exporté' : 'Aucune donnée', {
-                  description: ok ? `${filtered.length} expirations exportées (CSV).` : 'Aucune expiration à exporter.',
+                notifySuccess(ok ? t('Calendrier exporté') : t('Aucune donnée'), {
+                  description: ok ? `${filtered.length} ${t('expirations exportées (CSV).')}` : t('Aucune expiration à exporter.'),
                 });
               }}
             >
-              Export
+              {t('Export')}
             </Button>
             <Button icon={<Send20Regular />} appearance="primary" onClick={() => setRelanceOpen(true)}>
-              Relance groupée
+              {t('Relance groupée')}
             </Button>
           </>
         }
@@ -366,7 +438,14 @@ export default function CalendarExpirations() {
 
       <div className={styles.bucketRow}>
         {buckets.map((b) => (
-          <div key={b.label} className={styles.bucket} onClick={b.onClick}>
+          <div
+            key={b.label}
+            className={styles.bucket}
+            role="button"
+            tabIndex={0}
+            aria-pressed={b.pressed}
+            onClick={b.onClick}
+          >
             <div className={styles.bucketLabel}>{b.label}</div>
             <div className={styles.bucketValue} style={{ color: b.color }}>{b.count}</div>
             <div className={styles.bucketMeta}>{b.meta}</div>
@@ -441,17 +520,17 @@ export default function CalendarExpirations() {
         flush
         title={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <CalendarLtr20Regular /> Tous les documents
+            <CalendarLtr20Regular /> {t('Tous les documents')}
           </span>
         }
-        subtitle={`${filtered.length} sur ${expirations.length} documents`}
+        subtitle={`${filtered.length} ${t('sur')} ${expirations.length} documents`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#C20012', fontSize: '13px' }}>
-            Erreur de chargement depuis Dataverse : {error.message}
+          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+            {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>Chargement des documents…</div>
+          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des documents…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -484,9 +563,9 @@ export default function CalendarExpirations() {
           ) : null
         }
         tabs={[
-          { id: 'detail', label: 'Détails' },
-          { id: 'versions', label: 'Versions', count: 3 },
-          { id: 'historique', label: 'Historique' },
+          { id: 'detail', label: t('Détails') },
+          { id: 'versions', label: t('Versions'), count: openDoc ? versions(openDoc).length : undefined },
+          { id: 'historique', label: t('Historique') },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -494,19 +573,19 @@ export default function CalendarExpirations() {
           openDoc ? (
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
               <Button appearance="outline" icon={<Send20Regular />} onClick={() => { relanceUnitaire(openDoc); setOpenDoc(null); }}>
-                Relancer le partenaire
+                {t('Relancer le partenaire')}
               </Button>
               <Button
                 appearance="primary"
                 icon={<ArrowUpload20Regular />}
                 onClick={() =>
-                  notifyInfo('Téléverser une nouvelle version', {
+                  notifyInfo(t('Téléverser une nouvelle version'), {
                     description:
-                      'Sélectionnez le fichier à jour — il remplacera la version actuelle après contrôle de conformité.',
+                      t('Sélectionnez le fichier à jour — il remplacera la version actuelle après contrôle de conformité.'),
                   })
                 }
               >
-                Téléverser une nouvelle version
+                {t('Téléverser une nouvelle version')}
               </Button>
             </div>
           ) : null
@@ -516,24 +595,24 @@ export default function CalendarExpirations() {
           <>
             {activeTab === 'detail' && (
               <>
-                <DrawerSection title="Identification du document">
+                <DrawerSection title={t('Identification du document')}>
                   <FieldGrid
                     items={[
-                      { label: 'Type', value: openDoc.typeDoc },
-                      { label: 'Référence', value: openDoc.reference, mono: true },
-                      { label: 'Partenaire', value: openDoc.partenaire },
-                      { label: 'Chargé de relation', value: openDoc.charge },
-                      { label: 'Date d\'expiration', value: openDoc.expireLe },
-                      { label: 'Échéance', value: <strong style={{ color: daysColor(openDoc.joursRestants) }}>{daysLabel(openDoc.joursRestants)}</strong> },
+                      { label: t('Type'), value: openDoc.typeDoc },
+                      { label: t('Référence'), value: openDoc.reference, mono: true },
+                      { label: t('Partenaire'), value: openDoc.partenaire },
+                      { label: t('Chargé de relation'), value: openDoc.charge },
+                      { label: t('Date d\'expiration'), value: openDoc.expireLe },
+                      { label: t('Échéance'), value: <strong style={{ color: daysColor(openDoc.joursRestants) }}>{daysLabel(openDoc.joursRestants)}</strong> },
                     ]}
                   />
                 </DrawerSection>
-                <DrawerSection title="Politique de renouvellement">
+                <DrawerSection title={t('Politique de renouvellement')}>
                   <FieldGrid
                     items={[
-                      { label: 'Durée de validité', value: '24 mois' },
-                      { label: 'Relances automatiques', value: 'J-60 / J-30 / J-7 / J-1' },
-                      { label: 'Escalade J+7', value: 'Chargé + RCSI' },
+                      { label: t('Durée de validité'), value: t('24 mois') },
+                      { label: t('Relances automatiques'), value: 'J-60 / J-30 / J-7 / J-1' },
+                      { label: t('Escalade J+7'), value: t('Chargé + RCSI') },
                     ]}
                   />
                 </DrawerSection>
@@ -542,12 +621,12 @@ export default function CalendarExpirations() {
 
             {activeTab === 'versions' && (
               <DrawerSection
-                title="Versions du document"
-                description="Historique complet — toutes les versions sont conservées 10 ans (Art. 38 R-2023/01)."
+                title={t('Versions du document')}
+                description={t('Historique complet — toutes les versions sont conservées 10 ans (Art. 38 R-2023/01).')}
               >
                 {versions(openDoc).map((v) => (
                   <div key={v.version} className={styles.versionRow}>
-                    <Document20Regular style={{ color: v.status === 'current' ? '#E30613' : '#767676' }} />
+                    <Document20Regular style={{ color: v.status === 'current' ? '#c8102e' : '#767676' }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>
                         <span className={`${styles.versionBadge} ${v.status === 'current' ? styles.versionCurrent : ''}`}>
@@ -556,7 +635,7 @@ export default function CalendarExpirations() {
                         — {v.date}
                       </div>
                       <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>
-                        Déposé par {v.auteur} · {v.taille}
+                        {t('Déposé par')} {v.auteur} · {v.taille}
                       </div>
                     </div>
                     <Button
@@ -564,8 +643,8 @@ export default function CalendarExpirations() {
                       appearance="subtle"
                       icon={<ArrowDownload20Regular />}
                       onClick={() =>
-                        notifySuccess('Téléchargement démarré', {
-                          description: `${v.version} (${v.taille}) — récupération du document en cours.`,
+                        notifySuccess(t('Téléchargement démarré'), {
+                          description: `${v.version} (${v.taille}) — ${t('récupération du document en cours.')}`,
                         })
                       }
                     />
@@ -575,13 +654,18 @@ export default function CalendarExpirations() {
             )}
 
             {activeTab === 'historique' && (
-              <DrawerSection title="Historique du document">
+              <DrawerSection title={t('Historique du document')}>
                 <DrawerTimeline
                   events={[
-                    { when: 'Aujourd’hui 06h00', title: 'Notification automatique', detail: `Relance ${daysLabel(openDoc.joursRestants)} envoyée au chargé` },
-                    { when: '15/04/2026 14h22', title: 'Document validé', detail: `Pièce contrôlée — ${openDoc.charge}` },
-                    { when: '14/04/2026 11h08', title: 'Document déposé', detail: 'Téléversement depuis l\'espace partenaire' },
-                    { when: '12/05/2024', title: 'Version précédente', detail: 'v2 — expirait le 12/05/2026' },
+                    {
+                      when: openDoc.expireLe,
+                      title: openDoc.joursRestants < 0 ? t('Document expiré') : t('Date d’expiration'),
+                      detail: `${daysLabel(openDoc.joursRestants)} · ${t('échéance de renouvellement')}`,
+                    },
+                    ...(openDoc.emisLe !== '—'
+                      ? [{ when: openDoc.emisLe, title: t('Document émis'), detail: `${openDoc.typeDoc} · ${openDoc.reference}` }]
+                      : []),
+                    { when: openDoc.expireLe, title: t('Déposé par le partenaire'), detail: openDoc.partenaire },
                   ]}
                 />
               </DrawerSection>
@@ -594,32 +678,32 @@ export default function CalendarExpirations() {
       <FormDialog
         open={relanceOpen}
         onOpenChange={setRelanceOpen}
-        eyebrow="Relances en lot"
-        title="Lancer une relance groupée"
-        subtitle="Envoie un e-mail aux partenaires concernés et dépose la notification dans leur espace dédié."
+        eyebrow={t('Relances en lot')}
+        title={t('Lancer une relance groupée')}
+        subtitle={t('Envoie un e-mail aux partenaires concernés et dépose la notification dans leur espace dédié.')}
         size="large"
-        submitLabel="Envoyer les relances"
+        submitLabel={t('Envoyer les relances')}
         onSubmit={submitRelanceGroupee}
       >
-        <FormSection title="Périmètre de la relance">
-          <Field label="Échéance cible" required>
+        <FormSection title={t('Périmètre de la relance')}>
+          <Field label={t('Échéance cible')} required>
             <Dropdown
               value={
                 filterBucket === 'expired'
-                  ? 'Documents expirés (relance immédiate)'
+                  ? t('Documents expirés (relance immédiate)')
                   : filterBucket === 'j7'
-                    ? 'Échéance dans les 7 jours'
+                    ? t('Échéance dans les 7 jours')
                     : filterBucket === 'j30'
-                      ? 'Échéance dans les 30 jours'
-                      : 'Tous les documents à renouveler'
+                      ? t('Échéance dans les 30 jours')
+                      : t('Tous les documents à renouveler')
               }
               selectedOptions={[filterBucket]}
               onOptionSelect={(_, d) => setFilterBucket((d.optionValue ?? 'j30') as 'expired' | 'j7' | 'j30' | 'all')}
             >
-              <Option value="expired">Documents expirés (relance immédiate)</Option>
-              <Option value="j7">Échéance dans les 7 jours</Option>
-              <Option value="j30">Échéance dans les 30 jours</Option>
-              <Option value="all">Tous les documents à renouveler</Option>
+              <Option value="expired">{t('Documents expirés (relance immédiate)')}</Option>
+              <Option value="j7">{t('Échéance dans les 7 jours')}</Option>
+              <Option value="j30">{t('Échéance dans les 30 jours')}</Option>
+              <Option value="all">{t('Tous les documents à renouveler')}</Option>
             </Dropdown>
           </Field>
           <div
@@ -632,7 +716,7 @@ export default function CalendarExpirations() {
               borderRadius: '8px',
             }}
           >
-            <CheckmarkCircle20Filled style={{ color: '#C20012', flexShrink: 0, marginTop: '1px' }} />
+            <CheckmarkCircle20Filled style={{ color: '#c8102e', flexShrink: 0, marginTop: '1px' }} />
             <div style={{ fontSize: '12.5px', color: '#525252', lineHeight: 1.5 }}>
               <strong>
                 {filterBucket === 'expired'
@@ -644,47 +728,47 @@ export default function CalendarExpirations() {
                       : expirations.length}{' '}
                 documents
               </strong>{' '}
-              seront concernés par cette relance — un e-mail par partenaire avec consolidation des documents.
+              {t('seront concernés par cette relance — un e-mail par partenaire avec consolidation des documents.')}
             </div>
           </div>
         </FormSection>
 
-        <FormSection title="Template d'e-mail">
+        <FormSection title={t('Template d\'e-mail')}>
           <FieldRow cols={2}>
-            <Field label="Modèle" required>
+            <Field label={t('Modèle')} required>
               <Dropdown
                 value={
                   templateMail === 'standard'
-                    ? 'Standard'
+                    ? t('Standard')
                     : templateMail === 'ferme'
-                      ? 'Ferme (J+0 escalade)'
-                      : 'Personnalisé'
+                      ? t('Ferme (J+0 escalade)')
+                      : t('Personnalisé')
                 }
                 selectedOptions={[templateMail]}
                 onOptionSelect={(_, d) => setTemplateMail(d.optionValue ?? 'standard')}
               >
-                <Option value="standard">Standard</Option>
-                <Option value="ferme">Ferme (J+0 escalade)</Option>
-                <Option value="custom">Personnalisé</Option>
+                <Option value="standard">{t('Standard')}</Option>
+                <Option value="ferme">{t('Ferme (J+0 escalade)')}</Option>
+                <Option value="custom">{t('Personnalisé')}</Option>
               </Dropdown>
             </Field>
-            <Field label="Sujet">
+            <Field label={t('Sujet')}>
               <Input value={subjectMail} onChange={(_, d) => setSubjectMail(d.value)} />
             </Field>
           </FieldRow>
           <FieldRow>
-            <Field label="Corps du message">
+            <Field label={t('Corps du message')}>
               <Textarea value={bodyMail} onChange={(_, d) => setBodyMail(d.value)} rows={6} />
             </Field>
           </FieldRow>
         </FormSection>
 
-        <FormSection title="Options">
+        <FormSection title={t('Options')}>
           <Field>
             <Switch
               checked={escalation}
               onChange={(_, d) => setEscalation(d.checked)}
-              label="Escalader automatiquement au RCSI si pas de réponse à J+7"
+              label={t('Escalader automatiquement au RCSI si pas de réponse à J+7')}
             />
           </Field>
         </FormSection>

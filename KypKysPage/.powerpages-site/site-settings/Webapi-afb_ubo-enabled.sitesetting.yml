@@ -1,0 +1,4 @@
+description: Enables the Power Pages Web API for table afb_ubo.
+id: 4afb2001-2001-4001-8001-200100100101
+name: Webapi/afb_ubo/enabled
+value: 'true'

@@ -6,6 +6,7 @@ export type Permission =
   | 'dashboard.view'
   | 'partners.view' | 'partners.create' | 'partners.edit' | 'partners.delete'
   | 'dossiers.validate' | 'dossiers.reject'
+  | 'dossiers.confirm'
   | 'screening.view' | 'screening.run'
   | 'ubo.view' | 'ubo.validate'
   | 'questionnaires.view' | 'questionnaires.create' | 'questionnaires.assign'
@@ -33,18 +34,18 @@ export const DEMO_ROLES: Role[] = [
     permissions: ['admin.full'],
   },
   {
-    id: 'admin-dmg',
-    label: 'Admin Direction · DMG',
+    id: 'admin-direction',
+    label: 'Admin Direction',
     level: 2,
-    direction: 'DMG',
-    description: 'Gère les utilisateurs et dossiers de la Direction DMG',
+    description: 'Valide en second niveau les dossiers de sa direction (validation effective)',
     permissions: [
       'dashboard.view',
       'partners.view', 'partners.create', 'partners.edit',
-      'dossiers.validate', 'dossiers.reject',
+      'dossiers.validate', 'dossiers.reject', 'dossiers.confirm',
       'screening.view',
       'ubo.view',
-      'questionnaires.view', 'questionnaires.assign',
+      // Création/affectation de questionnaires réservée à la DCONF (retiré ici).
+      'questionnaires.view',
       'reports.export',
       'users.create', 'users.manage',
       'roles.create',
@@ -67,6 +68,19 @@ export const DEMO_ROLES: Role[] = [
     ],
   },
   {
+    id: 'charge-relation',
+    label: 'Chargé de relation',
+    level: 3,
+    description: 'Crée les tiers et envoie les invitations — pas de validation',
+    permissions: [
+      'dashboard.view',
+      'partners.view', 'partners.create', 'partners.edit',
+      'ubo.view',
+      'questionnaires.view',
+      'reports.export',
+    ],
+  },
+  {
     id: 'analyste-questionnaires',
     label: 'Analyste questionnaires',
     level: 3,
@@ -83,6 +97,19 @@ export const DEMO_ROLES: Role[] = [
     label: 'Visiteur',
     level: 3,
     description: 'Lecture seule — audit interne, COMDIR',
+    permissions: [
+      'dashboard.view',
+      'partners.view',
+      'screening.view',
+      'ubo.view',
+      'questionnaires.view',
+    ],
+  },
+  {
+    id: 'auditeur-externe',
+    label: 'Auditeur externe · COBAC/ANIF',
+    level: 3,
+    description: 'Accès lecture seule temporaire pour le régulateur',
     permissions: [
       'dashboard.view',
       'partners.view',

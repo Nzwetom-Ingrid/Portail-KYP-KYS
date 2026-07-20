@@ -69,7 +69,7 @@ export function ProgressionChart() {
         </div>
         <div className={styles.legend}>
           <span className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ backgroundColor: '#C20012' }} />
+            <span className={styles.legendDot} style={{ backgroundColor: '#c8102e' }} />
             Reçus
           </span>
           <span className={styles.legendItem}>
@@ -82,8 +82,8 @@ export function ProgressionChart() {
         <AreaChart data={mockProgression} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
           <defs>
             <linearGradient id="recusGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#C20012" stopOpacity={0.18} />
-              <stop offset="100%" stopColor="#C20012" stopOpacity={0} />
+              <stop offset="0%" stopColor="#c8102e" stopOpacity={0.18} />
+              <stop offset="100%" stopColor="#c8102e" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="traitesGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#404040" stopOpacity={0.10} />
@@ -117,12 +117,12 @@ export function ProgressionChart() {
           <Area
             type="monotone"
             dataKey="recus"
-            stroke="#C20012"
+            stroke="#c8102e"
             strokeWidth={2.5}
             fill="url(#recusGradient)"
             name="Dossiers reçus"
-            dot={{ r: 3.5, fill: '#C20012', strokeWidth: 2, stroke: '#FFFFFF' }}
-            activeDot={{ r: 5.5, fill: '#C20012', strokeWidth: 3, stroke: '#FFFFFF' }}
+            dot={{ r: 3.5, fill: '#c8102e', strokeWidth: 2, stroke: '#FFFFFF' }}
+            activeDot={{ r: 5.5, fill: '#c8102e', strokeWidth: 3, stroke: '#FFFFFF' }}
           />
           <Area
             type="monotone"

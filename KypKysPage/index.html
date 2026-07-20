@@ -15,6 +15,27 @@
     />
 
     <title>KYP / KYS · Mon espace</title>
+
+    <!-- Identité du tiers connecté, injectée par Power Pages via Liquid
+         (rendu côté serveur quand l'utilisateur est authentifié). Garde
+         défensive : si le Liquid n'est pas rendu (dev local, ou page servie
+         en statique), les valeurs commencent par « { » et sont ignorées —
+         le portail retombe alors sur ses autres voies de résolution. -->
+    <script>
+      (function () {
+        var u = {
+          id: "{{ user.id }}",
+          firstName: "{{ user.firstname }}",
+          lastName: "{{ user.lastname }}",
+          fullName: "{{ user.fullname }}",
+          email: "{{ user.emailaddress1 }}"
+        };
+        if (u.id && u.id.charAt(0) !== "{") {
+          u.contactId = u.id;
+          window.User = u;
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
