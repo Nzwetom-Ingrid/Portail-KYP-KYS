@@ -535,7 +535,7 @@ export default function Users() {
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Suspendu')}>
           <div className={styles.kpiLabel}>{t('Suspendus')}</div>
-          <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{kpis.suspendus}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--danger)' }}>{kpis.suspendus}</div>
           <div className={styles.kpiMeta}>{t('accès révoqué')}</div>
         </div>
       </div>

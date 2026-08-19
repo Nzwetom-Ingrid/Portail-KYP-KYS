@@ -271,7 +271,7 @@ export default function AuditLogs() {
         </div>
         <div className={styles.kpi} onClick={() => setResultatFilter('Échec')}>
           <div className={styles.kpiLabel}>{t('Échecs')}</div>
-          <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{counts.echecs24h}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--danger)' }}>{counts.echecs24h}</div>
           <div className={styles.kpiMeta}>{t('connexions / actions refusées')}</div>
         </div>
       </div>

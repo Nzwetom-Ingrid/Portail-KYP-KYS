@@ -16,8 +16,8 @@ const STATUT: Record<number, { label: string; color: string; bg: string }> = {
   0: { label: 'Validé', color: '#15803D', bg: '#F0FDF4' },
   1: { label: 'En revue', color: 'var(--warning)', bg: '#FFFBEB' },
   2: { label: 'À compléter', color: 'var(--warning)', bg: '#FFF7ED' },
-  747010001: { label: 'Appel à validation en cours', color: 'var(--accent)', bg: '#FEF2F2' },
-  747010002: { label: 'Rejeté', color: 'var(--accent)', bg: '#FEF2F2' },
+  747010001: { label: 'Appel à validation en cours', color: 'var(--accent)', bg: 'var(--danger-bg)' },
+  747010002: { label: 'Rejeté', color: 'var(--danger)', bg: 'var(--danger-bg)' },
 };
 
 interface Row {
@@ -169,7 +169,7 @@ export default function MesDossiers() {
 
       <Card title="Dossiers suivis" subtitle={`${rows.length} ${t('dossier(s)')}`}>
         {error ? (
-          <div style={{ padding: 20, color: 'var(--accent)' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
+          <div style={{ padding: 20, color: 'var(--danger)' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
         ) : isLoading ? (
           <div style={{ padding: 20, color: '#737373' }}>{t('Chargement des dossiers…')}</div>
         ) : (

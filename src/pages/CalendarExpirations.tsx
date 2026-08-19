@@ -163,7 +163,7 @@ function statutColor(s: DocExpiration['statut']) {
 }
 
 function daysColor(jours: number) {
-  if (jours < 0) return 'var(--accent)';
+  if (jours < 0) return 'var(--danger)';
   if (jours <= 7) return 'var(--warning)';
   if (jours <= 30) return '#404040';
   return '#15803D';
@@ -260,7 +260,7 @@ export default function CalendarExpirations() {
       key: 'expired',
       label: t('Dépassés'),
       count: expirations.filter((d) => d.joursRestants < 0).length,
-      color: 'var(--accent)',
+      color: 'var(--danger)',
       meta: t('relance immédiate'),
       pressed: statutFilter === 'Expiré',
       // Les deux familles de filtres (statut / fenêtre) s'excluent : on efface l'autre.
@@ -526,7 +526,7 @@ export default function CalendarExpirations() {
         subtitle={`${filtered.length} ${t('sur')} ${expirations.length} documents`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--danger)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (

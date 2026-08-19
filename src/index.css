@@ -29,11 +29,20 @@
   --text-secondary: #525660;
   --text-muted:     #8b9099;
 
-  /* Statuts sémantiques (verts/rouges plus doux, réf. portail) */
+  /* Statuts sémantiques (verts/rouges plus doux, réf. portail).
+     ATTENTION — --danger est distinct de --accent à dessein : la charte
+     AFB_PS03 § 15.1 réserve le rouge institutionnel à la marque et proscrit son
+     emploi pour signaler une erreur, sous peine d'ambiguïté de lecture. */
   --success: #1d9d6f;
   --warning: #B45309;
   --info:    #404040;
   --danger:  #d24545;
+
+  /* Fonds sémantiques — teintes de remplissage des badges et bandeaux d'état. */
+  --success-bg: #ECFAF3;
+  --warning-bg: #FDF6E7;
+  --info-bg:    #F2F3F5;
+  --danger-bg:  #FCEFEF;
 
   /* Surfaces — cartes blanches flottantes à ombre douce diffuse */
   --glass-bg:           rgba(255, 255, 255, 0.94);
@@ -96,6 +105,12 @@
   --warning: #f59e0b;
   --info:    #3b82f6;
   --danger:  #ef4444;
+
+  /* Fonds sémantiques — voilés en mode sombre, pour rester lisibles sur canvas noir. */
+  --success-bg: rgba(34, 197, 94, 0.12);
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --info-bg:    rgba(59, 130, 246, 0.12);
+  --danger-bg:  rgba(239, 68, 68, 0.12);
 
   --glass-bg:           rgba(255, 255, 255, 0.06);
   --glass-border:       rgba(255, 255, 255, 0.10);

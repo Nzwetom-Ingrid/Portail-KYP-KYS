@@ -1094,8 +1094,8 @@ function DossierDrawer({
   const DOC_STATUT: Record<number, { label: string; color: string; bg: string }> = {
     0: { label: t('Validé'), color: '#15803D', bg: '#F0FDF4' },
     1: { label: t('En attente'), color: 'var(--warning)', bg: '#FFFBEB' },
-    747010001: { label: t('Expiré'), color: 'var(--accent)', bg: '#FEF2F2' },
-    747010002: { label: t('Rejeté'), color: 'var(--accent)', bg: '#FEF2F2' },
+    747010001: { label: t('Expiré'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
+    747010002: { label: t('Rejeté'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
   };
   const partnerDocs = ((rawDocs ?? []) as unknown as Array<Record<string, unknown>>)
     // Exclut les marqueurs hors-KYC : réponses du tiers (facture/complément) et
@@ -1390,7 +1390,7 @@ function DossierDrawer({
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
                   color: c.fourni ? '#15803D' : c.mandatory ? 'var(--accent)' : '#737373',
-                  backgroundColor: c.fourni ? '#F0FDF4' : c.mandatory ? '#FEF2F2' : '#F5F5F5',
+                  backgroundColor: c.fourni ? '#F0FDF4' : c.mandatory ? 'var(--danger-bg)' : '#F5F5F5',
                 }}
               >
                 {c.fourni ? t('Fourni') : c.mandatory ? t('Manquant') : t('Optionnel')}

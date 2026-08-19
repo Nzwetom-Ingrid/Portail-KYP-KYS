@@ -13,7 +13,7 @@ const RESP_STATUT: Record<number, { label: string; color: string }> = {
   0: { label: 'Validée', color: '#1d9d6f' },
   1: { label: 'Brouillon', color: '#8b9099' },
   747010001: { label: 'Soumise', color: 'var(--warning)' },
-  747010002: { label: 'Rejetée', color: 'var(--accent)' },
+  747010002: { label: 'Rejetée', color: 'var(--danger)' },
 };
 
 /** Statut de l'affectation quand aucune réponse n'existe encore. */
