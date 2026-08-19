@@ -36,7 +36,7 @@ const useStyles = makeStyles({
     },
     ':focus-visible': {
       outline: 'none',
-      borderTopColor: '#c8102e', borderRightColor: '#c8102e', borderBottomColor: '#c8102e', borderLeftColor: '#c8102e',
+      borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)',
       boxShadow: '0 0 0 3px rgba(200, 16, 46, 0.18)',
     },
   },
@@ -64,7 +64,7 @@ const useStyles = makeStyles({
     letterSpacing: '0.02em',
   },
   impersonating: {
-    color: '#c8102e',
+    color: 'var(--accent)',
     fontWeight: 600,
   },
   chevron: {
@@ -92,7 +92,7 @@ const useStyles = makeStyles({
     padding: '10px 12px',
     width: '100%',
     borderRadius: '8px',
-    color: '#c8102e',
+    color: 'var(--accent)',
     fontSize: '13px',
     fontWeight: 600,
   },
@@ -118,7 +118,7 @@ const useStyles = makeStyles({
   activeBadge: {
     width: '8px',
     height: '8px',
-    backgroundColor: '#c8102e',
+    backgroundColor: 'var(--accent)',
     borderRadius: '50%',
     marginLeft: 'auto',
     boxShadow: '0 0 0 3px rgba(200, 16, 46, 0.18)',

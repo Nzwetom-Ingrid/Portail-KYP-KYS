@@ -87,8 +87,8 @@ export function RisqueBadge({ risque }: { risque: Risque }) {
     : styles.riskHigh;
   const dotColor =
     risque === 'Low' ? '#15803D'
-    : risque === 'Medium' ? '#B45309'
-    : '#c8102e';
+    : risque === 'Medium' ? 'var(--warning)'
+    : 'var(--accent)';
   return (
     <span className={mergeClasses(styles.base, variant)}>
       <span className={styles.dot} style={{ backgroundColor: dotColor }} />
@@ -119,7 +119,7 @@ export function SLABadge({ value }: { value: string }) {
   }
   const isOverdue = value === 'Dépassé' || value.startsWith('-');
   const isClose = /^J-?[1-3]$/.test(value);
-  const color = isOverdue ? '#c8102e' : isClose ? '#B45309' : '#404040';
+  const color = isOverdue ? 'var(--accent)' : isClose ? 'var(--warning)' : '#404040';
   const bg = isOverdue ? '#FDF0F1' : isClose ? '#FDF6E3' : 'transparent';
   const border = isOverdue ? '#FDE0E3' : isClose ? '#FAEDC5' : 'transparent';
   const weight = isOverdue ? 700 : isClose ? 600 : 500;

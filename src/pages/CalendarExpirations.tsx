@@ -121,7 +121,7 @@ const useStyles = makeStyles({
   versionCurrent: {
     backgroundColor: '#FEF2F3',
     borderTopColor: '#FCE4E6', borderRightColor: '#FCE4E6', borderBottomColor: '#FCE4E6', borderLeftColor: '#FCE4E6',
-    color: '#a30f24',
+    color: 'var(--accent-dark)',
   },
   partnerOption: {
     display: 'flex',
@@ -163,8 +163,8 @@ function statutColor(s: DocExpiration['statut']) {
 }
 
 function daysColor(jours: number) {
-  if (jours < 0) return '#c8102e';
-  if (jours <= 7) return '#B45309';
+  if (jours < 0) return 'var(--accent)';
+  if (jours <= 7) return 'var(--warning)';
   if (jours <= 30) return '#404040';
   return '#15803D';
 }
@@ -260,7 +260,7 @@ export default function CalendarExpirations() {
       key: 'expired',
       label: t('Dépassés'),
       count: expirations.filter((d) => d.joursRestants < 0).length,
-      color: '#c8102e',
+      color: 'var(--accent)',
       meta: t('relance immédiate'),
       pressed: statutFilter === 'Expiré',
       // Les deux familles de filtres (statut / fenêtre) s'excluent : on efface l'autre.
@@ -273,7 +273,7 @@ export default function CalendarExpirations() {
       key: 'j7',
       label: 'J-7',
       count: expirations.filter((d) => d.joursRestants >= 0 && d.joursRestants <= 7).length,
-      color: '#B45309',
+      color: 'var(--warning)',
       meta: t('à renouveler'),
       pressed: statutFilter === 'À renouveler',
       onClick: () => {
@@ -526,7 +526,7 @@ export default function CalendarExpirations() {
         subtitle={`${filtered.length} ${t('sur')} ${expirations.length} documents`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
@@ -626,7 +626,7 @@ export default function CalendarExpirations() {
               >
                 {versions(openDoc).map((v) => (
                   <div key={v.version} className={styles.versionRow}>
-                    <Document20Regular style={{ color: v.status === 'current' ? '#c8102e' : '#767676' }} />
+                    <Document20Regular style={{ color: v.status === 'current' ? 'var(--accent)' : '#767676' }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>
                         <span className={`${styles.versionBadge} ${v.status === 'current' ? styles.versionCurrent : ''}`}>
@@ -716,7 +716,7 @@ export default function CalendarExpirations() {
               borderRadius: '8px',
             }}
           >
-            <CheckmarkCircle20Filled style={{ color: '#c8102e', flexShrink: 0, marginTop: '1px' }} />
+            <CheckmarkCircle20Filled style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '1px' }} />
             <div style={{ fontSize: '12.5px', color: '#525252', lineHeight: 1.5 }}>
               <strong>
                 {filterBucket === 'expired'

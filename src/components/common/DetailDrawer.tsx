@@ -79,7 +79,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#c8102e',
+    color: 'var(--accent)',
     textTransform: 'uppercase',
     letterSpacing: '0.10em',
     marginBottom: '8px',
@@ -152,7 +152,7 @@ const useStyles = makeStyles({
     lineHeight: '18px',
     textAlign: 'center',
     backgroundColor: '#FDF0F1',
-    color: '#c8102e',
+    color: 'var(--accent)',
     borderRadius: '999px',
   },
   body: {
@@ -448,7 +448,7 @@ const useTimelineStyles = makeStyles({
     height: '12px',
     borderRadius: '50%',
     backgroundColor: '#FFFFFF',
-    border: '2px solid #c8102e',
+    border: '2px solid var(--accent)',
     boxShadow: '0 0 0 3px #FFFFFF, 0 0 8px rgba(200, 16, 46, 0.20)',
   },
   itemHeader: {

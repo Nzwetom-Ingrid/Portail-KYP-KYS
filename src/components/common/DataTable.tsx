@@ -56,7 +56,7 @@ const useStyles = makeStyles({
     ':focus-visible': {
       outline: 'none',
       backgroundColor: '#FDF0F1',
-      boxShadow: 'inset 3px 0 0 #c8102e',
+      boxShadow: 'inset 3px 0 0 var(--accent)',
     },
   },
   empty: {

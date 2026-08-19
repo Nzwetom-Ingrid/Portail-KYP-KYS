@@ -437,7 +437,7 @@ export default function PartnerTypesAdmin() {
                 </div>
                 {DEFAULT_CHECKLIST.map((c) => (
                   <div key={c.id} className={styles.checklistItem}>
-                    <Document20Regular style={{ color: c.required ? '#c8102e' : '#C8C8C8' }} />
+                    <Document20Regular style={{ color: c.required ? 'var(--accent)' : '#C8C8C8' }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>{c.label}</div>
                       <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>
@@ -568,7 +568,7 @@ export default function PartnerTypesAdmin() {
           {checklist.map((c) => (
             <div key={c.id} className={styles.checklistItem}>
               <Checkbox checked={c.required} onChange={() => toggleRequired(c.id)} />
-              <Document20Regular style={{ color: c.required ? '#c8102e' : '#767676' }} />
+              <Document20Regular style={{ color: c.required ? 'var(--accent)' : '#767676' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>{c.label}</div>
                 <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>

@@ -22,7 +22,7 @@ const useStyles = makeStyles({
     gap: '7px',
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#c8102e',
+    color: 'var(--accent)',
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
     marginBottom: '12px',

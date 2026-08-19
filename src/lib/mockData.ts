@@ -211,9 +211,9 @@ export const mockScreeningAlerts: ScreeningAlert[] = [
 
 export const mockScreeningSources = [
   { source: 'ONU', count: 1, color: '#1A1A1A' },
-  { source: 'OFAC', count: 1, color: '#c8102e' },
+  { source: 'OFAC', count: 1, color: 'var(--accent)' },
   { source: 'UE', count: 2, color: '#767676' },
-  { source: 'PPE', count: 2, color: '#a30f24' },
+  { source: 'PPE', count: 2, color: 'var(--accent-dark)' },
   { source: 'Interpol', count: 1, color: '#C8C8C8' },
 ];
 

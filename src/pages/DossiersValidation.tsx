@@ -178,7 +178,7 @@ const useStyles = makeStyles({
     height: '34px',
     borderRadius: '10px',
     backgroundColor: '#FDF0F1',
-    color: '#c8102e',
+    color: 'var(--accent)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -226,12 +226,12 @@ const useStyles = makeStyles({
     },
   },
   typeCardActive: {
-    borderTopColor: '#c8102e', borderRightColor: '#c8102e', borderBottomColor: '#c8102e', borderLeftColor: '#c8102e',
+    borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)',
     backgroundColor: '#FDFAFA',
-    boxShadow: '0 6px 16px -4px rgba(200, 16, 46, 0.18), inset 0 0 0 1px #c8102e',
+    boxShadow: '0 6px 16px -4px rgba(200, 16, 46, 0.18), inset 0 0 0 1px var(--accent)',
     ':hover': {
-      borderTopColor: '#c8102e', borderRightColor: '#c8102e', borderBottomColor: '#c8102e', borderLeftColor: '#c8102e',
-      boxShadow: '0 8px 20px -4px rgba(200, 16, 46, 0.22), inset 0 0 0 1px #c8102e',
+      borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)',
+      boxShadow: '0 8px 20px -4px rgba(200, 16, 46, 0.22), inset 0 0 0 1px var(--accent)',
     },
   },
   typeIconBubble: {
@@ -248,7 +248,7 @@ const useStyles = makeStyles({
   },
   typeIconActive: {
     backgroundColor: '#FDF0F1',
-    color: '#c8102e',
+    color: 'var(--accent)',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   typeTitle: {
@@ -283,7 +283,7 @@ const useStyles = makeStyles({
     width: '18px',
     height: '18px',
     borderRadius: '50%',
-    backgroundColor: '#c8102e',
+    backgroundColor: 'var(--accent)',
     color: '#FFFFFF',
     display: 'flex',
     alignItems: 'center',
@@ -341,7 +341,7 @@ const useStyles = makeStyles({
   docViewLink: {
     fontSize: '12px',
     fontWeight: 600,
-    color: '#c8102e',
+    color: 'var(--accent)',
     cursor: 'pointer',
     background: 'transparent',
     border: 'none',
@@ -677,7 +677,7 @@ export default function DossiersValidation() {
     {
       label: t('En attente de revue'),
       count: dossiers.filter((d) => d.statut === 'En revue').length,
-      color: '#B45309',
+      color: 'var(--warning)',
       meta: t('priorité hiérarchique'),
       icon: <ClipboardTaskListLtr20Regular />,
       active: statutFilter === 'En revue',
@@ -770,7 +770,7 @@ export default function DossiersValidation() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
+              icon={<DismissCircle20Regular style={{ color: 'var(--accent)' }} />}
               onClick={() => setValidateAction({ dossier: d, intent: 'reject' })}
               aria-label={t('Rejeter')}
             />
@@ -878,7 +878,7 @@ export default function DossiersValidation() {
         subtitle={`${filtered.length} dossiers — file de validation`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
@@ -1093,9 +1093,9 @@ function DossierDrawer({
   };
   const DOC_STATUT: Record<number, { label: string; color: string; bg: string }> = {
     0: { label: t('Validé'), color: '#15803D', bg: '#F0FDF4' },
-    1: { label: t('En attente'), color: '#B45309', bg: '#FFFBEB' },
-    747010001: { label: t('Expiré'), color: '#c8102e', bg: '#FEF2F2' },
-    747010002: { label: t('Rejeté'), color: '#c8102e', bg: '#FEF2F2' },
+    1: { label: t('En attente'), color: 'var(--warning)', bg: '#FFFBEB' },
+    747010001: { label: t('Expiré'), color: 'var(--accent)', bg: '#FEF2F2' },
+    747010002: { label: t('Rejeté'), color: 'var(--accent)', bg: '#FEF2F2' },
   };
   const partnerDocs = ((rawDocs ?? []) as unknown as Array<Record<string, unknown>>)
     // Exclut les marqueurs hors-KYC : réponses du tiers (facture/complément) et
@@ -1346,7 +1346,7 @@ function DossierDrawer({
                       icon={<DismissCircle20Regular />}
                       title={t('Rejeter ce document')}
                       onClick={() => decideDoc(doc, false)}
-                      style={{ color: '#c8102e' }}
+                      style={{ color: 'var(--accent)' }}
                       disabled={updateDoc.isPending || doc.statut === 747010002}
                     />
                   </div>
@@ -1372,7 +1372,7 @@ function DossierDrawer({
                     width: 20,
                     height: 20,
                     borderRadius: '50%',
-                    border: `2px solid ${c.mandatory ? '#c8102e' : '#D1D5DB'}`,
+                    border: `2px solid ${c.mandatory ? 'var(--accent)' : '#D1D5DB'}`,
                     flexShrink: 0,
                   }}
                 />
@@ -1389,7 +1389,7 @@ function DossierDrawer({
                   borderRadius: '999px',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
-                  color: c.fourni ? '#15803D' : c.mandatory ? '#c8102e' : '#737373',
+                  color: c.fourni ? '#15803D' : c.mandatory ? 'var(--accent)' : '#737373',
                   backgroundColor: c.fourni ? '#F0FDF4' : c.mandatory ? '#FEF2F2' : '#F5F5F5',
                 }}
               >
@@ -1471,7 +1471,7 @@ function DossierDrawer({
             appearance="primary"
             icon={<DismissCircle20Regular />}
             onClick={onReject}
-            style={{ backgroundColor: '#c8102e', borderTopColor: '#c8102e', borderRightColor: '#c8102e', borderBottomColor: '#c8102e', borderLeftColor: '#c8102e'}}
+            style={{ backgroundColor: 'var(--accent)', borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)'}}
           >
             {t('Rejeter')}
           </Button>
@@ -1711,14 +1711,14 @@ function NewDossierDialog({
                   size="small"
                   appearance={d.mandatory ? 'primary' : 'outline'}
                   onClick={() => toggleMandatory(i)}
-                  style={d.mandatory ? { backgroundColor: '#c8102e', borderColor: '#c8102e' } : undefined}
+                  style={d.mandatory ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}
                 >
                   {d.mandatory ? t('Obligatoire') : t('Optionnel')}
                 </Button>
                 <Button
                   size="small"
                   appearance="subtle"
-                  icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
+                  icon={<DismissCircle20Regular style={{ color: 'var(--accent)' }} />}
                   title={t('Retirer cette pièce')}
                   onClick={() => removeDoc(i)}
                 />
@@ -1829,7 +1829,7 @@ function ComplementDialog({
           />
         </Field>
         <div className={styles.helperBanner} style={{ marginTop: '12px' }}>
-          <CheckmarkCircle20Filled style={{ color: '#c8102e', flexShrink: 0, marginTop: '1px' }} />
+          <CheckmarkCircle20Filled style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '1px' }} />
           <span>
             {t('À l\'envoi, le dossier passe en statut « à compléter » et le tiers est notifié par e-mail à son adresse enregistrée.')}
           </span>

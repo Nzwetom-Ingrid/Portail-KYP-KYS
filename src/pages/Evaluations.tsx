@@ -126,12 +126,12 @@ const useStyles = makeStyles({
     width: '8px',
     height: '8px',
     borderRadius: '50%',
-    backgroundColor: '#c8102e',
+    backgroundColor: 'var(--accent)',
     marginTop: '6px',
     flexShrink: 0,
   },
-  ecartTitle: { fontSize: '13px', fontWeight: 600, color: '#a30f24', marginBottom: '2px' },
-  ecartDetail: { fontSize: '12px', color: '#a30f24', lineHeight: 1.5 },
+  ecartTitle: { fontSize: '13px', fontWeight: 600, color: 'var(--accent-dark)', marginBottom: '2px' },
+  ecartDetail: { fontSize: '12px', color: 'var(--accent-dark)', lineHeight: 1.5 },
 });
 
 const TYPE_OPTIONS = [
@@ -151,8 +151,8 @@ const STATUT_OPTIONS = [
 
 function scoreColor(score: number) {
   if (score >= 80) return '#15803D';
-  if (score >= 60) return '#B45309';
-  return '#c8102e';
+  if (score >= 60) return 'var(--warning)';
+  return 'var(--accent)';
 }
 
 function statutColor(s: Evaluation['statut']) {
@@ -181,8 +181,8 @@ function Donut({ conforme, ameliorer, nonConforme }: { conforme: number; amelior
       <circle cx="48" cy="48" r={r} fill="none" stroke="#F4F4F4" strokeWidth="14" />
       <g transform="rotate(-90 48 48)">
         <circle cx="48" cy="48" r={r} fill="none" stroke="#15803D" strokeWidth="14" strokeDasharray={`${sConforme} ${c - sConforme}`} />
-        <circle cx="48" cy="48" r={r} fill="none" stroke="#B45309" strokeWidth="14" strokeDasharray={`${sAmeliorer} ${c - sAmeliorer}`} strokeDashoffset={-sConforme} />
-        <circle cx="48" cy="48" r={r} fill="none" stroke="#c8102e" strokeWidth="14" strokeDasharray={`${sNon} ${c - sNon}`} strokeDashoffset={-(sConforme + sAmeliorer)} />
+        <circle cx="48" cy="48" r={r} fill="none" stroke="var(--warning)" strokeWidth="14" strokeDasharray={`${sAmeliorer} ${c - sAmeliorer}`} strokeDashoffset={-sConforme} />
+        <circle cx="48" cy="48" r={r} fill="none" stroke="var(--accent)" strokeWidth="14" strokeDasharray={`${sNon} ${c - sNon}`} strokeDashoffset={-(sConforme + sAmeliorer)} />
       </g>
       <text x="48" y="50" textAnchor="middle" fontSize="16" fontWeight="700" fill="#1A1A1A">{total}</text>
       <text x="48" y="64" textAnchor="middle" fontSize="9" fill="#767676">{t('évaluations')}</text>
@@ -487,12 +487,12 @@ export default function Evaluations() {
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('À améliorer')}>
           <div className={styles.kpiLabel}>{evalKpis.ameliorer.label}</div>
-          <div className={styles.kpiValue} style={{ color: '#B45309' }}>{evalKpis.ameliorer.value}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{evalKpis.ameliorer.value}</div>
           <div className={styles.kpiMeta}>{evalKpis.ameliorer.pct}% {t('du total')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Non conforme')}>
           <div className={styles.kpiLabel}>{evalKpis.nonConformes.label}</div>
-          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{evalKpis.nonConformes.value}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{evalKpis.nonConformes.value}</div>
           <div className={styles.kpiMeta}>{evalKpis.nonConformes.pct}% {t('— escalade')}</div>
         </div>
       </div>
@@ -512,12 +512,12 @@ export default function Evaluations() {
                 <span className={styles.legendValue}>{evalKpis.conformes.value}</span>
               </div>
               <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{ backgroundColor: '#B45309' }} />
+                <span className={styles.legendDot} style={{ backgroundColor: 'var(--warning)' }} />
                 <span className={styles.legendLabel}>{t('À améliorer')}</span>
                 <span className={styles.legendValue}>{evalKpis.ameliorer.value}</span>
               </div>
               <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{ backgroundColor: '#c8102e' }} />
+                <span className={styles.legendDot} style={{ backgroundColor: 'var(--accent)' }} />
                 <span className={styles.legendLabel}>{t('Non conformes')}</span>
                 <span className={styles.legendValue}>{evalKpis.nonConformes.value}</span>
               </div>
@@ -617,14 +617,14 @@ export default function Evaluations() {
                   </Button>
                   <Button
                     appearance="outline"
-                    icon={<ShieldCheckmark20Regular style={{ color: '#B45309' }} />}
+                    icon={<ShieldCheckmark20Regular style={{ color: 'var(--warning)' }} />}
                     onClick={() => decide(1, t('Sous surveillance'))}
                   >
                     {t('Sous surveillance')}
                   </Button>
                   <Button
                     appearance="outline"
-                    icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
+                    icon={<DismissCircle20Regular style={{ color: 'var(--accent)' }} />}
                     onClick={() => decide(2, t('Annuler'))}
                   >
                     {t('Annuler le partenariat')}

@@ -33,7 +33,7 @@ const useStyles = makeStyles({
   },
   badge: {
     fontSize: '10.5px',
-    backgroundColor: '#c8102e',
+    backgroundColor: 'var(--accent)',
     color: '#FFFFFF',
     padding: '3px 10px',
     borderRadius: '999px',
@@ -80,7 +80,7 @@ const useStyles = makeStyles({
   bar: {
     width: '100%',
     maxWidth: '28px',
-    background: 'linear-gradient(180deg, #d8324a 0%, #c8102e 100%)',
+    background: 'linear-gradient(180deg, #d8324a 0%, var(--accent) 100%)',
     borderRadius: '8px 8px 2px 2px',
     transition: 'height 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms',
     minHeight: '4px',
@@ -103,7 +103,7 @@ const useStyles = makeStyles({
     alignItems: 'flex-start',
   },
   calloutIcon: {
-    color: '#c8102e',
+    color: 'var(--accent)',
     flexShrink: 0,
     marginTop: '1px',
   },

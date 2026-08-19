@@ -70,7 +70,7 @@ const useStyles = makeStyles({
     height: '36px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#c8102e',
+    color: 'var(--accent)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -83,7 +83,7 @@ const useStyles = makeStyles({
     height: '64px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#c8102e',
+    color: 'var(--accent)',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -535,7 +535,7 @@ export default function Users() {
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Suspendu')}>
           <div className={styles.kpiLabel}>{t('Suspendus')}</div>
-          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{kpis.suspendus}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{kpis.suspendus}</div>
           <div className={styles.kpiMeta}>{t('accès révoqué')}</div>
         </div>
       </div>
@@ -561,7 +561,7 @@ export default function Users() {
         subtitle={`${filtered.length} sur ${users.length} utilisateurs`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (

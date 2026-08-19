@@ -14,10 +14,10 @@ import { useT } from '@/i18n/i18n';
 // afb_statutdudossier : mapping code → présentation.
 const STATUT: Record<number, { label: string; color: string; bg: string }> = {
   0: { label: 'Validé', color: '#15803D', bg: '#F0FDF4' },
-  1: { label: 'En revue', color: '#B45309', bg: '#FFFBEB' },
-  2: { label: 'À compléter', color: '#B45309', bg: '#FFF7ED' },
-  747010001: { label: 'Appel à validation en cours', color: '#c8102e', bg: '#FEF2F2' },
-  747010002: { label: 'Rejeté', color: '#c8102e', bg: '#FEF2F2' },
+  1: { label: 'En revue', color: 'var(--warning)', bg: '#FFFBEB' },
+  2: { label: 'À compléter', color: 'var(--warning)', bg: '#FFF7ED' },
+  747010001: { label: 'Appel à validation en cours', color: 'var(--accent)', bg: '#FEF2F2' },
+  747010002: { label: 'Rejeté', color: 'var(--accent)', bg: '#FEF2F2' },
 };
 
 interface Row {
@@ -132,7 +132,7 @@ export default function MesDossiers() {
       render: (r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
           <div style={{ flex: 1, height: 6, borderRadius: 999, background: '#F1EFE9', overflow: 'hidden' }}>
-            <div style={{ width: `${Math.min(100, Math.max(0, r.taux))}%`, height: '100%', background: r.taux >= 100 ? '#15803D' : '#c8102e' }} />
+            <div style={{ width: `${Math.min(100, Math.max(0, r.taux))}%`, height: '100%', background: r.taux >= 100 ? '#15803D' : 'var(--accent)' }} />
           </div>
           <span style={{ fontSize: 12, color: '#525252', fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.taux)}%</span>
         </div>
@@ -169,7 +169,7 @@ export default function MesDossiers() {
 
       <Card title="Dossiers suivis" subtitle={`${rows.length} ${t('dossier(s)')}`}>
         {error ? (
-          <div style={{ padding: 20, color: '#c8102e' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
+          <div style={{ padding: 20, color: 'var(--accent)' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
         ) : isLoading ? (
           <div style={{ padding: 20, color: '#737373' }}>{t('Chargement des dossiers…')}</div>
         ) : (

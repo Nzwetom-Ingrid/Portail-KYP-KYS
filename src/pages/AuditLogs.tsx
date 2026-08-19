@@ -121,13 +121,13 @@ function ResultatBadge({ r }: { r: AuditLog['resultat'] }) {
   }
   if (r === 'Échec') {
     return (
-      <span className={styles.resultatCell} style={{ color: '#c8102e' }}>
+      <span className={styles.resultatCell} style={{ color: 'var(--accent)' }}>
         <ErrorCircle16Filled /> {t('Échec')}
       </span>
     );
   }
   return (
-    <span className={styles.resultatCell} style={{ color: '#B45309' }}>
+    <span className={styles.resultatCell} style={{ color: 'var(--warning)' }}>
       <Warning16Filled /> {t('Avertissement')}
     </span>
   );
@@ -266,12 +266,12 @@ export default function AuditLogs() {
         </div>
         <div className={styles.kpi} onClick={() => setResultatFilter('Avertissement')}>
           <div className={styles.kpiLabel}>{t('Avertissements')}</div>
-          <div className={styles.kpiValue} style={{ color: '#B45309' }}>{counts.avertissements24h}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{counts.avertissements24h}</div>
           <div className={styles.kpiMeta}>{t('à examiner')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setResultatFilter('Échec')}>
           <div className={styles.kpiLabel}>{t('Échecs')}</div>
-          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{counts.echecs24h}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{counts.echecs24h}</div>
           <div className={styles.kpiMeta}>{t('connexions / actions refusées')}</div>
         </div>
       </div>
@@ -296,7 +296,7 @@ export default function AuditLogs() {
         subtitle={`${filtered.length} sur ${logs.length} événements`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (

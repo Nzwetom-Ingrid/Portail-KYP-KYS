@@ -64,12 +64,12 @@ const useStyles = makeStyles({
   },
   cardCritical: {
     '::before': {
-      backgroundColor: '#c8102e',
+      backgroundColor: 'var(--accent)',
     },
   },
   cardWarning: {
     '::before': {
-      backgroundColor: '#B45309',
+      backgroundColor: 'var(--warning)',
     },
   },
   cardPositive: {
@@ -95,7 +95,7 @@ const useStyles = makeStyles({
     fontVariantNumeric: 'tabular-nums',
   },
   valueCritical: {
-    color: '#c8102e',
+    color: 'var(--accent)',
   },
   meta: {
     display: 'flex',
@@ -139,7 +139,7 @@ const useStyles = makeStyles({
     gap: '3px',
     fontSize: '11px',
     fontWeight: 600,
-    color: '#c8102e',
+    color: 'var(--accent)',
     opacity: 0,
     transform: 'translateX(-4px)',
     transition: 'opacity 240ms cubic-bezier(0.16, 1, 0.3, 1), transform 240ms cubic-bezier(0.16, 1, 0.3, 1)',

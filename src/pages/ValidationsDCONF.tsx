@@ -144,8 +144,8 @@ const useStyles = makeStyles({
     color: '#FFFFFF',
   },
   stepDotActive: {
-    borderTopColor: '#c8102e', borderRightColor: '#c8102e', borderBottomColor: '#c8102e', borderLeftColor: '#c8102e',
-    color: '#c8102e',
+    borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)',
+    color: 'var(--accent)',
   },
 });
 
@@ -180,8 +180,8 @@ function statutColor(s: ValidationDecision['statut']) {
 // Complétude : plus le taux est élevé, mieux c'est → vert pour un taux haut.
 function scoreColor(score: number) {
   if (score >= 80) return '#15803D';
-  if (score >= 50) return '#B45309';
-  return '#c8102e';
+  if (score >= 50) return 'var(--warning)';
+  return 'var(--accent)';
 }
 
 function scoreLabel(score: number) {
@@ -253,7 +253,7 @@ export default function ValidationsDCONF() {
       label: t('En attente'),
       value: validations.filter((v) => v.statut === 'En attente').length,
       meta: t('à arbitrer'),
-      color: '#B45309',
+      color: 'var(--warning)',
       pressed: statutFilter === 'En attente',
       filter: () => setStatutFilter((cur) => (cur === 'En attente' ? '' : 'En attente')),
     },
@@ -261,7 +261,7 @@ export default function ValidationsDCONF() {
       label: t('Niveau Critique'),
       value: validations.filter((v) => v.niveau === 'Critique').length,
       meta: t('double validation N+2'),
-      color: '#c8102e',
+      color: 'var(--accent)',
       pressed: niveauFilter === 'Critique',
       filter: () => setNiveauFilter((cur) => (cur === 'Critique' ? '' : 'Critique')),
     },
@@ -269,7 +269,7 @@ export default function ValidationsDCONF() {
       label: t('SLA dépassé'),
       value: validations.filter((v) => v.sla === 'Dépassé').length,
       meta: t('escalade automatique'),
-      color: '#a30f24',
+      color: 'var(--accent-dark)',
       pressed: slaFilter === 'Dépassé',
       filter: () => setSlaFilter((cur) => (cur === 'Dépassé' ? '' : 'Dépassé')),
     },
@@ -433,7 +433,7 @@ export default function ValidationsDCONF() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
+              icon={<DismissCircle20Regular style={{ color: 'var(--accent)' }} />}
               disabled={v.statut === 'Validé' || v.statut === 'Rejeté'}
               onClick={() => {
                 setOpenVal(v);
@@ -446,7 +446,7 @@ export default function ValidationsDCONF() {
               <Button
                 size="small"
                 appearance="subtle"
-                icon={<ArrowUp20Regular style={{ color: '#B45309' }} />}
+                icon={<ArrowUp20Regular style={{ color: 'var(--warning)' }} />}
                 onClick={() => {
                   setOpenVal(v);
                   setConfirmIntent('warn');
@@ -535,7 +535,7 @@ export default function ValidationsDCONF() {
         subtitle={`${filtered.length} sur ${validations.length} décisions — triées par priorité SLA`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse : ')}{error.message}
           </div>
         ) : isLoading ? (

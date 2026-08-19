@@ -620,7 +620,7 @@ export default function QuestionnairesList() {
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Brouillon')}>
           <div className={styles.kpiLabel}>{t('Brouillons')}</div>
-          <div className={styles.kpiValue} style={{ color: '#B45309' }}>{kpis.brouillons}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{kpis.brouillons}</div>
           <div className={styles.kpiMeta}>{t('en cours d’édition')}</div>
         </div>
         <div
@@ -656,7 +656,7 @@ export default function QuestionnairesList() {
         subtitle={`${filtered.length} sur ${questionnaires.length} modèles`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (

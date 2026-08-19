@@ -125,8 +125,8 @@ const STATUT_OPTIONS = [
 ];
 
 function scoreColor(score: number) {
-  if (score >= 80) return '#c8102e';
-  if (score >= 60) return '#B45309';
+  if (score >= 80) return 'var(--accent)';
+  if (score >= 60) return 'var(--warning)';
   return '#404040';
 }
 
@@ -304,7 +304,7 @@ export default function Screening() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
+              icon={<DismissCircle20Regular style={{ color: 'var(--accent)' }} />}
               disabled={a.statut === 'Faux positif' || a.statut === 'Confirmé'}
               onClick={() => { setOpenAlert(a); setConfirmIntent('reject'); }}
             />
@@ -362,12 +362,12 @@ export default function Screening() {
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Nouveau')}>
           <div className={styles.kpiLabel}>{t('À traiter')}</div>
-          <div className={styles.kpiValue} style={{ color: '#B45309' }}>{kpis.aRevoir}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{kpis.aRevoir}</div>
           <div className={styles.kpiMeta}>{t('nouveau · en revue')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Confirmé')}>
           <div className={styles.kpiLabel}>{t('Confirmés')}</div>
-          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>{kpis.confirmes}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{kpis.confirmes}</div>
           <div className={styles.kpiMeta}>{t('escalade DCONF')}</div>
         </div>
         <div className={styles.kpi} onClick={() => setStatutFilter('Faux positif')}>
@@ -399,7 +399,7 @@ export default function Screening() {
             />
           </div>
           {error ? (
-            <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+            <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
               {t('Erreur de chargement depuis Dataverse :')} {error.message}
             </div>
           ) : isLoading ? (
@@ -477,12 +477,12 @@ export default function Screening() {
             {activeTab === 'match' && (
               <>
                 <div className={styles.matchBanner}>
-                  <Warning20Filled style={{ color: '#c8102e', flexShrink: 0, marginTop: '2px' }} />
+                  <Warning20Filled style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '2px' }} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#a30f24', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-dark)', marginBottom: '4px' }}>
                       {t('Match')} {openAlert.match} {t('détecté sur')} {openAlert.source}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#a30f24', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--accent-dark)', marginBottom: '12px' }}>
                       {t('Score de similarité')} {openAlert.score} — {t('vérification requise par')} {openAlert.charge}.
                     </div>
                     <div className={styles.matchFields}>

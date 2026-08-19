@@ -18,10 +18,10 @@ const RESULT_TO_STATUT: Record<string, ScreeningAlert['statut']> = {
 
 /** Couleurs par source, pour la carte de répartition. */
 export const SOURCE_COLORS: Record<ScreeningAlert['source'], string> = {
-  OFAC: '#c8102e', // rouge Afriland — sanctions principales
+  OFAC: 'var(--accent)', // rouge Afriland — sanctions principales
   ONU: '#1A1A1A', // noir
   UE: '#767676', // gris moyen
-  PPE: '#a30f24', // rouge profond
+  PPE: 'var(--accent-dark)', // rouge profond
   Interpol: '#C8C8C8', // gris clair
 };
 

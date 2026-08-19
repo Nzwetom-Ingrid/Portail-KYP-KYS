@@ -58,7 +58,7 @@ const useStyles = makeStyles({
     gap: '7px',
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#c8102e',
+    color: 'var(--accent)',
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
     marginBottom: '12px',
@@ -508,7 +508,7 @@ export default function Dashboard() {
                     style={{
                       height: '100%',
                       width: `${openDossier.progression}%`,
-                      backgroundColor: openDossier.progression >= 80 ? '#15803D' : '#c8102e',
+                      backgroundColor: openDossier.progression >= 80 ? '#15803D' : 'var(--accent)',
                       borderRadius: '999px',
                     }}
                   />
@@ -665,7 +665,7 @@ export default function Dashboard() {
               borderRadius: '8px',
             }}
           >
-            <CheckmarkCircle20Filled style={{ color: '#c8102e', flexShrink: 0, marginTop: '1px' }} />
+            <CheckmarkCircle20Filled style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '1px' }} />
             <div style={{ fontSize: '12.5px', color: '#525252', lineHeight: 1.5 }}>
               {t('Une fois soumis, le système crée la fiche dans le référentiel, charge la checklist KYC adaptée au type de tiers, et envoie l’e-mail d’invitation avec lien sécurisé (validité 72 h).')}
             </div>

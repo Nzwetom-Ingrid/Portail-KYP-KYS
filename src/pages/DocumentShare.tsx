@@ -323,7 +323,7 @@ export default function DocumentShare() {
 
       <Card title="Documents partagés" subtitle={`${rows.length} ${t('document(s) partagé(s)')}`}>
         {error ? (
-          <div style={{ padding: 20, color: '#c8102e' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
+          <div style={{ padding: 20, color: 'var(--accent)' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
         ) : isLoading ? (
           <div style={{ padding: 20, color: '#737373' }}>{t('Chargement des documents…')}</div>
         ) : (

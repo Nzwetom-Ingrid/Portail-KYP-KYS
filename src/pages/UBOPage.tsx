@@ -78,7 +78,7 @@ const useStyles = makeStyles({
     height: '36px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#c8102e',
+    color: 'var(--accent)',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -91,7 +91,7 @@ const useStyles = makeStyles({
     height: '52px',
     borderRadius: '50%',
     backgroundColor: '#FCE4E6',
-    color: '#c8102e',
+    color: 'var(--accent)',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -110,7 +110,7 @@ const useStyles = makeStyles({
     overflow: 'hidden',
     marginTop: '4px',
   },
-  partFill: { height: '100%', backgroundColor: '#c8102e', borderRadius: '999px' },
+  partFill: { height: '100%', backgroundColor: 'var(--accent)', borderRadius: '999px' },
   partCellValue: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
   uboHeader: {
@@ -144,7 +144,7 @@ const useStyles = makeStyles({
   pct: {
     fontSize: '12px',
     fontWeight: 700,
-    color: '#c8102e',
+    color: 'var(--accent)',
     backgroundColor: '#FEF2F3',
     padding: '3px 8px',
     borderRadius: '999px',
@@ -435,7 +435,7 @@ export default function UBOPage() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<DismissCircle20Regular style={{ color: '#c8102e' }} />}
+              icon={<DismissCircle20Regular style={{ color: 'var(--accent)' }} />}
               disabled={u.validation === 'Validé'}
               onClick={() => {
                 setOpenUbo(u);
@@ -514,7 +514,7 @@ export default function UBOPage() {
           onClick={() => setPpeFilter((cur) => !cur)}
         >
           <div className={styles.kpiLabel}>{t('PPE')}</div>
-          <div className={styles.kpiValue} style={{ color: '#c8102e' }}>
+          <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>
             {kpis.ppe}
           </div>
           <div className={styles.kpiMeta}>{t('due diligence renforcée')}</div>
@@ -544,9 +544,9 @@ export default function UBOPage() {
             marginBottom: '16px',
           }}
         >
-          <Warning20Filled style={{ color: '#c8102e', marginTop: '2px' }} />
+          <Warning20Filled style={{ color: 'var(--accent)', marginTop: '2px' }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#a30f24' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--accent-dark)' }}>
               {reviewList.length} {t('fiche')}{reviewList.length > 1 ? 's' : ''} {t('UBO nécessite')}
               {reviewList.length > 1 ? 'nt' : ''} {t('une revue')}
             </div>
@@ -580,7 +580,7 @@ export default function UBOPage() {
         subtitle={`${filtered.length} ${t('sur')} ${ubos.length} ${t('bénéficiaires')}`}
       >
         {error ? (
-          <div style={{ padding: '24px', color: '#c8102e', fontSize: '13px' }}>
+          <div style={{ padding: '24px', color: 'var(--accent)', fontSize: '13px' }}>
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
@@ -697,7 +697,7 @@ export default function UBOPage() {
                       border: `1px solid ${openUbo.ppe ? '#FCE4E6' : '#BBF7D0'}`,
                       borderRadius: '8px',
                       fontSize: '13px',
-                      color: openUbo.ppe ? '#a30f24' : '#15803D',
+                      color: openUbo.ppe ? 'var(--accent-dark)' : '#15803D',
                     }}
                   >
                     {openUbo.ppe
@@ -714,7 +714,7 @@ export default function UBOPage() {
                 description={t('Détention déclarée du bénéficiaire sur l’entité contrôlée.')}
               >
                 <div className={styles.chainNode}>
-                  <Branch20Regular style={{ color: '#c8102e' }} />
+                  <Branch20Regular style={{ color: 'var(--accent)' }} />
                   <div>
                     <div className={styles.chainNodeName}>{openUbo.partenaire}</div>
                     <div className={styles.chainNodeSub}>{t('Entité contrôlée')}</div>
@@ -755,12 +755,12 @@ export default function UBOPage() {
                   return (
                     <div className={`${styles.screeningSource} ${hit ? styles.screeningSourceFail : ''}`}>
                       {hit ? (
-                        <Warning20Filled style={{ color: '#c8102e' }} />
+                        <Warning20Filled style={{ color: 'var(--accent)' }} />
                       ) : (
                         <ShieldCheckmark20Regular style={{ color: openUbo.screening ? '#15803D' : '#767676' }} />
                       )}
-                      <strong style={{ fontSize: '13px', color: hit ? '#a30f24' : '#15803D' }}>{t('Sanctions')}</strong>
-                      <span style={{ marginLeft: 'auto', fontSize: '12px', color: hit ? '#a30f24' : '#767676' }}>
+                      <strong style={{ fontSize: '13px', color: hit ? 'var(--accent-dark)' : '#15803D' }}>{t('Sanctions')}</strong>
+                      <span style={{ marginLeft: 'auto', fontSize: '12px', color: hit ? 'var(--accent-dark)' : '#767676' }}>
                         {openUbo.screening ?? t('Screening non encore exécuté')}
                       </span>
                     </div>
@@ -768,12 +768,12 @@ export default function UBOPage() {
                 })()}
                 <div className={`${styles.screeningSource} ${openUbo.ppe ? styles.screeningSourceFail : ''}`}>
                   {openUbo.ppe ? (
-                    <Warning20Filled style={{ color: '#c8102e' }} />
+                    <Warning20Filled style={{ color: 'var(--accent)' }} />
                   ) : (
                     <ShieldCheckmark20Regular style={{ color: '#15803D' }} />
                   )}
-                  <strong style={{ fontSize: '13px', color: openUbo.ppe ? '#a30f24' : '#15803D' }}>{t('PPE')}</strong>
-                  <span style={{ marginLeft: 'auto', fontSize: '12px', color: openUbo.ppe ? '#a30f24' : '#767676' }}>
+                  <strong style={{ fontSize: '13px', color: openUbo.ppe ? 'var(--accent-dark)' : '#15803D' }}>{t('PPE')}</strong>
+                  <span style={{ marginLeft: 'auto', fontSize: '12px', color: openUbo.ppe ? 'var(--accent-dark)' : '#767676' }}>
                     {openUbo.ppe ? t('Personne politiquement exposée') : t('Aucun statut PPE')}
                   </span>
                 </div>

@@ -32,7 +32,7 @@ const useStyles = makeStyles({
   },
   viewAll: {
     fontSize: '12.5px',
-    color: '#c8102e',
+    color: 'var(--accent)',
     textDecoration: 'none',
     display: 'inline-flex',
     alignItems: 'center',
@@ -78,7 +78,7 @@ const useStyles = makeStyles({
     ':focus-visible': {
       outline: 'none',
       backgroundColor: '#FDF0F1',
-      boxShadow: 'inset 3px 0 0 #c8102e',
+      boxShadow: 'inset 3px 0 0 var(--accent)',
     },
   },
   entiteName: {

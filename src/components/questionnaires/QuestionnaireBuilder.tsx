@@ -358,7 +358,7 @@ export function QuestionnaireBuilder({ questionnaireId }: { questionnaireId: str
             opacity: busy ? 0.6 : 1,
             fontSize: 13,
             fontWeight: 600,
-            color: '#c8102e',
+            color: 'var(--accent)',
             border: '1px solid #F3C9CD',
             borderRadius: 6,
             padding: '5px 12px',

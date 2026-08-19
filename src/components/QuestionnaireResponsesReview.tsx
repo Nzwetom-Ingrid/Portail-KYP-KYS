@@ -12,15 +12,15 @@ import {
 const RESP_STATUT: Record<number, { label: string; color: string }> = {
   0: { label: 'Validée', color: '#1d9d6f' },
   1: { label: 'Brouillon', color: '#8b9099' },
-  747010001: { label: 'Soumise', color: '#b45309' },
-  747010002: { label: 'Rejetée', color: '#c8102e' },
+  747010001: { label: 'Soumise', color: 'var(--warning)' },
+  747010002: { label: 'Rejetée', color: 'var(--accent)' },
 };
 
 /** Statut de l'affectation quand aucune réponse n'existe encore. */
 const ASSIGN_STATUT: Record<number, { label: string; color: string }> = {
   2: { label: 'Affecté', color: '#8b9099' },
-  1: { label: 'En cours', color: '#b45309' },
-  747010001: { label: 'Soumis', color: '#b45309' },
+  1: { label: 'En cours', color: 'var(--warning)' },
+  747010001: { label: 'Soumis', color: 'var(--warning)' },
   0: { label: 'Validé', color: '#1d9d6f' },
 };
 
@@ -172,7 +172,7 @@ export function QuestionnaireResponsesReview({
                   <button
                     onClick={(e) => { e.stopPropagation(); decide(aid, resp.id, false, partner); }}
                     title="Rejeter"
-                    style={btn('#c8102e')}
+                    style={btn('var(--accent)')}
                   >
                     <XCircle size={15} /> Rejeter
                   </button>
