@@ -1,0 +1,34 @@
+# Normalisation des fins de ligne.
+#
+# Sans ce fichier, deux postes Windows configurés différemment produisent des
+# diffs entiers sur des fichiers que personne n'a modifiés — le symptôme étant
+# l'avertissement « LF will be replaced by CRLF » à chaque commit.
+#
+# `text=auto` : Git détecte les fichiers texte, les stocke en LF dans le dépôt,
+# et les restitue selon la configuration du poste au checkout. C'est le réglage
+# neutre : il n'impose rien à l'éditeur de personne.
+* text=auto
+
+# Fichiers devant garder des fins de ligne LF quel que soit le poste : ils sont
+# lus par des outils qui ne tolèrent pas CRLF (shell, conteneurs, CI).
+*.sh    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# Fichiers Windows, à garder en CRLF.
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
+# Binaires : aucune conversion, sinon le fichier est corrompu.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.docx  binary
+*.xlsx  binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
