@@ -258,7 +258,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Pilotage',
     items: [
       { to: '/dashboard',         label: 'Dashboard',                icon: <Home24Regular />, permission: 'dashboard.view' },
-      { to: '/mes-dossiers',      label: 'Mes dossiers',             icon: <ClipboardTaskListLtr24Regular />, roles: ['charge-relation'] },
+      { to: '/mes-dossiers',      label: 'Mes dossiers',             icon: <ClipboardTaskListLtr24Regular />, roles: ['charge-kyc'] },
       { to: '/dossiers',          label: 'Dossiers',                 icon: <ClipboardTaskListLtr24Regular />, permission: 'dossiers.validate' },
       { to: '/validations-dconf', label: 'Validation',               icon: <ShieldTask24Regular />, permission: 'dossiers.confirm' },
       { to: '/calendar',          label: 'Calendrier expirations',   icon: <CalendarLtr24Regular /> },

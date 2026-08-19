@@ -52,7 +52,7 @@ function RoleHome() {
   const roleResolved = useRoleStore(s => s.roleResolved);
   const roleId = useRoleStore(s => s.currentRole.id);
   if (!roleResolved) return null;
-  const home = roleId === 'charge-relation' ? '/mes-dossiers' : '/dashboard';
+  const home = roleId === 'charge-kyc' ? '/mes-dossiers' : '/dashboard';
   return <Navigate to={home} replace />;
 }
 
@@ -96,7 +96,7 @@ export default function App() {
                   <Route path="questionnaires" element={<RequirePermission permission="questionnaires.view"><QuestionnairesList /></RequirePermission>} />
                   <Route path="reports"        element={<RequirePermission permission="reports.export"><Reports /></RequirePermission>} />
                   <Route path="document-share" element={<RequireDirection directions={['DCONF', 'DMG']}><DocumentShare /></RequireDirection>} />
-                  <Route path="mes-dossiers"   element={<RequireRole roles={['charge-relation']}><MesDossiers /></RequireRole>} />
+                  <Route path="mes-dossiers"   element={<RequireRole roles={['charge-kyc']}><MesDossiers /></RequireRole>} />
                   <Route path="users"          element={<RequirePermission permission="users.manage"><Users /></RequirePermission>} />
                   <Route path="audit-logs"     element={<RequirePermission permission="admin.full"><AuditLogs /></RequirePermission>} />
                   <Route path="admin/partner-types" element={<RequirePermission permission="admin.full"><PartnerTypesAdmin /></RequirePermission>} />

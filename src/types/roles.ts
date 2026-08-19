@@ -24,6 +24,16 @@ export interface Role {
   description: string;
 }
 
+/** Socle de lecture seule, partagé par les rôles qui ne modifient rien. Défini
+ *  une fois : deux listes recopiées finissent toujours par diverger. */
+const READ_ONLY: Permission[] = [
+  'dashboard.view',
+  'partners.view',
+  'screening.view',
+  'ubo.view',
+  'questionnaires.view',
+];
+
 export const DEMO_ROLES: Role[] = [
   {
     id: 'super-admin',
@@ -52,78 +62,45 @@ export const DEMO_ROLES: Role[] = [
     ],
   },
   {
-    id: 'charge-conformite',
-    label: 'Chargé de conformité',
+    id: 'charge-kyc',
+    label: 'Chargé KYC',
     level: 3,
     direction: 'DCONF',
-    description: 'Validation des dossiers, screening, décisions',
-    permissions: [
-      'dashboard.view',
-      'partners.view', 'partners.edit',
-      'dossiers.validate', 'dossiers.reject',
-      'screening.view', 'screening.run',
-      'ubo.view', 'ubo.validate',
-      'questionnaires.view',
-      'reports.export',
-    ],
-  },
-  {
-    id: 'charge-relation',
-    label: 'Chargé de relation',
-    level: 3,
-    description: 'Crée les tiers et envoie les invitations — pas de validation',
+    description:
+      'Crée les tiers, instruit les dossiers, mène le screening et les questionnaires — propose une décision, ne la rend pas effective',
     permissions: [
       'dashboard.view',
       'partners.view', 'partners.create', 'partners.edit',
-      'ubo.view',
-      'questionnaires.view',
+      // ATTENTION — 'dossiers.confirm' est volontairement ABSENT. C'est cette
+      // absence, et elle seule, qui déclenche la double validation : sans cette
+      // permission, DossiersValidation enregistre une PROPOSITION et laisse le
+      // dossier « En revue ». La confirmation revient à l'Admin Direction.
+      // Ajouter 'dossiers.confirm' ici supprimerait le contrôle à quatre yeux.
+      'dossiers.validate', 'dossiers.reject',
+      'screening.view', 'screening.run',
+      'ubo.view', 'ubo.validate',
+      'questionnaires.view', 'questionnaires.create', 'questionnaires.assign',
       'reports.export',
     ],
   },
   {
-    id: 'analyste-questionnaires',
-    label: 'Analyste questionnaires',
+    id: 'utilisateur-afb',
+    label: 'Utilisateur AFB',
     level: 3,
-    direction: 'DCONF',
-    description: 'Revue et validation des réponses aux questionnaires',
-    permissions: [
-      'dashboard.view',
-      'partners.view',
-      'questionnaires.view', 'questionnaires.create', 'questionnaires.assign',
-    ],
+    description: 'Lecture seule — collaborateur de la banque, audit interne, COMDIR',
+    permissions: READ_ONLY,
   },
   {
-    id: 'visiteur',
-    label: 'Visiteur',
-    level: 3,
-    description: 'Lecture seule — audit interne, COMDIR',
-    permissions: [
-      'dashboard.view',
-      'partners.view',
-      'screening.view',
-      'ubo.view',
-      'questionnaires.view',
-    ],
-  },
-  {
+    // Mêmes droits qu'un Utilisateur AFB, conservé comme rôle distinct pour une
+    // raison de traçabilité et non de permissions : le journal d'audit enregistre
+    // l'auteur d'une action, pas son rôle. Le rôle porté par la fiche utilisateur
+    // est donc le seul endroit qui permette de distinguer un accès régulateur
+    // d'un accès collaborateur lorsqu'on relit le journal.
     id: 'auditeur-externe',
     label: 'Auditeur externe · COBAC/ANIF',
     level: 3,
-    description: 'Accès lecture seule temporaire pour le régulateur',
-    permissions: [
-      'dashboard.view',
-      'partners.view',
-      'screening.view',
-      'ubo.view',
-      'questionnaires.view',
-    ],
-  },
-  {
-    id: 'partenaire-externe',
-    label: 'Partenaire / Fournisseur',
-    level: 3,
-    description: 'Vue Power Pages simulée — espace partenaire externe',
-    permissions: ['dashboard.view'],
+    description: 'Accès lecture seule pour le régulateur — révocation manuelle en fin de mission',
+    permissions: READ_ONLY,
   },
 ];
 

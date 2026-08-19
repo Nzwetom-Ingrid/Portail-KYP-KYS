@@ -7,7 +7,7 @@
  *
  * Politique de repli (sans lockout pendant la phase de déploiement) :
  *  - utilisateur identifié ET présent dans le référentiel → son rôle réel est appliqué ;
- *  - utilisateur identifié mais absent du référentiel → rôle minimal « Visiteur » ;
+ *  - utilisateur identifié mais absent du référentiel → rôle minimal « Utilisateur AFB » ;
  *  - contexte indisponible (SDK non initialisé, hors hôte Power Apps) → on garde le
  *    rôle par défaut du store (pas de blocage). À durcir une fois la détection validée.
  *
@@ -29,13 +29,23 @@ const DV_DIRECTION_TO_LABEL: Record<number, string> = {
   [DV_DIRECTION_CODE.DRISQUE]: 'DRISQUE',
 };
 
-/** Code `afb_role` Dataverse → identifiant de rôle applicatif (cf. DEMO_ROLES). */
+/** Code `afb_role` Dataverse → identifiant de rôle applicatif (cf. DEMO_ROLES).
+ *
+ *  La fusion des rôles se joue ICI et nulle part ailleurs : les codes de choix
+ *  Dataverse restent inchangés, seule leur cible applicative bouge. Aucune
+ *  migration de données n'est donc nécessaire, et les fiches utilisateur
+ *  existantes continuent de se résoudre correctement.
+ *
+ *  « Chargé Conformité » et « Chargé Relation » pointent désormais tous deux
+ *  vers le rôle unique Chargé KYC. Les deux valeurs de choix subsistent côté
+ *  Dataverse : elles restent utiles pour savoir quelle casquette la personne
+ *  portait à sa création, sans changer ce qu'elle peut faire. */
 const DV_ROLE_TO_APP_ROLE_ID: Record<number, string> = {
   [DV_ROLE_CODE.SuperadminDCONF]: 'super-admin', // niveau 1 — valide effectivement
-  747010005: 'admin-direction', // niveau 2 — Admin direction (valeur de choix à créer dans afb_role)
-  [DV_ROLE_CODE.ChargeConformite]: 'charge-conformite', // niveau 3 — propose, validation requise
-  [DV_ROLE_CODE.ChargeRelation]: 'charge-relation',
-  [DV_ROLE_CODE.Auditeurinterne]: 'visiteur',
+  [DV_ROLE_CODE.AdminDirection]: 'admin-direction', // niveau 2 — valeur de choix restant à créer
+  [DV_ROLE_CODE.ChargeConformite]: 'charge-kyc', // niveau 3 — propose, confirmation requise
+  [DV_ROLE_CODE.ChargeRelation]: 'charge-kyc', // fusionné avec le précédent
+  [DV_ROLE_CODE.Auditeurinterne]: 'utilisateur-afb',
   [DV_ROLE_CODE.Auditeurexterne]: 'auditeur-externe',
 };
 
@@ -79,10 +89,10 @@ export function useResolveCurrentRole(): ResolvedIdentity {
         const displayName = me?.afb_nomcomplet?.trim() || fullName;
         const direction = me ? DV_DIRECTION_TO_LABEL[me.afb_direction as number] : undefined;
         if (me) {
-          setRealRole(DV_ROLE_TO_APP_ROLE_ID[me.afb_role as number] ?? 'visiteur');
+          setRealRole(DV_ROLE_TO_APP_ROLE_ID[me.afb_role as number] ?? 'utilisateur-afb');
         } else {
           // Authentifié mais non habilité dans le référentiel → privilège minimal.
-          setRealRole('visiteur');
+          setRealRole('utilisateur-afb');
         }
         // Mémorise l'utilisateur pour la journalisation d'audit (auteur des actions).
         setCurrentUser({ utilisateurInterneId: me?.afb_utilisateurinterneid, name: displayName, email });

@@ -38,7 +38,7 @@ interface RoleStore {
 //   sur Super Admin.)
 const DEFAULT_ROLE = import.meta.env.DEV
   ? DEMO_ROLES[0]
-  : (DEMO_ROLES.find((r) => r.id === 'visiteur') ?? DEMO_ROLES[0]);
+  : (DEMO_ROLES.find((r) => r.id === 'utilisateur-afb') ?? DEMO_ROLES[0]);
 
 export const useRoleStore = create<RoleStore>((set, get) => ({
   currentRole: DEFAULT_ROLE,

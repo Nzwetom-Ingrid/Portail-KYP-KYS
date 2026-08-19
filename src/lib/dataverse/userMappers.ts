@@ -23,16 +23,20 @@ export const DV_ROLE_CODE = {
   ChargeRelation: 747010002,
   SuperadminDCONF: 747010003,
   Auditeurexterne: 747010004,
+  /** ⚠️ Valeur RESTANT À CRÉER dans la colonne de choix `afb_role` côté Dataverse.
+   *  Tant qu'elle n'existe pas, toute écriture de ce code est rejetée par le
+   *  serveur — c'est volontaire, voir ROLE_FORM_TO_CODE dans Users.tsx. */
+  AdminDirection: 747010005,
 } as const;
 
 /** Code numérique `afb_role` → rôle d'affichage (la clé numérique est stable même
  *  si le libellé d'affichage est modifié dans Dataverse). */
 const ROLE_CODE_TO_DISPLAY: Record<number, Utilisateur['role']> = {
   [DV_ROLE_CODE.SuperadminDCONF]: 'Super Admin',
-  [DV_ROLE_CODE.ChargeConformite]: 'Chargé conformité',
-  [DV_ROLE_CODE.ChargeRelation]: 'Chargé de relation',
-  [DV_ROLE_CODE.Auditeurinterne]: 'Visiteur',
-  [DV_ROLE_CODE.Auditeurexterne]: 'Visiteur',
+  [DV_ROLE_CODE.ChargeConformite]: 'Chargé KYC',
+  [DV_ROLE_CODE.ChargeRelation]: 'Chargé KYC',
+  [DV_ROLE_CODE.Auditeurinterne]: 'Utilisateur AFB',
+  [DV_ROLE_CODE.Auditeurexterne]: 'Auditeur externe',
 };
 
 /** Code numérique `afb_direction` → direction d'affichage. */
@@ -66,7 +70,7 @@ export function toUtilisateur(u: Afb_utilisateurinternes): Utilisateur {
     prenom,
     nom,
     email: u.afb_adresseemail ?? '',
-    role: ROLE_CODE_TO_DISPLAY[u.afb_role as number] ?? 'Visiteur',
+    role: ROLE_CODE_TO_DISPLAY[u.afb_role as number] ?? 'Utilisateur AFB',
     direction: DIRECTION_CODE_TO_DISPLAY[u.afb_direction as number] ?? 'DCONF',
     // « Suspendu » = accès révoqué (afb_actif = Non) ; « Inactif » = ligne désactivée.
     statut:

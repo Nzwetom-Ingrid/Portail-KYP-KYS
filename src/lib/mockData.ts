@@ -344,7 +344,7 @@ export interface Utilisateur {
   nom: string;
   prenom: string;
   email: string;
-  role: 'Super Admin' | 'Admin Direction' | 'Chargé conformité' | 'Chargé de relation' | 'Visiteur';
+  role: 'Super Admin' | 'Admin Direction' | 'Chargé KYC' | 'Utilisateur AFB' | 'Auditeur externe';
   direction: Direction;
   statut: 'Actif' | 'Inactif' | 'Suspendu';
   derniereConnexion: string;
@@ -353,15 +353,15 @@ export interface Utilisateur {
 }
 
 export const mockUtilisateurs: Utilisateur[] = [
-  { id: 'USR-001', nom: 'Mbarga', prenom: 'Jean-Marie', email: 'jm.mbarga@afriland.cm', role: 'Chargé conformité', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 09:42', dossiersTraites: 142, creeLe: '2023-04-12' },
-  { id: 'USR-002', nom: 'Nguele', prenom: 'Anastasie', email: 'a.nguele@afriland.cm', role: 'Chargé conformité', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 08:15', dossiersTraites: 98, creeLe: '2023-06-20' },
-  { id: 'USR-003', nom: 'Eyenga', prenom: 'Christelle', email: 'c.eyenga@afriland.cm', role: 'Chargé de relation', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-16 17:22', dossiersTraites: 56, creeLe: '2024-01-08' },
+  { id: 'USR-001', nom: 'Mbarga', prenom: 'Jean-Marie', email: 'jm.mbarga@afriland.cm', role: 'Chargé KYC', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 09:42', dossiersTraites: 142, creeLe: '2023-04-12' },
+  { id: 'USR-002', nom: 'Nguele', prenom: 'Anastasie', email: 'a.nguele@afriland.cm', role: 'Chargé KYC', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 08:15', dossiersTraites: 98, creeLe: '2023-06-20' },
+  { id: 'USR-003', nom: 'Eyenga', prenom: 'Christelle', email: 'c.eyenga@afriland.cm', role: 'Chargé KYC', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-16 17:22', dossiersTraites: 56, creeLe: '2024-01-08' },
   { id: 'USR-004', nom: 'Bilong', prenom: 'Paul', email: 'p.bilong@afriland.cm', role: 'Admin Direction', direction: 'DMG', statut: 'Actif', derniereConnexion: '2026-05-17 10:01', dossiersTraites: 0, creeLe: '2022-11-15' },
   { id: 'USR-005', nom: 'Atangana', prenom: 'Sylvie', email: 's.atangana@afriland.cm', role: 'Super Admin', direction: 'DCONF', statut: 'Actif', derniereConnexion: '2026-05-17 07:58', dossiersTraites: 0, creeLe: '2021-09-01' },
-  { id: 'USR-006', nom: 'Ngono', prenom: 'Roger', email: 'r.ngono@afriland.cm', role: 'Visiteur', direction: 'COMEX', statut: 'Actif', derniereConnexion: '2026-05-15 14:33', dossiersTraites: 0, creeLe: '2024-09-22' },
-  { id: 'USR-007', nom: 'Kemajou', prenom: 'Marc', email: 'm.kemajou@afriland.cm', role: 'Chargé conformité', direction: 'TRESO', statut: 'Inactif', derniereConnexion: '2026-03-12 11:04', dossiersTraites: 31, creeLe: '2023-10-30' },
+  { id: 'USR-006', nom: 'Ngono', prenom: 'Roger', email: 'r.ngono@afriland.cm', role: 'Utilisateur AFB', direction: 'COMEX', statut: 'Actif', derniereConnexion: '2026-05-15 14:33', dossiersTraites: 0, creeLe: '2024-09-22' },
+  { id: 'USR-007', nom: 'Kemajou', prenom: 'Marc', email: 'm.kemajou@afriland.cm', role: 'Chargé KYC', direction: 'TRESO', statut: 'Inactif', derniereConnexion: '2026-03-12 11:04', dossiersTraites: 31, creeLe: '2023-10-30' },
   { id: 'USR-008', nom: 'Owono', prenom: 'Bertrand', email: 'b.owono@afriland.cm', role: 'Admin Direction', direction: 'TRESO', statut: 'Actif', derniereConnexion: '2026-05-17 09:11', dossiersTraites: 0, creeLe: '2022-02-18' },
-  { id: 'USR-009', nom: 'Foning', prenom: 'Béatrice', email: 'b.foning@afriland.cm', role: 'Chargé de relation', direction: 'DCONF', statut: 'Suspendu', derniereConnexion: '2026-04-22 16:45', dossiersTraites: 12, creeLe: '2025-02-03' },
+  { id: 'USR-009', nom: 'Foning', prenom: 'Béatrice', email: 'b.foning@afriland.cm', role: 'Chargé KYC', direction: 'DCONF', statut: 'Suspendu', derniereConnexion: '2026-04-22 16:45', dossiersTraites: 12, creeLe: '2025-02-03' },
 ];
 
 // ============================================================================

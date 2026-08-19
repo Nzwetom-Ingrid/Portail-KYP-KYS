@@ -119,9 +119,9 @@ const ROLE_OPTIONS = [
   { label: 'Tous rôles', value: '' },
   { label: 'Super Admin', value: 'Super Admin' },
   { label: 'Admin Direction', value: 'Admin Direction' },
-  { label: 'Chargé conformité', value: 'Chargé conformité' },
-  { label: 'Chargé de relation', value: 'Chargé de relation' },
-  { label: 'Visiteur', value: 'Visiteur' },
+  { label: 'Chargé KYC', value: 'Chargé KYC' },
+  { label: 'Utilisateur AFB', value: 'Utilisateur AFB' },
+  { label: 'Auditeur externe', value: 'Auditeur externe' },
 ];
 
 const DIRECTION_OPTIONS = [
@@ -148,17 +148,24 @@ const DIR_FORM_TO_CODE: Record<string, number> = {
 };
 const ROLE_FORM_TO_CODE: Record<string, number> = {
   'Super Admin': DV_ROLE_CODE.SuperadminDCONF,
-  'Admin Direction': DV_ROLE_CODE.SuperadminDCONF,
-  'Chargé conformité': DV_ROLE_CODE.ChargeConformite,
-  'Chargé de relation': DV_ROLE_CODE.ChargeRelation,
-  Visiteur: DV_ROLE_CODE.Auditeurinterne,
+  // ⚠️ Ce libellé écrivait auparavant le code Super Admin, faute de valeur de
+  // choix dédiée dans Dataverse. Créer un « Admin Direction » depuis l'interface
+  // produisait donc un compte porteur de admin.full : une élévation de privilège
+  // silencieuse, et le contraire du moindre privilège.
+  // On écrit désormais le code correct. Tant que la valeur 747010005 n'est pas
+  // créée dans la colonne afb_role, la création échoue visiblement — ce qui est
+  // préférable à un compte trop puissant créé sans que personne ne le sache.
+  'Admin Direction': DV_ROLE_CODE.AdminDirection,
+  'Chargé KYC': DV_ROLE_CODE.ChargeConformite,
+  'Utilisateur AFB': DV_ROLE_CODE.Auditeurinterne,
+  'Auditeur externe': DV_ROLE_CODE.Auditeurexterne,
 };
 
 function roleColor(r: Utilisateur['role']) {
   if (r === 'Super Admin') return 'danger';
   if (r === 'Admin Direction') return 'severe';
-  if (r === 'Chargé conformité') return 'important';
-  if (r === 'Chargé de relation') return 'warning';
+  if (r === 'Chargé KYC') return 'important';
+  if (r === 'Auditeur externe') return 'warning';
   return 'subtle';
 }
 
@@ -190,22 +197,25 @@ const PERMISSIONS_BY_ROLE: Record<string, { name: string; granted: boolean }[]> 
     { name: 'Administration · utilisateurs de la direction', granted: true },
     { name: 'Export · données nominatives', granted: true },
   ],
-  'Chargé conformité': [
-    { name: 'Lecture · dossiers assignés', granted: true },
-    { name: 'Édition · dossiers assignés', granted: true },
-    { name: 'Validation · Standard', granted: true },
-    { name: 'Validation · Élevé, Critique', granted: false },
-    { name: 'Export · données nominatives', granted: false },
+  'Chargé KYC': [
+    { name: 'Création et édition · tiers', granted: true },
+    { name: 'Instruction · dossiers, screening, UBO', granted: true },
+    { name: 'Questionnaires · création et affectation', granted: true },
+    // La validation est PROPOSÉE, jamais rendue effective : c'est la double
+    // validation. Voir l'absence de 'dossiers.confirm' dans types/roles.ts.
+    { name: 'Validation · proposition soumise à confirmation', granted: true },
+    { name: 'Validation · confirmation effective', granted: false },
+    { name: 'Export · données nominatives', granted: true },
   ],
-  'Chargé de relation': [
-    { name: 'Lecture · dossiers assignés', granted: true },
-    { name: 'Édition · pré-instruction', granted: true },
-    { name: 'Validation', granted: false },
-    { name: 'Export · données anonymisées uniquement', granted: true },
+  'Utilisateur AFB': [
+    { name: 'Lecture · tableau de bord et dossiers', granted: true },
+    { name: 'Lecture · screening et UBO', granted: true },
+    { name: 'Édition', granted: false },
+    { name: 'Export', granted: false },
   ],
-  Visiteur: [
-    { name: 'Lecture · tableau de bord', granted: true },
-    { name: 'Lecture · rapports publiés', granted: true },
+  'Auditeur externe': [
+    { name: 'Lecture · tableau de bord et dossiers', granted: true },
+    { name: 'Lecture · screening et UBO', granted: true },
     { name: 'Édition', granted: false },
     { name: 'Export', granted: false },
   ],
@@ -283,7 +293,7 @@ export default function Users() {
   const [uPrenom, setUPrenom] = useState('');
   const [uNom, setUNom] = useState('');
   const [uEmail, setUEmail] = useState('');
-  const [uRole, setURole] = useState<Utilisateur['role']>('Chargé conformité');
+  const [uRole, setURole] = useState<Utilisateur['role']>('Chargé KYC');
   const [uDirection, setUDirection] = useState<Utilisateur['direction']>('DCONF');
   const [uSendInvite, setUSendInvite] = useState(true);
   const [uMfa, setUMfa] = useState(true);
@@ -319,7 +329,7 @@ export default function Users() {
     setUPrenom('');
     setUNom('');
     setUEmail('');
-    setURole('Chargé conformité');
+    setURole('Chargé KYC');
     setUDirection('DCONF');
     setUSendInvite(true);
     setUMfa(true);
@@ -735,13 +745,13 @@ export default function Users() {
               <Dropdown
                 value={uRole}
                 selectedOptions={[uRole]}
-                onOptionSelect={(_, d) => setURole((d.optionValue ?? 'Chargé conformité') as Utilisateur['role'])}
+                onOptionSelect={(_, d) => setURole((d.optionValue ?? 'Chargé KYC') as Utilisateur['role'])}
               >
                 <Option value="Super Admin">{t('Super Admin')}</Option>
                 <Option value="Admin Direction">{t('Admin Direction')}</Option>
-                <Option value="Chargé conformité">{t('Chargé conformité')}</Option>
-                <Option value="Chargé de relation">{t('Chargé de relation')}</Option>
-                <Option value="Visiteur">{t('Visiteur')}</Option>
+                <Option value="Chargé KYC">{t('Chargé KYC')}</Option>
+                <Option value="Utilisateur AFB">{t('Utilisateur AFB')}</Option>
+                <Option value="Auditeur externe">{t('Auditeur externe')}</Option>
               </Dropdown>
             </Field>
             <Field label={t('Direction')} required>
