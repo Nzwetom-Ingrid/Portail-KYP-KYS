@@ -18,7 +18,7 @@ import { DataTable, type Column } from '@/components/common/DataTable';
 import { DetailDrawer, DrawerSection, FieldGrid } from '@/components/common/DetailDrawer';
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
-import { tiersExterneB2c } from '@/lib/dataverse/entityHooks';
+import { tiers as tiersHooks, tiersExterneB2c } from '@/lib/dataverse/entityHooks';
 import { useT } from '@/i18n/i18n';
 import {
   compterParSeverite,
@@ -89,14 +89,22 @@ const SEVERITE_OPTIONS = [
   { label: 'Opérationnel', value: 'ok' },
 ];
 
-/** Ligne du tableau : l'enregistrement Dataverse enrichi de son diagnostic. */
+/** Ordre de gravité pour le tri : le support veut les bloquants en tête, ce
+ *  qu'un tri alphabétique des libellés ne donnerait jamais. */
+const SEVERITE_ORDRE: Record<Severite, number> = { bloquant: 1, attention: 2, info: 3, ok: 4 };
+
+/** Ligne du tableau : l'enregistrement Dataverse enrichi de son diagnostic.
+ *  Les champs `*Tri` portent la valeur BRUTE des dates : trier sur « 19/08/2026 »
+ *  reviendrait à trier par jour du mois. */
 interface LigneSupport {
   id: string;
   email: string;
   tiers: string;
   diagnostic: Diagnostic;
   invitation: string;
+  invitationTri?: string;
   derniereConnexion: string;
+  connexionTri?: string;
   tentatives: number;
   statutCompte?: number;
   compteB2cCree: boolean;
@@ -116,11 +124,24 @@ export default function SupportAcces() {
 
   const { data: comptes, isLoading, error } = tiersExterneB2c.useList({ top: 500 });
   const majCompte = tiersExterneB2c.useUpdate();
+  const { data: tousLesTiers } = tiersHooks.useList({ top: 500 });
 
   const [search, setSearch] = useState('');
   const [severiteFilter, setSeveriteFilter] = useState('');
   const [ouvert, setOuvert] = useState<LigneSupport | null>(null);
   const [confirmOuvert, setConfirmOuvert] = useState(false);
+
+  // Le nom du tiers est résolu par jointure sur la liste des tiers plutôt que
+  // lu depuis le lookup : la requête sur afb_tiersexterneb2c ne renvoie pas le
+  // libellé formaté, et la colonne affichait « — » pour tout le monde.
+  const nomParTiersId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of tousLesTiers ?? []) {
+      const raw = t as unknown as { afb_tiersid?: string; afb_nomdupartenaire?: string };
+      if (raw.afb_tiersid && raw.afb_nomdupartenaire) map.set(raw.afb_tiersid, raw.afb_nomdupartenaire);
+    }
+    return map;
+  }, [tousLesTiers]);
 
   const lignes = useMemo<LigneSupport[]>(() => {
     return (comptes ?? []).map((c) => {
@@ -128,19 +149,25 @@ export default function SupportAcces() {
         afb_tiersexterneb2cid: string;
         afb_nomdutiersname?: string;
       };
+      const tiersId = compte._afb_nomdutiers_value;
       return {
         id: compte.afb_tiersexterneb2cid,
         email: compte.afb_emaildauthentification ?? '—',
-        tiers: compte.afb_nomdutiersname ?? '—',
+        tiers:
+          compte.afb_nomdutiersname ??
+          (tiersId ? nomParTiersId.get(tiersId) : undefined) ??
+          '—',
         diagnostic: diagnostiquer(compte),
         invitation: frDate(compte.afb_datedinvitation),
+        invitationTri: compte.afb_datedinvitation,
         derniereConnexion: frDate(compte.afb_derniereconnexion, true),
+        connexionTri: compte.afb_derniereconnexion,
         tentatives: compte.afb_nombredetentativesechouees ?? 0,
         statutCompte: compte.afb_statutducompte,
         compteB2cCree: Boolean(compte.afb_identifiantb2c),
       };
     });
-  }, [comptes]);
+  }, [comptes, nomParTiersId]);
 
   const compteurs = useMemo(
     () => compterParSeverite(lignes.map((l) => l.diagnostic)),
@@ -183,6 +210,7 @@ export default function SupportAcces() {
     {
       key: 'email',
       header: 'Identité de connexion',
+      sortValue: (l) => l.email,
       render: (l) => (
         <div>
           <div className={styles.mail}>{l.email}</div>
@@ -193,18 +221,21 @@ export default function SupportAcces() {
     {
       key: 'diagnostic',
       header: 'Diagnostic',
+      // Tri par gravite : le support veut voir les bloquants en tete.
+      sortValue: (l) => SEVERITE_ORDRE[l.diagnostic.severite],
       render: (l) => (
         <Badge appearance="filled" color={SEVERITE_BADGE[l.diagnostic.severite]}>
           {t(l.diagnostic.libelle)}
         </Badge>
       ),
     },
-    { key: 'invitation', header: 'Invitation', render: (l) => l.invitation },
-    { key: 'connexion', header: 'Dernière connexion', render: (l) => l.derniereConnexion },
+    { key: 'invitation', header: 'Invitation', sortValue: (l) => l.invitationTri, render: (l) => l.invitation },
+    { key: 'connexion', header: 'Dernière connexion', sortValue: (l) => l.connexionTri, render: (l) => l.derniereConnexion },
     {
       key: 'tentatives',
       header: 'Échecs',
       align: 'right',
+      sortValue: (l) => l.tentatives,
       render: (l) => (l.tentatives > 0 ? String(l.tentatives) : '—'),
     },
   ];

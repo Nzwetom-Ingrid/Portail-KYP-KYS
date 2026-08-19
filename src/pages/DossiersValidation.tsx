@@ -69,6 +69,11 @@ import { downloadTiersReport } from '@/lib/tiersReport';
 import { exportToCsv } from '@/lib/exportCsv';
 
 /** Statut du dossier (affichage) → choix Dataverse afb_statutdudossier. */
+// Le risque se trie par GRAVITE, pas par ordre alphabetique : un tri A-Z
+// placerait « High » avant « Low », ce qui n'a aucun sens pour une file de
+// validation ou l'on cherche d'abord les dossiers les plus exposes.
+const RISQUE_ORDRE: Record<string, number> = { Low: 1, Medium: 2, High: 3 };
+
 const STATUT_DOSSIER_TO_DV = { valider: 0, enRevue: 1, completer: 2, suspendre: 747010001, rejeter: 747010002 } as const;
 import {
   entityTypeLabels,
@@ -716,6 +721,7 @@ export default function DossiersValidation() {
     {
       key: 'entite',
       header: 'Entité',
+      sortValue: (d) => d.entite,
       render: (d) => (
         <div className={styles.entityCell}>
           <div className={styles.avatar}>{getInitials(d.entite)}</div>
@@ -729,16 +735,17 @@ export default function DossiersValidation() {
     {
       key: 'type',
       header: 'Type',
+      sortValue: (d) => d.type,
       render: (d) => (
         <Badge appearance="tint" color="subtle" size="small">
           {d.type}
         </Badge>
       ),
     },
-    { key: 'pays', header: 'Pays', render: (d) => d.pays ?? '—' },
-    { key: 'risque', header: 'Risque', render: (d) => <RisqueBadge risque={d.risque} /> },
-    { key: 'statut', header: 'Statut', render: (d) => <StatutBadge statut={d.statut} /> },
-    { key: 'charge', header: 'Chargé', render: (d) => d.charge ?? '—' },
+    { key: 'pays', header: 'Pays', sortValue: (d) => d.pays, render: (d) => d.pays ?? '—' },
+    { key: 'risque', header: 'Risque', sortValue: (d) => RISQUE_ORDRE[d.risque] ?? 99, render: (d) => <RisqueBadge risque={d.risque} /> },
+    { key: 'statut', header: 'Statut', sortValue: (d) => d.statut, render: (d) => <StatutBadge statut={d.statut} /> },
+    { key: 'charge', header: 'Chargé', sortValue: (d) => d.charge, render: (d) => d.charge ?? '—' },
     {
       key: 'actions',
       header: '',
