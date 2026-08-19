@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=24.11.0 <25",
+    "npm": ">=11"
+  },
   "scripts": {
     "dev": "where pac >nul 2>nul && (start pac code run) & vite",
     "build": "tsc -b && vite build",

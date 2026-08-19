@@ -1,0 +1,22 @@
+# Reglages d'editeur partages — evite que le formatage varie d'un poste a l'autre.
+# Complete .gitattributes : celui-ci normalise ce qui est ECRIT, l'autre ce qui
+# est STOCKE dans le depot.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{ps1,cmd,bat}]
+end_of_line = crlf
+
+[*.{yml,yaml}]
+indent_size = 2

@@ -20,8 +20,11 @@
 //   vers Azure AD B2C (parcours le plus court).
 // • Si laissée vide → repli GET vers /SignIn (page de connexion
 //   standard Power Pages, qui redirige vers le fournisseur par défaut).
-export const B2C_PROVIDER = ''
+// Lue depuis l'environnement (cf. .env.example) plutôt qu'écrite en dur : la
+// charte § 18.2 proscrit les valeurs d'environnement figées dans le code. Le
+// repli conserve le comportement actuel si la variable n'est pas renseignée.
+export const B2C_PROVIDER = import.meta.env.VITE_B2C_PROVIDER || ''
 
 // URL de retour après authentification réussie.
 // La racine "/" charge l'espace du tiers (vue « Mon espace »).
-export const LOGIN_RETURN_URL = '/'
+export const LOGIN_RETURN_URL = import.meta.env.VITE_LOGIN_RETURN_URL || '/'
