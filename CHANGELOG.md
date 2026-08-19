@@ -23,6 +23,10 @@ lecteur non technique.
 - Socle de projet conforme à la charte : `.nvmrc`, `.editorconfig`,
   `.gitattributes`, `.env.example`, champ `engines`, présent journal.
 - Mode strict TypeScript activé sur les deux configurations de compilation.
+- Console support « accès partenaires » : diagnostic automatique de huit
+  situations de connexion, avec la manœuvre à effectuer pour chacune.
+- Outillage de tests (Vitest) et première couverture : matrice des
+  habilitations et diagnostic d'accès, à 100 %.
 
 ### Modifié
 

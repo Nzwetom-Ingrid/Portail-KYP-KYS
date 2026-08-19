@@ -53,8 +53,9 @@ export interface CompteExterne {
   _afb_nomdutiers_value?: string;
 }
 
-function heuresDepuis(iso: string | undefined, maintenant: Date): number | null {
-  if (!iso) return null;
+/** Le paramètre est non optionnel à dessein : l'unique appelant a déjà écarté le
+ *  cas « pas de date d'invitation » en amont, un garde ici serait du code mort. */
+function heuresDepuis(iso: string, maintenant: Date): number | null {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   return (maintenant.getTime() - d.getTime()) / 3_600_000;
