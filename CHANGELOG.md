@@ -22,6 +22,7 @@ lecteur non technique.
   indiquant ce qu'il faut corriger.
 - Socle de projet conforme à la charte : `.nvmrc`, `.editorconfig`,
   `.gitattributes`, `.env.example`, champ `engines`, présent journal.
+- Mode strict TypeScript activé sur les deux configurations de compilation.
 
 ### Modifié
 
@@ -35,6 +36,11 @@ lecteur non technique.
 
 ### Corrigé
 
+- **Les décisions de conformité étaient journalisées au nom de la mauvaise
+  personne.** L'auteur enregistré au registre des décisions était résolu depuis
+  un contexte de démonstration, et retombait en pratique sur le premier
+  utilisateur interne de la liste. Il correspond désormais à l'utilisateur
+  réellement connecté.
 - La zone de dépôt de « Mes documents » n'appliquait aucun filtre de type de
   fichier : n'importe quelle extension était acceptée.
 - Clé de traduction en double dans le dictionnaire anglais, qui faisait échouer
