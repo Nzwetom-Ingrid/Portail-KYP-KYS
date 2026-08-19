@@ -10,6 +10,27 @@ lecteur non technique.
 
 ## [Non publié]
 
+### À traiter — relevé, non corrigé
+
+- **Authentification du portail : plusieurs portes ouvertes.** Les paramètres
+  du site autorisent simultanément la connexion locale par mot de passe
+  (`LocalLoginEnabled`), Azure AD, les fournisseurs externes, **et
+  l'inscription libre** (`OpenRegistrationEnabled`) — alors que le portail est
+  conçu pour Azure AD B2C avec code à usage unique, sur invitation. En l'état,
+  un inconnu peut créer un compte sur le portail KYC de la banque.
+  Aucune page de réinitialisation de mot de passe n'existe par ailleurs : si la
+  connexion locale reste ouverte, un utilisateur qui perd son mot de passe n'a
+  aucun recours en libre-service.
+  Décision attendue : fermer la connexion locale et l'inscription libre (voie
+  recommandée, conforme au § 12 de la charte et sans développement), ou bien
+  mettre en place le parcours complet de réinitialisation.
+- **Flux « Invitation Tiers » : contacts dupliqués.** Le déclencheur est réglé
+  sur « Créer ou mettre à jour » de la table TIERS, sans filtre de colonnes, et
+  l'étape de création de contact est inconditionnelle. Toute modification d'un
+  tiers crée donc un contact supplémentaire et renvoie une invitation. Le
+  portail écrivant deux fois sur la fiche à chaque soumission d'onboarding, une
+  seule soumission produit deux doublons et deux e-mails.
+
 ### Ajouté
 
 - Référentiel des secteurs d'activité : 110 secteurs groupés par section
