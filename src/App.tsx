@@ -24,6 +24,7 @@ import MesDossiers from '@/pages/MesDossiers';
 import i18n from '@/i18n/config';
 import PartnerTypesAdmin from '@/pages/PartnerTypesAdmin';
 import ValidationsDCONF from '@/pages/ValidationsDCONF';
+import SupportAcces from '@/pages/SupportAcces';
 import Users from '@/pages/Users';
 import AuditLogs from '@/pages/AuditLogs';
 
@@ -98,6 +99,7 @@ export default function App() {
                   <Route path="document-share" element={<RequireDirection directions={['DCONF', 'DMG']}><DocumentShare /></RequireDirection>} />
                   <Route path="mes-dossiers"   element={<RequireRole roles={['charge-kyc']}><MesDossiers /></RequireRole>} />
                   <Route path="users"          element={<RequirePermission permission="users.manage"><Users /></RequirePermission>} />
+                  <Route path="support"        element={<RequirePermission permission="users.manage"><SupportAcces /></RequirePermission>} />
                   <Route path="audit-logs"     element={<RequirePermission permission="admin.full"><AuditLogs /></RequirePermission>} />
                   <Route path="admin/partner-types" element={<RequirePermission permission="admin.full"><PartnerTypesAdmin /></RequirePermission>} />
                 </Route>

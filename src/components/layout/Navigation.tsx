@@ -12,6 +12,7 @@ import {
   DocumentBulletList24Regular,
   DocumentPdf24Regular,
   Person24Regular,
+  PersonQuestionMark24Regular,
   History24Regular,
   ShieldTask24Regular,
   Share24Regular,
@@ -290,6 +291,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Administration',
     items: [
       { to: '/users',         label: 'Utilisateurs',  icon: <Person24Regular />,   permission: 'users.manage' },
+      { to: '/support',       label: 'Support accès', icon: <PersonQuestionMark24Regular />, permission: 'users.manage' },
       { to: '/audit-logs',    label: 'Logs d’audit',  icon: <History24Regular />,  permission: 'admin.full' },
     ],
   },
