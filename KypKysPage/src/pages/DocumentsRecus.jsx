@@ -10,6 +10,7 @@ import {
   getDocumentFile,
   deleteDocument,
 } from '../services/portal'
+import { filterBySearch } from '../utils/search'
 
 // Décode un base64 Dataverse en Blob téléchargeable/affichable.
 function b64ToBlob(b64, mime) {
@@ -217,10 +218,12 @@ export default function DocumentsRecus({ notify, search = '' }) {
             </thead>
             <tbody>
               {(() => {
-                const q = search.trim().toLowerCase()
-                const shown = q
-                  ? docs.filter((d) => `${d.afb_nomfichier || ''} ${d.afb_categorie_label || ''}`.toLowerCase().includes(q))
-                  : docs
+                const shown = filterBySearch(docs, search, (d) => [
+                  d.afb_nomfichier,
+                  d.afb_categorie_label,
+                  d.afb_typedocument,
+                  d.afb_statutvalidite,
+                ])
                 if (shown.length === 0)
                   return (
                     <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '18px' }}>{t('Aucun document ne correspond à la recherche.')}</td></tr>

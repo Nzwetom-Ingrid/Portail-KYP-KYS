@@ -3,6 +3,16 @@ import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
 import { submitOnboarding, getCurrentTiers, loadDocumentCategories, uploadDocument } from '../services/portal'
 import { COUNTRIES } from '../config/countries'
+import { SECTOR_GROUPS, isKnownSector } from '../config/sectors'
+import {
+  ACCEPT_DOCUMENT,
+  ACCEPT_IDENTITY,
+  acceptAttr,
+  acceptLabel,
+  PHONE_HINT,
+  validateFile,
+  validatePhone,
+} from '../utils/validation'
 
 // Persistance locale : la progression de l'onboarding (formulaire, étape, docs,
 // soumission) est sauvegardée dans le navigateur pour survivre à une navigation
@@ -37,11 +47,14 @@ const STEPS = [
   { title: 'Validation', desc: 'Vérifiez et soumettez votre dossier', icon: 'shield' },
 ]
 
+// Chaque pièce porte son propre jeu de formats : la pièce d’identité est exigée
+// en PDF (une photo de CNI est retouchable et souvent illisible à l’écran de la
+// conformité), les autres acceptent aussi les images.
 const REQUIRED_DOCS = [
-  'Registre de commerce (RCCM)',
-  'Statuts de la société',
-  'Attestation fiscale',
-  "Pièce d’identité du représentant légal",
+  { label: 'Registre de commerce (RCCM ou équivalent)', accept: ACCEPT_DOCUMENT },
+  { label: 'Statuts de la société', accept: ACCEPT_DOCUMENT },
+  { label: 'Attestation fiscale', accept: ACCEPT_DOCUMENT },
+  { label: 'Pièce d’identité du représentant légal', accept: ACCEPT_IDENTITY },
 ]
 
 export default function Onboarding({ notify }) {
@@ -119,21 +132,28 @@ export default function Onboarding({ notify }) {
   }, [])
 
   // Téléversement réel d'une pièce justificative vers Dataverse.
-  const handleDocFile = async (docLabel, file) => {
+  const handleDocFile = async (doc, file) => {
     if (!file) return
     if (!tiersId) {
       notify('Aucune fiche tiers rattachée à votre compte — téléversement impossible.')
       return
     }
-    const categoryId = pickCategoryId(docLabel, categories)
+    // Contrôle AVANT envoi : l'attribut `accept` de l'input ne filtre que la
+    // boîte de dialogue, l'utilisateur peut toujours forcer « tous les fichiers ».
+    const invalid = validateFile(file, { accept: doc.accept })
+    if (invalid) {
+      notify(invalid)
+      return
+    }
+    const categoryId = pickCategoryId(doc.label, categories)
     if (!categoryId) {
       notify('Catégories de documents indisponibles. Contactez votre chargé de relation AFB.')
       return
     }
-    setUploadingDoc(docLabel)
+    setUploadingDoc(doc.label)
     try {
       await uploadDocument(tiersId, file, { categoryId })
-      setDocs((p) => ({ ...p, [docLabel]: file.name }))
+      setDocs((p) => ({ ...p, [doc.label]: file.name }))
       notify(`${file.name} téléversé.`)
     } catch (e) {
       notify(`Téléversement impossible : ${e.message}`)
@@ -145,12 +165,20 @@ export default function Onboarding({ notify }) {
   const set = (k) => (e) =>
     setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
 
+  // Les erreurs de format ne s'affichent qu'une fois le champ quitté : signaler
+  // « numéro trop court » dès la première touche tapée est agressif et inutile.
+  const [touched, setTouched] = useState({})
+  const touch = (k) => () => setTouched((p) => ({ ...p, [k]: true }))
+  const phoneError = (k) => (touched[k] ? validatePhone(form[k]) : null)
+
   const progress = Math.round(((step + 1) / STEPS.length) * 100)
 
   const canNext = () => {
     if (step === 0) return !!form.profil
-    if (step === 1) return form.raisonSociale && form.rccm && form.email
-    if (step === 2) return form.repNom && form.repFonction && form.repEmail
+    // Le téléphone reste facultatif, mais s'il est renseigné il doit être valide :
+    // un numéro inexploitable bloque la conformité au moment de joindre le tiers.
+    if (step === 1) return form.raisonSociale && form.rccm && form.email && !validatePhone(form.telephone)
+    if (step === 2) return form.repNom && form.repFonction && form.repEmail && !validatePhone(form.repTelephone)
     if (step === 4) return form.consent
     return true
   }
@@ -293,12 +321,29 @@ export default function Onboarding({ notify }) {
                 </select>
               </div>
               <div className="field">
-                <label>{t('N° RCCM / Certificate of incorporation')} <span className="req">*</span></label>
+                <label>{t('Numéro de registre de commerce')} <span className="req">*</span></label>
                 <input value={form.rccm} onChange={set('rccm')} placeholder="RC/DLA/2026/B/1234" />
+                <span className="field__hint">
+                  {t('RCCM en zone OHADA, ou le numéro d’immatriculation équivalent de votre pays.')}
+                </span>
               </div>
               <div className="field">
                 <label>{t('Secteur d’activité')}</label>
-                <input value={form.secteur} onChange={set('secteur')} placeholder={t('Ex. Transport & logistique')} />
+                <select value={form.secteur} onChange={set('secteur')}>
+                  <option value="">{t('— Sélectionner —')}</option>
+                  {/* Fiches créées avant la liste fermée : on garde la valeur libre
+                      visible plutôt que de la faire disparaître sans prévenir. */}
+                  {form.secteur && !isKnownSector(form.secteur) && (
+                    <option value={form.secteur}>{form.secteur} ({t('valeur actuelle')})</option>
+                  )}
+                  {SECTOR_GROUPS.map((g) => (
+                    <optgroup key={g.code} label={g.label}>
+                      {g.items.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
               </div>
               <div className="field">
                 <label>{t('Pays')}</label>
@@ -327,7 +372,17 @@ export default function Onboarding({ notify }) {
               </div>
               <div className="field">
                 <label>{t('Téléphone')}</label>
-                <input value={form.telephone} onChange={set('telephone')} placeholder="+237 6 00 00 00 00" />
+                <input
+                  type="tel"
+                  value={form.telephone}
+                  onChange={set('telephone')}
+                  onBlur={touch('telephone')}
+                  placeholder="+237 6 00 00 00 00"
+                  aria-invalid={!!phoneError('telephone')}
+                />
+                <span className={`field__hint ${phoneError('telephone') ? 'field__hint--error' : ''}`}>
+                  {phoneError('telephone') || t(PHONE_HINT)}
+                </span>
               </div>
             </div>
           )}
@@ -349,7 +404,17 @@ export default function Onboarding({ notify }) {
               </div>
               <div className="field">
                 <label>{t('Téléphone')}</label>
-                <input value={form.repTelephone} onChange={set('repTelephone')} placeholder="+237 6 00 00 00 00" />
+                <input
+                  type="tel"
+                  value={form.repTelephone}
+                  onChange={set('repTelephone')}
+                  onBlur={touch('repTelephone')}
+                  placeholder="+237 6 00 00 00 00"
+                  aria-invalid={!!phoneError('repTelephone')}
+                />
+                <span className={`field__hint ${phoneError('repTelephone') ? 'field__hint--error' : ''}`}>
+                  {phoneError('repTelephone') || t(PHONE_HINT)}
+                </span>
               </div>
               <div className="field field--full">
                 <label>{t('Type de pièce d’identité')}</label>
@@ -371,30 +436,30 @@ export default function Onboarding({ notify }) {
               )}
               {REQUIRED_DOCS.map((d) => (
                 <div
-                  key={d}
+                  key={d.label}
                   className="card"
                   style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px' }}
                 >
                   <span className="doc-name__icon"><Icon name="fileText" size={20} /></span>
                   <div style={{ flex: 1 }}>
-                    <strong style={{ color: 'var(--ink)', fontSize: 14, display: 'block' }}>{t(d)}</strong>
+                    <strong style={{ color: 'var(--ink)', fontSize: 14, display: 'block' }}>{t(d.label)}</strong>
                     <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
-                      {docs[d] ? docs[d] : t('PDF, JPG ou PNG · 10 Mo max')}
+                      {docs[d.label] ? docs[d.label] : acceptLabel(d.accept)}
                     </span>
                   </div>
-                  {docs[d] ? (
+                  {docs[d.label] ? (
                     <span className="badge badge--success"><Icon name="check" size={13} /> {t('Ajouté')}</span>
                   ) : (
                     <label
                       className="btn btn--soft btn--sm"
-                      style={{ cursor: tiersId && uploadingDoc !== d ? 'pointer' : 'not-allowed', opacity: tiersId ? 1 : 0.6 }}
+                      style={{ cursor: tiersId && uploadingDoc !== d.label ? 'pointer' : 'not-allowed', opacity: tiersId ? 1 : 0.6 }}
                     >
-                      <Icon name="upload" size={15} /> {uploadingDoc === d ? t('Envoi…') : t('Déposer')}
+                      <Icon name="upload" size={15} /> {uploadingDoc === d.label ? t('Envoi…') : t('Déposer')}
                       <input
                         type="file"
                         hidden
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        disabled={!tiersId || uploadingDoc === d}
+                        accept={acceptAttr(d.accept)}
+                        disabled={!tiersId || uploadingDoc !== null}
                         onChange={(e) => {
                           const file = e.target.files?.[0]
                           e.target.value = '' // permet de re-sélectionner le même fichier
@@ -415,7 +480,7 @@ export default function Onboarding({ notify }) {
                 <div className="recap__row"><dt>{t('Type de profil')}</dt><dd>{form.profil === 'kys' ? t('KYS — Fournisseur') : form.profil === 'kyp' ? t('KYP — Partenaire') : '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Raison sociale')}</dt><dd>{form.raisonSociale || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Forme juridique')}</dt><dd>{form.formeJuridique}</dd></div>
-                <div className="recap__row"><dt>{t('N° RCCM / Certificate of incorporation')}</dt><dd>{form.rccm || '—'}</dd></div>
+                <div className="recap__row"><dt>{t('Numéro de registre de commerce')}</dt><dd>{form.rccm || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Secteur d’activité')}</dt><dd>{form.secteur || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Pays')}</dt><dd>{form.pays || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Ville')}</dt><dd>{form.ville || '—'}</dd></div>

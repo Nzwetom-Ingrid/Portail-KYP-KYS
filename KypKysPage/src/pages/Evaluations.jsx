@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
 import { getCurrentTiers, loadEvaluations } from '../services/portal'
+import { filterBySearch } from '../utils/search'
 
 // Décision de partenariat → présentation
 const DECISION = {
@@ -43,10 +44,18 @@ export default function Evaluations({ search = '' }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const q = search.trim().toLowerCase()
-  const shown = q
-    ? items.filter((ev) => `${ev.reference || ''} ${ev.avis || ''} ${ev.risque || ''}`.toLowerCase().includes(q))
-    : items
+  // Recherche sur l'ensemble de la fiche d'évaluation, décision et plan
+  // d'actions compris — c'est souvent par la décision (« sous surveillance »)
+  // qu'on retrouve l'évaluation concernée.
+  const shown = filterBySearch(items, search, (ev) => [
+    ev.reference,
+    ev.avis,
+    ev.risque,
+    ev.decision && (DECISION[ev.decision]?.label || ev.decision),
+    ev.tendance,
+    ev.plan,
+    ev.note != null && ev.noteMax ? `${ev.note}/${ev.noteMax} ${ev.pourcentage}%` : '',
+  ])
 
   useEffect(() => {
     let cancelled = false

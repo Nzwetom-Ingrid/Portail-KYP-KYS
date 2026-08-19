@@ -16,6 +16,8 @@ import {
   docLabelFromKey,
   parseRequiredDocs,
 } from '../config/requiredDocs'
+import { filterBySearch } from '../utils/search'
+import { ACCEPT_DOCUMENT, acceptAttr, acceptLabel, validateFile } from '../utils/validation'
 
 // Décode un base64 Dataverse en Blob téléchargeable/affichable.
 function b64ToBlob(b64, mime) {
@@ -81,6 +83,8 @@ export default function Documents({ notify, search = '' }) {
   const [filter, setFilter] = useState('all')
   const [drag, setDrag] = useState(false)
   const [uploading, setUploading] = useState(false)
+  // Progression du lot en cours : { done, total, name }. null = aucun envoi.
+  const [progress, setProgress] = useState(null)
   const [expiry, setExpiry] = useState('') // date d'expiration appliquée au prochain téléversement
   const [categories, setCategories] = useState([])
   const [categoryId, setCategoryId] = useState('') // catégorie (requise) du prochain téléversement
@@ -125,13 +129,6 @@ export default function Documents({ notify, search = '' }) {
     return c
   }, [docs])
 
-  const byStatus = filter === 'all' ? docs : docs.filter((d) => d.status === filter)
-  // Recherche globale : nom de fichier + catégorie + type.
-  const q = search.trim().toLowerCase()
-  const list = q
-    ? byStatus.filter((d) => `${d.name || ''} ${d.cat || ''} ${d.type || ''}`.toLowerCase().includes(q))
-    : byStatus
-
   // Checklist des pièces attendues : liste personnalisée du tiers (afb_documentsrequis)
   // si présente, sinon pièces par défaut du type. Suivi X/Y + manquants.
   const required = parseRequiredDocs(tiers?.afb_documentsrequis, entityType)
@@ -139,13 +136,40 @@ export default function Documents({ notify, search = '' }) {
   const checklist = required.map((item) => ({ ...item, fourni: providedKeys.has(item.key) }))
   const nbFournis = checklist.filter((c) => c.fourni).length
 
+  const byStatus = filter === 'all' ? docs : docs.filter((d) => d.status === filter)
+  // Recherche globale : toutes les colonnes affichées dans le tableau, plus le
+  // libellé lisible de la pièce attendue (« Registre du commerce ») que l'on
+  // cherche plus volontiers que sa clé technique (« rccm »).
+  const list = filterBySearch(byStatus, search, (d) => [
+    d.name,
+    d.cat,
+    d.type,
+    required.find((r) => r.key === d.type)?.name || docLabelFromKey(entityType, d.type),
+    STATUS[d.status]?.label,
+    d.date,
+    d.expiry,
+  ])
+
   const handleFiles = async (files) => {
     const arr = Array.from(files || [])
     if (!arr.length || !tiers?.afb_tiersid) return
+
+    // Contrôle de tous les fichiers AVANT d'en envoyer un seul : mieux vaut
+    // refuser la sélection entière que déposer trois pièces sur cinq et laisser
+    // l'utilisateur deviner lesquelles sont passées.
+    const rejected = arr
+      .map((f) => ({ name: f.name, error: validateFile(f) }))
+      .filter((r) => r.error)
+    if (rejected.length) {
+      notify(rejected.map((r) => `${r.name} — ${r.error}`).join(' '))
+      return
+    }
+
     setUploading(true)
     try {
       const created = []
-      for (const f of arr) {
+      for (const [i, f] of arr.entries()) {
+        setProgress({ done: i, total: arr.length, name: f.name })
         const rec = await uploadDocument(tiers.afb_tiersid, f, { categoryId, expiration: expiry || null, docType: docType || null })
         created.push(adapt(rec))
       }
@@ -157,6 +181,7 @@ export default function Documents({ notify, search = '' }) {
       notify(`Échec du téléversement : ${e.message}`)
     } finally {
       setUploading(false)
+      setProgress(null)
     }
   }
 
@@ -272,9 +297,23 @@ export default function Documents({ notify, search = '' }) {
         onDrop={onDrop}
         style={{ marginBottom: 24, opacity: uploading ? 0.7 : 1 }}
       >
-        <div className="dropzone__icon"><Icon name="upload" size={26} /></div>
+        <div className="dropzone__icon"><Icon name={uploading ? 'clock' : 'upload'} size={26} /></div>
         <h3>{uploading ? t('Téléversement en cours…') : t('Glissez-déposez vos documents ici')}</h3>
-        <p>{t('ou cliquez pour parcourir · PDF, JPG, PNG · 10 Mo max par fichier')}</p>
+        {uploading && progress ? (
+          <>
+            <p style={{ marginBottom: 10 }}>
+              {progress.name} · {t('fichier')} {progress.done + 1} {t('sur')} {progress.total}
+            </p>
+            {/* Barre de progression : l'envoi convertit le fichier en base64 avant
+                de l'écrire dans Dataverse — sur plusieurs Mo, l'écran restait figé
+                plusieurs secondes sans aucun signe de vie. */}
+            <div className="wizard__progress" style={{ maxWidth: 320, margin: '0 auto' }}>
+              <i style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }} />
+            </div>
+          </>
+        ) : (
+          <p>{t('ou cliquez pour parcourir')} · {acceptLabel(ACCEPT_DOCUMENT)} {t('par fichier')}</p>
+        )}
         <button
           className="btn btn--primary btn--sm"
           type="button"
@@ -288,7 +327,13 @@ export default function Documents({ notify, search = '' }) {
           type="file"
           multiple
           hidden
-          onChange={(e) => handleFiles(e.target.files)}
+          accept={acceptAttr(ACCEPT_DOCUMENT)}
+          disabled={uploading}
+          onChange={(e) => {
+            const files = e.target.files
+            e.target.value = '' // permet de re-sélectionner le même fichier après une erreur
+            handleFiles(files)
+          }}
         />
       </div>
 

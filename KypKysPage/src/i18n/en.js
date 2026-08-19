@@ -80,7 +80,6 @@ export const EN = {
   'Votre dossier KYP est complété à': 'Your KYP file is',
   'Plus que quelques étapes pour finaliser votre conformité. Complétez votre questionnaire en cours et déposez les pièces manquantes.':
     'Just a few steps left to finalize your compliance. Complete your current questionnaire and upload the missing documents.',
-  'Reprendre l’onboarding': 'Resume onboarding',
   'Déposer un document': 'Upload a document',
   'Dossier validé': 'File validated',
   'Complément demandé': 'Additional information requested',
@@ -137,8 +136,9 @@ export const EN = {
     'Optional — applies to the file(s) uploaded below (e.g. validity of an ID document).',
   'Téléversement en cours…': 'Uploading…',
   'Glissez-déposez vos documents ici': 'Drag & drop your documents here',
-  'ou cliquez pour parcourir · PDF, JPG, PNG · 10 Mo max par fichier':
-    'or click to browse · PDF, JPG, PNG · 10 MB max per file',
+  'ou cliquez pour parcourir': 'or click to browse',
+  'par fichier': 'per file',
+  'fichier': 'file',
   'Documents à fournir': 'Documents to provide',
   'Pièces attendues pour votre dossier. Sélectionnez « Pièce demandée » ci-dessus avant de déposer pour cocher automatiquement la ligne correspondante.':
     'Documents expected for your file. Select “Requested document” above before uploading to automatically tick the matching line.',
@@ -281,10 +281,15 @@ export const EN = {
     'No partner record linked to your account: upload will be available once your account is linked by AFB.',
   'PDF, JPG ou PNG · 10 Mo max': 'PDF, JPG or PNG · 10 MB max',
   'Ajouté': 'Added',
-  'Documents déposés': 'Documents uploaded',
   'Représentant': 'Representative',
   'N° RCCM / Certificate of incorporation': 'RCCM No. / Certificate of incorporation',
   'Secteur d’activité': 'Business sector',
+  'Numéro de registre de commerce': 'Commercial register number',
+  'RCCM en zone OHADA, ou le numéro d’immatriculation équivalent de votre pays.':
+    'RCCM in the OHADA area, or your country’s equivalent registration number.',
+  'valeur actuelle': 'current value',
+  'Format international : + indicatif pays puis le numéro. Ex. +237 6 12 34 56 78':
+    'International format: + country code then the number. E.g. +237 6 12 34 56 78',
   'Pays': 'Country',
   'Ville': 'City',
   'Code SWIFT / BIC': 'SWIFT / BIC code',

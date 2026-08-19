@@ -3,6 +3,7 @@ import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
 import { getCurrentTiers, loadUbos, submitUbo } from '../services/portal'
 import { COUNTRIES } from '../config/countries'
+import { filterBySearch } from '../utils/search'
 
 // Mappe le choix Dataverse afb_statutdevalidation → présentation
 const STATUS = {
@@ -80,12 +81,21 @@ export default function UBO({ notify, search = '' }) {
     () => ubos.reduce((sum, u) => sum + (Number(u.part) || 0), 0),
     [ubos],
   )
-  // Filtre par la recherche globale (nom + nationalité).
-  const shownUbos = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return ubos
-    return ubos.filter((u) => `${u.nom} ${u.nationalite}`.toLowerCase().includes(q))
-  }, [ubos, search])
+  // Recherche globale sur toutes les colonnes affichées : on cherche autant un
+  // bénéficiaire par son statut (« rejeté ») ou sa qualité de PPE que par son nom.
+  const shownUbos = useMemo(
+    () =>
+      filterBySearch(ubos, search, (u) => [
+        u.nom,
+        u.nationalite,
+        u.naissance,
+        u.morale ? 'personne morale' : 'personne physique',
+        `${u.part}%`,
+        u.ppe ? 'PPE personne politiquement exposée' : '',
+        STATUS[u.status]?.label,
+      ]),
+    [ubos, search],
+  )
 
   const set = (k) => (e) =>
     setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))

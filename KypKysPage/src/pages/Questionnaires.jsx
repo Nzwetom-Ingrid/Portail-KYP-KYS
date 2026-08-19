@@ -9,6 +9,7 @@ import {
   saveQuestionnaireDraft,
   loadQuestionnaireDraftAnswers,
 } from '../services/portal'
+import { filterBySearch } from '../utils/search'
 
 const STATUS = {
   AFaire:    { label: 'À compléter', cls: 'badge--warning' },
@@ -117,10 +118,14 @@ export default function Questionnaires({ notify, search = '' }) {
   }, [items])
 
   const byStatus = filter === 'all' ? items : items.filter((d) => d.afb_statut === filter)
-  const q = search.trim().toLowerCase()
-  const list = q
-    ? byStatus.filter((d) => `${d.afb_intitule || ''} ${d.afb_sous_titre || ''}`.toLowerCase().includes(q))
-    : byStatus
+  // Recherche sur tout ce qui est visible sur la carte : on cherche aussi un
+  // questionnaire par son code ou par son statut (« à compléter »).
+  const list = filterBySearch(byStatus, search, (d) => [
+    d.afb_intitule,
+    d.afb_sous_titre,
+    d.afb_code,
+    STATUS[d.afb_statut]?.label,
+  ])
 
   const openQ = async (q) => {
     setActive(q)

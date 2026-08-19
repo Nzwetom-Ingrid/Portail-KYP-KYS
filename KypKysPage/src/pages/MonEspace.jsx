@@ -145,10 +145,7 @@ export default function MonEspace({ onNavigate, notify }) {
           </p>
         </div>
         <div className="hero-banner__actions">
-          <button className="btn btn--light" onClick={() => onNavigate('onboarding')}>
-            <Icon name="rocket" size={18} /> {t('Reprendre l’onboarding')}
-          </button>
-          <button className="btn btn--ghost" onClick={() => onNavigate('documents')}>
+          <button className="btn btn--light" onClick={() => onNavigate('documents')}>
             <Icon name="upload" size={18} /> {t('Déposer un document')}
           </button>
         </div>
@@ -257,15 +254,6 @@ export default function MonEspace({ onNavigate, notify }) {
                     {data.docsTotal
                       ? `${data.docsValid} / ${data.docsTotal} ${t('validé(s)')}`
                       : t('Ajoutez vos pièces justificatives')}
-                  </span>
-                </span>
-              </button>
-              <button className="quick-action" onClick={() => onNavigate('onboarding')}>
-                <span className="quick-action__icon"><Icon name="rocket" size={20} /></span>
-                <span>
-                  <strong>{t('Reprendre l’onboarding')}</strong>
-                  <span>
-                    {t('Étape')} {Math.min(data.steps.filter((s) => s.state === 'done').length + 1, data.steps.length)} {t('sur')} {data.steps.length}
                   </span>
                 </span>
               </button>
