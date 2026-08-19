@@ -67,7 +67,6 @@ import { getDocumentBinary, base64ToBlob } from '@/lib/dataverse/documentFile';
 import { COUNTRIES } from '@/lib/countries';
 import { downloadTiersReport } from '@/lib/tiersReport';
 import { exportToCsv } from '@/lib/exportCsv';
-import { useRole } from '@/lib/role-context';
 
 /** Statut du dossier (affichage) → choix Dataverse afb_statutdudossier. */
 const STATUT_DOSSIER_TO_DV = { valider: 0, enRevue: 1, completer: 2, suspendre: 747010001, rejeter: 747010002 } as const;
@@ -584,14 +583,13 @@ export default function DossiersValidation() {
 
   // Registre des décisions (afb_decision) — auteur = utilisateur interne courant.
   const createDecision = decisions.useCreate();
-  const { user } = useRole();
-  const authorGuid = useMemo(() => {
-    const list = usersForMap ?? [];
-    const byEmail = user?.email
-      ? list.find((u) => (u.afb_adresseemail ?? '').toLowerCase() === user.email.toLowerCase())
-      : undefined;
-    return byEmail?.afb_utilisateurinterneid ?? list[0]?.afb_utilisateurinterneid;
-  }, [usersForMap, user]);
+  // Auteur = utilisateur RÉELLEMENT connecté, résolu par useResolveCurrentRole.
+  // Auparavant cette valeur venait d'un contexte de démonstration dont l'e-mail
+  // était écrit en dur : les décisions étaient donc journalisées au nom d'une
+  // personne fictive, ou à défaut du premier utilisateur de la liste. Dans un
+  // registre de décisions LCB-FT, l'auteur doit être exact ou absent — jamais
+  // approximatif. Sans identité résolue, recordDecision s'abstient (cf. plus bas).
+  const authorGuid = useRoleStore((s) => s.identity.utilisateurInterneId);
 
   /**
    * Enregistre une décision formelle liée au dossier (best-effort : un échec ici
