@@ -10,18 +10,18 @@ import {
 
 /** Statut de la réponse (afb_statutglobal) → libellé + couleur. */
 const RESP_STATUT: Record<number, { label: string; color: string }> = {
-  0: { label: 'Validée', color: '#1d9d6f' },
-  1: { label: 'Brouillon', color: '#8b9099' },
+  0: { label: 'Validée', color: 'var(--success)' },
+  1: { label: 'Brouillon', color: 'var(--text-muted)' },
   747010001: { label: 'Soumise', color: 'var(--warning)' },
   747010002: { label: 'Rejetée', color: 'var(--danger)' },
 };
 
 /** Statut de l'affectation quand aucune réponse n'existe encore. */
 const ASSIGN_STATUT: Record<number, { label: string; color: string }> = {
-  2: { label: 'Affecté', color: '#8b9099' },
+  2: { label: 'Affecté', color: 'var(--text-muted)' },
   1: { label: 'En cours', color: 'var(--warning)' },
   747010001: { label: 'Soumis', color: 'var(--warning)' },
-  0: { label: 'Validé', color: '#1d9d6f' },
+  0: { label: 'Validé', color: 'var(--success)' },
 };
 
 type Assignment = {
@@ -121,7 +121,7 @@ export function QuestionnaireResponsesReview({
         const submitted = resp?.statut === 747010001 || resp?.statut === 0 || resp?.statut === 747010002;
         const badge = resp
           ? RESP_STATUT[resp.statut ?? 1]
-          : ASSIGN_STATUT[a.afb_statut ?? 2] ?? { label: '—', color: '#8b9099' };
+          : ASSIGN_STATUT[a.afb_statut ?? 2] ?? { label: '—', color: 'var(--text-muted)' };
         const answers = resp
           ? ((allQR ?? []) as unknown as Array<Record<string, unknown>>).filter(
               (qr) => qr._afb_reponseauquestionnaire_value === resp.id,

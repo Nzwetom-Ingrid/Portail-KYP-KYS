@@ -27,17 +27,17 @@ const useBadgeStyles = makeStyles({
   // Risque
   riskLow: {
     backgroundColor: 'var(--success-bg)',
-    color: '#0F5E2D',
+    color: 'var(--success)',
     borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
   },
   riskMedium: {
     backgroundColor: 'var(--warning-bg)',
-    color: '#854020',
+    color: 'var(--warning)',
     borderTopColor: '#FAEDC5', borderRightColor: '#FAEDC5', borderBottomColor: '#FAEDC5', borderLeftColor: '#FAEDC5',
   },
   riskHigh: {
     backgroundColor: 'var(--glass-red-bg)',
-    color: '#8C040D',
+    color: 'var(--danger)',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   // Statut
@@ -48,27 +48,27 @@ const useBadgeStyles = makeStyles({
   },
   statRevue: {
     backgroundColor: 'var(--warning-bg)',
-    color: '#854020',
+    color: 'var(--warning)',
     borderTopColor: '#FAEDC5', borderRightColor: '#FAEDC5', borderBottomColor: '#FAEDC5', borderLeftColor: '#FAEDC5',
   },
   statValide: {
     backgroundColor: 'var(--success-bg)',
-    color: '#0F5E2D',
+    color: 'var(--success)',
     borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
   },
   statExpire: {
     backgroundColor: 'var(--glass-red-bg)',
-    color: '#8C040D',
+    color: 'var(--danger)',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   statRejete: {
     backgroundColor: 'var(--glass-red-bg)',
-    color: '#8C040D',
+    color: 'var(--danger)',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   statActif: {
     backgroundColor: 'var(--success-bg)',
-    color: '#0F5E2D',
+    color: 'var(--success)',
     borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
   },
   statInactif: {
@@ -115,7 +115,7 @@ export function StatutBadge({ statut }: { statut: Statut }) {
 export function SLABadge({ value }: { value: string }) {
   const { t } = useT();
   if (value === '—' || !value) {
-    return <span style={{ color: '#C8C8C8' }}>—</span>;
+    return <span style={{ color: 'var(--text-muted)' }}>—</span>;
   }
   const isOverdue = value === 'Dépassé' || value.startsWith('-');
   const isClose = /^J-?[1-3]$/.test(value);

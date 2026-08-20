@@ -147,7 +147,7 @@ const useStyles = makeStyles({
   queueValue: {
     fontSize: '36px',
     fontWeight: 700,
-    color: '#0A0A0A',
+    color: 'var(--text)',
     lineHeight: 1,
     letterSpacing: '-0.03em',
     fontVariantNumeric: 'tabular-nums',
@@ -277,7 +277,7 @@ const useStyles = makeStyles({
     padding: '3px 8px',
     fontSize: '10.5px',
     fontWeight: 600,
-    color: '#854020',
+    color: 'var(--warning)',
     backgroundColor: 'var(--warning-bg)',
     border: '1px solid #FAEDC5',
     borderRadius: '999px',
@@ -337,7 +337,7 @@ const useStyles = makeStyles({
   },
   docTagMandatory: {
     backgroundColor: 'var(--glass-red-bg)',
-    color: '#8C040D',
+    color: 'var(--danger)',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   docTagOptional: {
@@ -675,7 +675,7 @@ export default function DossiersValidation() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+              icon={<CheckmarkCircle20Regular style={{ color: 'var(--success)' }} />}
               onClick={() => setValidateAction({ dossier: d, intent: 'validate' })}
               aria-label={t('Valider')}
             />
@@ -728,7 +728,7 @@ export default function DossiersValidation() {
     {
       label: t('Risque élevé'),
       count: dossiers.filter((d) => d.risque === 'High').length,
-      color: '#8C040D',
+      color: 'var(--danger)',
       meta: t('double validation'),
       icon: <ShieldCheckmark20Regular />,
       active: table.hasFilter('risque', 'High'),
@@ -737,7 +737,7 @@ export default function DossiersValidation() {
     {
       label: t('Validés ce mois'),
       count: dossiers.filter((d) => d.statut === 'Validé').length,
-      color: '#15803D',
+      color: 'var(--success)',
       meta: t('archivés'),
       icon: <CheckmarkCircle20Filled />,
       active: table.hasFilter('statut', 'Validé'),
@@ -746,7 +746,7 @@ export default function DossiersValidation() {
     {
       label: t('Rejetés'),
       count: dossiers.filter((d) => d.statut === 'Rejeté').length,
-      color: '#B91C1C',
+      color: 'var(--danger)',
       meta: t("renvoyés à l'émetteur"),
       icon: <DismissCircle20Regular />,
       active: table.hasFilter('statut', 'Rejeté'),
@@ -1070,7 +1070,7 @@ function DossierDrawer({
     return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('fr-FR');
   };
   const DOC_STATUT: Record<number, { label: string; color: string; bg: string }> = {
-    0: { label: t('Validé'), color: '#15803D', bg: '#F0FDF4' },
+    0: { label: t('Validé'), color: 'var(--success)', bg: '#F0FDF4' },
     1: { label: t('En attente'), color: 'var(--warning)', bg: '#FFFBEB' },
     747010001: { label: t('Expiré'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
     747010002: { label: t('Rejeté'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
@@ -1315,7 +1315,7 @@ function DossierDrawer({
                       icon={<CheckmarkCircle20Regular />}
                       title={t('Valider ce document')}
                       onClick={() => decideDoc(doc, true)}
-                      style={{ color: '#15803D' }}
+                      style={{ color: 'var(--success)' }}
                       disabled={updateDoc.isPending || doc.statut === 0}
                     />
                     <Button
@@ -1343,7 +1343,7 @@ function DossierDrawer({
           {checklist.map((c) => (
             <div key={c.key} className={styles.docRow}>
               {c.fourni ? (
-                <CheckmarkCircle20Filled style={{ color: '#15803D', flexShrink: 0 }} />
+                <CheckmarkCircle20Filled style={{ color: 'var(--success)', flexShrink: 0 }} />
               ) : (
                 <span
                   style={{

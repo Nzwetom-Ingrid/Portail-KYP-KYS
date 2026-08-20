@@ -13,7 +13,7 @@ import { useT } from '@/i18n/i18n';
 
 // afb_statutdudossier : mapping code → présentation.
 const STATUT: Record<number, { label: string; color: string; bg: string }> = {
-  0: { label: 'Validé', color: '#15803D', bg: '#F0FDF4' },
+  0: { label: 'Validé', color: 'var(--success)', bg: '#F0FDF4' },
   1: { label: 'En revue', color: 'var(--warning)', bg: '#FFFBEB' },
   2: { label: 'À compléter', color: 'var(--warning)', bg: '#FFF7ED' },
   747010001: { label: 'Appel à validation en cours', color: 'var(--accent)', bg: 'var(--danger-bg)' },

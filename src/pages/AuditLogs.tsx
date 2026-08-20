@@ -66,7 +66,7 @@ const useStyles = makeStyles({
     fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
     fontSize: '12px',
     backgroundColor: '#1A1A1A',
-    color: '#F4F4F4',
+    color: 'var(--text-muted)',
     padding: '14px 16px',
     borderRadius: '8px',
     overflow: 'auto',
@@ -98,7 +98,7 @@ function ResultatBadge({ r }: { r: AuditLog['resultat'] }) {
   const { t } = useT();
   if (r === 'Succès') {
     return (
-      <span className={styles.resultatCell} style={{ color: '#15803D' }}>
+      <span className={styles.resultatCell} style={{ color: 'var(--success)' }}>
         <CheckmarkCircle16Filled /> {t('Succès')}
       </span>
     );
@@ -235,7 +235,7 @@ export default function AuditLogs() {
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('resultat', 'Succès')}>
           <div className={styles.kpiLabel}>{t('Succès')}</div>
-          <div className={styles.kpiValue} style={{ color: '#15803D' }}>{counts.succes24h}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--success)' }}>{counts.succes24h}</div>
           <div className={styles.kpiMeta}>{t('actions abouties')}</div>
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('resultat', 'Avertissement')}>

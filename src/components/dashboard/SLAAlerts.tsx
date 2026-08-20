@@ -114,7 +114,7 @@ const useStyles = makeStyles({
   },
   bold: {
     fontWeight: 700,
-    color: '#8C040D',
+    color: 'var(--danger)',
   },
 });
 

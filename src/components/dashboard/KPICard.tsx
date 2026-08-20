@@ -88,7 +88,7 @@ const useStyles = makeStyles({
   value: {
     fontSize: '40px',
     fontWeight: 700,
-    color: '#0A0A0A',
+    color: 'var(--text)',
     lineHeight: 1,
     letterSpacing: '-0.03em',
     marginBottom: '6px',
@@ -115,15 +115,15 @@ const useStyles = makeStyles({
     fontWeight: 600,
   },
   metaPositive: {
-    color: '#0F5E2D',
+    color: 'var(--success)',
     backgroundColor: 'var(--success-bg)',
   },
   metaWarning: {
-    color: '#854020',
+    color: 'var(--warning)',
     backgroundColor: 'var(--warning-bg)',
   },
   metaCritical: {
-    color: '#8C040D',
+    color: 'var(--danger)',
     backgroundColor: 'var(--glass-red-bg)',
   },
   period: {

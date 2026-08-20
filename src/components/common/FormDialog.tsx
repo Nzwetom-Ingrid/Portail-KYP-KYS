@@ -99,7 +99,7 @@ const useStyles = makeStyles({
   title: {
     fontSize: '22px',
     fontWeight: 700,
-    color: '#0A0A0A',
+    color: 'var(--text)',
     lineHeight: 1.2,
     letterSpacing: '-0.02em',
     margin: 0,
@@ -162,7 +162,7 @@ const useStyles = makeStyles({
     color: 'var(--text)',
   },
   stepLabelDone: {
-    color: '#15803D',
+    color: 'var(--success)',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -310,7 +310,7 @@ export function FormDialog({
                           : ''
                       }`}
                     >
-                      {i < currentStep && <CheckmarkCircle16Filled style={{ color: '#15803D' }} />}
+                      {i < currentStep && <CheckmarkCircle16Filled style={{ color: 'var(--success)' }} />}
                       {`${i + 1}. ${s.label}`}
                     </span>
                   ))}

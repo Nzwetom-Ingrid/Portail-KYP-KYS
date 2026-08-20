@@ -497,7 +497,7 @@ export default function Users() {
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Actif')}>
           <div className={styles.kpiLabel}>{t('Actifs')}</div>
-          <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.actifs}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--success)' }}>{kpis.actifs}</div>
           <div className={styles.kpiMeta}>{t('connectés sous 30 jours')}</div>
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('role', 'Super Admin')}>

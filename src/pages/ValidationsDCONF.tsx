@@ -362,7 +362,7 @@ export default function ValidationsDCONF() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+              icon={<CheckmarkCircle20Regular style={{ color: 'var(--success)' }} />}
               disabled={v.statut === 'Validé' || v.statut === 'Rejeté'}
               onClick={() => {
                 setOpenVal(v);
@@ -436,7 +436,7 @@ export default function ValidationsDCONF() {
       label: t('Validés ce mois'),
       value: validations.filter((v) => v.statut === 'Validé').length,
       meta: t('archivés'),
-      color: '#15803D',
+      color: 'var(--success)',
       pressed: table.hasFilter('statut', 'Validé'),
       filter: () => table.toggleFilter('statut', 'Validé'),
     },
@@ -662,10 +662,10 @@ export default function ValidationsDCONF() {
                   <div className={`${styles.hierarchyStep} ${styles.hierarchyDone}`}>
                     <span className={`${styles.stepDot} ${styles.stepDotDone}`}>✓</span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#15803D' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--success)' }}>
                         {t('Analyste DCONF — ')}{openVal.soumisPar}
                       </div>
-                      <div style={{ fontSize: '12px', color: '#15803D' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--success)' }}>
                         {t('Pré-instruction validée le ')}{openVal.soumisLe}
                       </div>
                     </div>

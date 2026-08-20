@@ -91,7 +91,7 @@ const useStyles = makeStyles({
   title: {
     fontSize: '22px',
     fontWeight: 700,
-    color: '#0A0A0A',
+    color: 'var(--text)',
     lineHeight: 1.2,
     letterSpacing: '-0.02em',
     margin: 0,

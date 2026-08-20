@@ -381,7 +381,7 @@ export function QuestionnaireBuilder({ questionnaireId }: { questionnaireId: str
         <Button size="small" appearance="subtle" icon={<ArrowDownload20Regular />} disabled={busy} onClick={downloadTemplate}>
           Modèle CSV
         </Button>
-        <span style={{ fontSize: 12, color: '#909090' }}>Colonnes : section, libellé, type, obligatoire</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Colonnes : section, libellé, type, obligatoire</span>
       </div>
 
       {sections.length === 0 && !secForm && (

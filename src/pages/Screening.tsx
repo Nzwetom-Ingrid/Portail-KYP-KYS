@@ -261,7 +261,7 @@ export default function Screening() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+              icon={<CheckmarkCircle20Regular style={{ color: 'var(--success)' }} />}
               disabled={a.statut === 'Faux positif' || a.statut === 'Confirmé'}
               onClick={() => { setOpenAlert(a); setConfirmIntent('validate'); }}
             />
@@ -343,7 +343,7 @@ export default function Screening() {
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Faux positif')}>
           <div className={styles.kpiLabel}>{t('Faux positifs')}</div>
-          <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.fauxPositifs}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--success)' }}>{kpis.fauxPositifs}</div>
           <div className={styles.kpiMeta}>{t('justifiés')}</div>
         </div>
       </div>

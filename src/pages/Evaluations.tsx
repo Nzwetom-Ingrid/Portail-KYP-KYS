@@ -457,7 +457,7 @@ export default function Evaluations() {
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Conforme')}>
           <div className={styles.kpiLabel}>{evalKpis.conformes.label}</div>
-          <div className={styles.kpiValue} style={{ color: '#15803D' }}>{evalKpis.conformes.value}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--success)' }}>{evalKpis.conformes.value}</div>
           <div className={styles.kpiMeta}>{evalKpis.conformes.pct}% {t('du total')}</div>
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('statut', 'À améliorer')}>
@@ -570,7 +570,7 @@ export default function Evaluations() {
                   {openEval.publie ? (
                     <Button
                       appearance="subtle"
-                      icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+                      icon={<CheckmarkCircle20Regular style={{ color: 'var(--success)' }} />}
                       disabled
                     >
                       {t('Publié au tiers')}
@@ -582,7 +582,7 @@ export default function Evaluations() {
                   )}
                   <Button
                     appearance="outline"
-                    icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+                    icon={<CheckmarkCircle20Regular style={{ color: 'var(--success)' }} />}
                     onClick={() => decide(0, t('Maintenir'))}
                   >
                     {t('Maintenir')}

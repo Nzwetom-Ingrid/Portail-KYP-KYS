@@ -403,7 +403,7 @@ export default function UBOPage() {
             <Button
               size="small"
               appearance="subtle"
-              icon={<CheckmarkCircle20Regular style={{ color: '#15803D' }} />}
+              icon={<CheckmarkCircle20Regular style={{ color: 'var(--success)' }} />}
               disabled={u.validation === 'Validé'}
               onClick={() => {
                 setOpenUbo(u);
@@ -489,7 +489,7 @@ export default function UBOPage() {
         </div>
         <div className={styles.kpi} onClick={() => table.setFilter('validation', 'Validé')}>
           <div className={styles.kpiLabel}>{t('Validés')}</div>
-          <div className={styles.kpiValue} style={{ color: '#15803D' }}>
+          <div className={styles.kpiValue} style={{ color: 'var(--success)' }}>
             {kpis.valides}
           </div>
           <div className={styles.kpiMeta}>{t('fiches conformes')}</div>
@@ -761,7 +761,7 @@ export default function UBOPage() {
                   {openUbo.ppe ? (
                     <Warning20Filled style={{ color: 'var(--accent)' }} />
                   ) : (
-                    <ShieldCheckmark20Regular style={{ color: '#15803D' }} />
+                    <ShieldCheckmark20Regular style={{ color: 'var(--success)' }} />
                   )}
                   <strong style={{ fontSize: '13px', color: openUbo.ppe ? 'var(--accent-dark)' : '#15803D' }}>{t('PPE')}</strong>
                   <span style={{ marginLeft: 'auto', fontSize: '12px', color: openUbo.ppe ? 'var(--accent-dark)' : '#767676' }}>

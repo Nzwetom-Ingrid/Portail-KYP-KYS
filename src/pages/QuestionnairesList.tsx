@@ -582,7 +582,7 @@ export default function QuestionnairesList() {
       <div className={styles.kpiRow}>
         <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Publié')}>
           <div className={styles.kpiLabel}>{t('Modèles publiés')}</div>
-          <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.publies}</div>
+          <div className={styles.kpiValue} style={{ color: 'var(--success)' }}>{kpis.publies}</div>
           <div className={styles.kpiMeta}>{t('en production')}</div>
         </div>
         <div
