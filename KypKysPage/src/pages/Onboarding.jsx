@@ -39,8 +39,15 @@ function pickCategoryId(docLabel, categories) {
   return (match || categories[0]).id
 }
 
+// Types d'enregistrement possibles. Le choix appartient a AFB : cette liste ne
+// sert qu'a presenter au tiers le type retenu pour son dossier.
+const PROFILS = [
+  { id: 'kyp', icon: 'handshake', t: 'KYP — Partenaire', d: 'Vous nouez une relation d’affaires en tant que partenaire commercial.' },
+  { id: 'kys', icon: 'truck', t: 'KYS — Fournisseur', d: 'Vous fournissez des biens ou services et devez être référencé.' },
+]
+
 const STEPS = [
-  { title: 'Type de profil', desc: 'Choisissez votre type d’enregistrement', icon: 'handshake' },
+  { title: 'Type de dossier', desc: 'Défini par Afriland First Bank', icon: 'handshake' },
   { title: 'Informations entreprise', desc: 'Identité et coordonnées légales', icon: 'building' },
   { title: 'Représentant légal', desc: 'Personne habilitée à signer', icon: 'user' },
   { title: 'Pièces justificatives', desc: 'Documents requis pour la conformité', icon: 'folder' },
@@ -110,7 +117,9 @@ export default function Onboarding({ notify }) {
         // saisies / restaurées du localStorage restent prioritaires).
         setForm((f) => ({
           ...f,
-          profil: f.profil || (t.afb_type === 'KYS' ? 'kys' : 'kyp'),
+          // Le type vient d'AFB et prime TOUJOURS sur ce qui traîne en local :
+          // contrairement aux autres champs, ce n'est pas une saisie du tiers.
+          profil: t.afb_type === 'KYS' ? 'kys' : 'kyp',
           raisonSociale: f.raisonSociale || t.afb_nomdupartenaire || '',
           rccm: f.rccm || t.afb_numerorccmimmatriculation || '',
           secteur: f.secteur || t.afb_secteurdactivite || '',
@@ -174,7 +183,8 @@ export default function Onboarding({ notify }) {
   const progress = Math.round(((step + 1) / STEPS.length) * 100)
 
   const canNext = () => {
-    if (step === 0) return !!form.profil
+    // Etape 0 : rien a saisir, le type vient d'AFB — on ne bloque pas dessus.
+    if (step === 0) return true
     // Le téléphone reste facultatif, mais s'il est renseigné il doit être valide :
     // un numéro inexploitable bloque la conformité au moment de joindre le tiers.
     if (step === 1) return form.raisonSociale && form.rccm && form.email && !validatePhone(form.telephone)
@@ -274,28 +284,42 @@ export default function Onboarding({ notify }) {
           <h2 className="wizard__title">{t(STEPS[step].title)}</h2>
           <p className="wizard__desc">{t(STEPS[step].desc)}</p>
 
-          {/* Étape 0 — Type */}
+          {/* Étape 0 — Type, déterminé par AFB et NON modifiable ici.
+              Le type d'enregistrement découle de la nature de la relation
+              d'affaires : c'est le chargé de relation qui la qualifie à la
+              création de la fiche tiers, pas le partenaire. Laisser le tiers
+              choisir ouvrait la porte à un fournisseur se déclarant partenaire,
+              donc à la mauvaise liste de pièces et au mauvais parcours de
+              conformité. L'étape reste affichée pour l'informer de son cas. */}
           {step === 0 && (
             <div className="type-grid">
-              {[
-                { id: 'kyp', icon: 'handshake', t: 'KYP — Partenaire', d: 'Vous nouez une relation d’affaires en tant que partenaire commercial.' },
-                { id: 'kys', icon: 'truck', t: 'KYS — Fournisseur', d: 'Vous fournissez des biens ou services et devez être référencé.' },
-              ].map((o) => (
-                <button
-                  key={o.id}
-                  type="button"
-                  className={`type-card ${form.profil === o.id ? 'is-selected' : ''}`}
-                  onClick={() => setForm((f) => ({ ...f, profil: o.id }))}
-                >
-                  <div className="type-card__icon"><Icon name={o.icon} size={26} /></div>
-                  <h4>{t(o.t)}</h4>
-                  <p>{t(o.d)}</p>
-                  <span className="type-card__check">
-                    <Icon name={form.profil === o.id ? 'check' : 'plus'} size={16} />
-                    {form.profil === o.id ? t('Sélectionné') : t('Choisir ce profil')}
-                  </span>
-                </button>
-              ))}
+              {PROFILS.map((o) => {
+                const actif = form.profil === o.id
+                return (
+                  <div
+                    key={o.id}
+                    className={`type-card ${actif ? 'is-selected' : ''}`}
+                    style={{ cursor: 'default', opacity: actif || !form.profil ? 1 : 0.5 }}
+                    aria-current={actif ? 'true' : undefined}
+                  >
+                    <div className="type-card__icon"><Icon name={o.icon} size={26} /></div>
+                    <h4>{t(o.t)}</h4>
+                    <p>{t(o.d)}</p>
+                    {actif && (
+                      <span className="type-card__check">
+                        <Icon name="check" size={16} /> {t('Votre type de dossier')}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+              <div className="field field--full">
+                <span className="field__hint">
+                  {form.profil
+                    ? t('Ce type est défini par Afriland First Bank à l’ouverture de votre dossier. Si vous pensez qu’il ne correspond pas à votre situation, contactez votre chargé de relation.')
+                    : t('Votre type de dossier n’a pas encore été communiqué par Afriland First Bank. Vous pouvez poursuivre : il sera renseigné par votre chargé de relation.')}
+                </span>
+              </div>
             </div>
           )}
 
