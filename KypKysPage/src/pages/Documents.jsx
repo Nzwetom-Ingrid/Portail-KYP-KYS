@@ -85,6 +85,8 @@ export default function Documents({ notify, search = '' }) {
   const [uploading, setUploading] = useState(false)
   // Progression du lot en cours : { done, total, name }. null = aucun envoi.
   const [progress, setProgress] = useState(null)
+  // Fichiers choisis mais pas encore envoyes : la file d'attente.
+  const [enAttente, setEnAttente] = useState([])
   const [expiry, setExpiry] = useState('') // date d'expiration appliquée au prochain téléversement
   const [categories, setCategories] = useState([])
   const [categoryId, setCategoryId] = useState('') // catégorie (requise) du prochain téléversement
@@ -150,34 +152,52 @@ export default function Documents({ notify, search = '' }) {
     d.expiry,
   ])
 
-  const handleFiles = async (files) => {
+  /**
+   * Ajoute des fichiers à la file d'attente — sans rien envoyer.
+   *
+   * Le dépôt était immédiat : choisir un fichier l'expédiait aussitôt, sans
+   * possibilité de vérifier la catégorie, la pièce rattachée ou même de
+   * constater qu'on s'était trompé de fichier. On constitue désormais une
+   * sélection, qu'on relit avant de la soumettre.
+   */
+  const ajouterFichiers = (files) => {
     const arr = Array.from(files || [])
-    if (!arr.length || !tiers?.afb_tiersid) return
+    if (!arr.length) return
 
-    // Contrôle de tous les fichiers AVANT d'en envoyer un seul : mieux vaut
-    // refuser la sélection entière que déposer trois pièces sur cinq et laisser
-    // l'utilisateur deviner lesquelles sont passées.
-    const rejected = arr
-      .map((f) => ({ name: f.name, error: validateFile(f) }))
-      .filter((r) => r.error)
-    if (rejected.length) {
-      notify(rejected.map((r) => `${r.name} — ${r.error}`).join(' '))
-      return
-    }
+    // Contrôle à l'ajout, pas à l'envoi : l'utilisateur voit tout de suite ce
+    // qui ne passe pas, au lieu de le découvrir après avoir cliqué « Soumettre ».
+    const rejetes = arr.map((f) => ({ name: f.name, error: validateFile(f) })).filter((r) => r.error)
+    if (rejetes.length) notify(rejetes.map((r) => `${r.name} — ${r.error}`).join(' '))
 
+    const valides = arr.filter((f) => !validateFile(f))
+    if (!valides.length) return
+
+    setEnAttente((prec) => {
+      // Un même fichier choisi deux fois ne doit pas partir en double.
+      const connus = new Set(prec.map((f) => `${f.name}:${f.size}`))
+      return [...prec, ...valides.filter((f) => !connus.has(`${f.name}:${f.size}`))]
+    })
+  }
+
+  const retirerDeLaFile = (index) => setEnAttente((prec) => prec.filter((_, i) => i !== index))
+
+  const soumettre = async () => {
+    if (!enAttente.length || !tiers?.afb_tiersid) return
     setUploading(true)
     try {
       const created = []
-      for (const [i, f] of arr.entries()) {
-        setProgress({ done: i, total: arr.length, name: f.name })
+      for (const [i, f] of enAttente.entries()) {
+        setProgress({ done: i, total: enAttente.length, name: f.name })
         const rec = await uploadDocument(tiers.afb_tiersid, f, { categoryId, expiration: expiry || null, docType: docType || null })
         created.push(adapt(rec))
       }
       setDocs((d) => [...created, ...d])
+      setEnAttente([])
       setExpiry('') // on réinitialise après usage
       setDocType('') // la pièce demandée est réinitialisée après dépôt
       notify(`${created.length} document${created.length > 1 ? 's' : ''} ajouté${created.length > 1 ? 's' : ''}.`)
     } catch (e) {
+      // La file est conservée : l'utilisateur peut relancer sans tout resélectionner.
       notify(`Échec du téléversement : ${e.message}`)
     } finally {
       setUploading(false)
@@ -188,7 +208,7 @@ export default function Documents({ notify, search = '' }) {
   const onDrop = (e) => {
     e.preventDefault()
     setDrag(false)
-    handleFiles(e.dataTransfer.files)
+    ajouterFichiers(e.dataTransfer.files)
   }
 
   const remove = async (id) => {
@@ -297,23 +317,12 @@ export default function Documents({ notify, search = '' }) {
         onDrop={onDrop}
         style={{ marginBottom: 24, opacity: uploading ? 0.7 : 1 }}
       >
-        <div className="dropzone__icon"><Icon name={uploading ? 'clock' : 'upload'} size={26} /></div>
-        <h3>{uploading ? t('Téléversement en cours…') : t('Glissez-déposez vos documents ici')}</h3>
-        {uploading && progress ? (
-          <>
-            <p style={{ marginBottom: 10 }}>
-              {progress.name} · {t('fichier')} {progress.done + 1} {t('sur')} {progress.total}
-            </p>
-            {/* Barre de progression : l'envoi convertit le fichier en base64 avant
-                de l'écrire dans Dataverse — sur plusieurs Mo, l'écran restait figé
-                plusieurs secondes sans aucun signe de vie. */}
-            <div className="wizard__progress" style={{ maxWidth: 320, margin: '0 auto' }}>
-              <i style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }} />
-            </div>
-          </>
-        ) : (
-          <p>{t('ou cliquez pour parcourir')} · {acceptLabel(ACCEPT_DOCUMENT)} {t('par fichier')}</p>
-        )}
+        {/* La progression vit désormais dans la file d'attente, au plus près du
+            bouton qui a lancé l'envoi. La zone de dépôt reste ce qu'elle est :
+            un endroit où poser des fichiers. */}
+        <div className="dropzone__icon"><Icon name="upload" size={26} /></div>
+        <h3>{t('Glissez-déposez vos documents ici')}</h3>
+        <p>{t('ou cliquez pour parcourir')} · {acceptLabel(ACCEPT_DOCUMENT)} {t('par fichier')}</p>
         <button
           className="btn btn--primary btn--sm"
           type="button"
@@ -332,10 +341,83 @@ export default function Documents({ notify, search = '' }) {
           onChange={(e) => {
             const files = e.target.files
             e.target.value = '' // permet de re-sélectionner le même fichier après une erreur
-            handleFiles(files)
+            ajouterFichiers(files)
           }}
         />
       </div>
+
+      {/* File d'attente : ce qui sera envoyé au clic sur « Soumettre ». */}
+      {enAttente.length > 0 && (
+        <div className="card card--pad" style={{ marginBottom: 24 }}>
+          <div className="section-head" style={{ marginBottom: 14 }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 16, color: 'var(--ink)' }}>
+                {t('Prêt à être envoyé')}
+              </h3>
+              <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: 13 }}>
+                {t('Vérifiez la catégorie et la pièce demandée ci-dessus avant de soumettre.')}
+              </p>
+            </div>
+            <span className="badge badge--brand">
+              {enAttente.length} {enAttente.length > 1 ? t('fichiers') : t('fichier')}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {enAttente.map((f, i) => (
+              <div
+                key={`${f.name}-${f.size}`}
+                className="card"
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}
+              >
+                <span className="doc-name__icon"><Icon name="fileText" size={18} /></span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <strong style={{ color: 'var(--ink)', fontSize: 13.5, display: 'block' }}>{f.name}</strong>
+                  <span style={{ fontSize: 12, color: 'var(--muted)' }}>
+                    {(f.size / 1048576).toFixed(1)} {t('Mo')}
+                  </span>
+                </div>
+                {/* Pendant l'envoi, retirer une ligne desynchroniserait la
+                    progression : on neutralise l'action plutôt que de la cacher. */}
+                <button
+                  className="danger"
+                  title={t('Retirer de la sélection')}
+                  disabled={uploading}
+                  onClick={() => retirerDeLaFile(i)}
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center' }}>
+            <button className="btn btn--primary" onClick={soumettre} disabled={uploading || !tiers?.afb_tiersid}>
+              <Icon name={uploading ? 'clock' : 'upload'} size={18} />
+              {uploading
+                ? `${t('Envoi…')} ${progress ? `${progress.done + 1}/${progress.total}` : ''}`
+                : t('Soumettre les documents')}
+            </button>
+            <button className="btn btn--ghost" onClick={() => setEnAttente([])} disabled={uploading}>
+              {t('Tout retirer')}
+            </button>
+          </div>
+
+          {/* Progression détaillée : l'envoi convertit chaque fichier en base64
+              avant l'écriture Dataverse — sur plusieurs Mo, l'écran resterait
+              figé plusieurs secondes sans aucun signe de vie. */}
+          {uploading && progress && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 6 }}>
+                {t('Envoi de')} <strong>{progress.name}</strong> — {t('fichier')} {progress.done + 1} {t('sur')} {progress.total}
+              </div>
+              <div className="wizard__progress">
+                <i style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }} />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Documents à fournir — checklist par type d'entité */}
       {checklist.length > 0 && (
