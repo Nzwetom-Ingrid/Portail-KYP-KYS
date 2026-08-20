@@ -30,6 +30,7 @@ import { dossiersKypKys, tiers as tiersHooks, documents as documentsHooks, resul
 import { useRoleStore } from '@/store/roleStore';
 import { assignQuestionnairesForTiers } from '@/lib/dataverse/assignQuestionnaires';
 import { toDossier } from '@/lib/dataverse/dossierMappers';
+import { construireProgression } from '@/lib/dashboard/progression';
 import { toDocExpiration } from '@/lib/dataverse/documentMappers';
 import {
   DetailDrawer,
@@ -171,6 +172,13 @@ export default function Dashboard() {
     [rawDossiers, tiersByGuid, usersByGuid],
   );
   const recents = useMemo(() => dossiers.slice(0, 8), [dossiers]);
+  // Serie mensuelle calculee sur les dossiers reels : le graphique affichait
+  // jusqu'ici une serie de demonstration sans rapport avec la base.
+  const progression = useMemo(
+    () => construireProgression((rawDossiers ?? []) as Parameters<typeof construireProgression>[0]),
+    [rawDossiers],
+  );
+
   const dossiersEnCours = dossiers.filter((d) => d.statut === 'En revue' || d.statut === 'Brouillon').length;
   const validesCeMois = dossiers.filter((d) => d.statut === 'Validé').length;
 
@@ -418,7 +426,7 @@ export default function Dashboard() {
       <div className={styles.sectionLabel}>{t('Activité & risques')}</div>
 
       <div className={styles.midRow}>
-        <ProgressionChart />
+        <ProgressionChart data={progression} />
         <RiskDistribution counts={riskCounts} />
       </div>
 

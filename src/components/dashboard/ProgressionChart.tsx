@@ -2,7 +2,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
 } from 'recharts';
 import { makeStyles } from '@fluentui/react-components';
-import { mockProgression } from '@/lib/mockData';
+import type { PointProgression } from '@/lib/dashboard/progression';
 
 const useStyles = makeStyles({
   card: {
@@ -58,7 +58,12 @@ const useStyles = makeStyles({
   },
 });
 
-export function ProgressionChart() {
+interface ProgressionChartProps {
+  /** Série mensuelle calculée depuis les dossiers réels. */
+  data: PointProgression[];
+}
+
+export function ProgressionChart({ data }: ProgressionChartProps) {
   const styles = useStyles();
   return (
     <div className={styles.card}>
@@ -67,38 +72,40 @@ export function ProgressionChart() {
           <div className={styles.title}>Progression des dossiers</div>
           <div className={styles.subtitle}>Volume traité — 8 derniers mois</div>
         </div>
+        {/* Le libellé reprend la couleur de sa courbe : on relie la légende au
+            tracé sans avoir à compter les pastilles. */}
         <div className={styles.legend}>
-          <span className={styles.legendItem}>
+          <span className={styles.legendItem} style={{ color: 'var(--accent)' }}>
             <span className={styles.legendDot} style={{ backgroundColor: 'var(--accent)' }} />
             Reçus
           </span>
-          <span className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ backgroundColor: '#404040' }} />
+          <span className={styles.legendItem} style={{ color: 'var(--success)' }}>
+            <span className={styles.legendDot} style={{ backgroundColor: 'var(--success)' }} />
             Traités
           </span>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={240}>
-        <AreaChart data={mockProgression} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
           <defs>
             <linearGradient id="recusGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.18} />
               <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="traitesGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#404040" stopOpacity={0.10} />
-              <stop offset="100%" stopColor="#404040" stopOpacity={0} />
+              <stop offset="0%" stopColor="var(--success)" stopOpacity={0.10} />
+              <stop offset="100%" stopColor="var(--success)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 4" stroke="#F4F2EC" vertical={false} />
+          <CartesianGrid strokeDasharray="3 4" stroke="var(--glass-border)" vertical={false} />
           <XAxis
             dataKey="mois"
-            tick={{ fontSize: 11.5, fill: '#737373', fontWeight: 500 }}
+            tick={{ fontSize: 11.5, fill: 'var(--text-muted)', fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fontSize: 11.5, fill: '#737373', fontWeight: 500 }}
+            tick={{ fontSize: 11.5, fill: 'var(--text-muted)', fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
           />
@@ -112,7 +119,7 @@ export function ProgressionChart() {
               padding: '10px 14px',
             }}
             labelStyle={{ fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}
-            cursor={{ stroke: '#ECEAE4', strokeWidth: 1, strokeDasharray: '4 4' }}
+            cursor={{ stroke: 'var(--glass-border)', strokeWidth: 1, strokeDasharray: '4 4' }}
           />
           <Area
             type="monotone"
@@ -121,18 +128,18 @@ export function ProgressionChart() {
             strokeWidth={2.5}
             fill="url(#recusGradient)"
             name="Dossiers reçus"
-            dot={{ r: 3.5, fill: 'var(--accent)', strokeWidth: 2, stroke: '#FFFFFF' }}
-            activeDot={{ r: 5.5, fill: 'var(--accent)', strokeWidth: 3, stroke: '#FFFFFF' }}
+            dot={{ r: 3.5, fill: 'var(--accent)', strokeWidth: 2, stroke: 'var(--glass-bg)' }}
+            activeDot={{ r: 5.5, fill: 'var(--accent)', strokeWidth: 3, stroke: 'var(--glass-bg)' }}
           />
           <Area
             type="monotone"
             dataKey="traites"
-            stroke="#404040"
+            stroke="var(--success)"
             strokeWidth={2.5}
             fill="url(#traitesGradient)"
             name="Dossiers traités"
-            dot={{ r: 3.5, fill: '#404040', strokeWidth: 2, stroke: '#FFFFFF' }}
-            activeDot={{ r: 5.5, fill: '#404040', strokeWidth: 3, stroke: '#FFFFFF' }}
+            dot={{ r: 3.5, fill: 'var(--success)', strokeWidth: 2, stroke: 'var(--glass-bg)' }}
+            activeDot={{ r: 5.5, fill: 'var(--success)', strokeWidth: 3, stroke: 'var(--glass-bg)' }}
           />
         </AreaChart>
       </ResponsiveContainer>

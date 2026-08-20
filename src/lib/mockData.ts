@@ -49,17 +49,6 @@ export const mockKPIs = {
   validesCeMois: { value: 142, evolution: '+9.4%', period: 'vs mois N-1' },
 };
 
-export const mockProgression = [
-  { mois: 'Oct', recus: 145, traites: 132 },
-  { mois: 'Nov', recus: 168, traites: 154 },
-  { mois: 'Déc', recus: 152, traites: 148 },
-  { mois: 'Jan', recus: 189, traites: 175 },
-  { mois: 'Fév', recus: 203, traites: 195 },
-  { mois: 'Mar', recus: 218, traites: 208 },
-  { mois: 'Avr', recus: 245, traites: 232 },
-  { mois: 'Mai', recus: 270, traites: 142 },
-];
-
 export const mockRiskDistribution = {
   low: { count: 184, percentage: 68 },
   medium: { count: 67, percentage: 25 },
