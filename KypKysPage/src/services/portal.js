@@ -17,6 +17,7 @@
 
 import { dv, getCurrentUser, getCurrentUserEmail } from './dataverse'
 import { SETS, LOGICAL, CHOICES } from '../config/dataverse'
+import { entityTypeFromFamille, CODE_PAR_TYPE } from '../config/entityType'
 import {
   MOCK_TIERS,
   MOCK_DOSSIER,
@@ -42,14 +43,29 @@ let _tiers = null
 // Mappe un enregistrement afb_tiers réel → view-model stable du portail
 function mapTiers(t, b2c) {
   if (!t) return null
-  const orga = b2c ? fmt(b2c, 'afb_typedorganisation') : null // Banque…/EMF/Fournisseur
-  const direction = fmt(t, 'afb_directionporteuse') // repli si pas de ligne B2C
-  // KYP = partenaire institutionnel, KYS = fournisseur (DMG gère les fournisseurs)
-  const isFournisseur = orga === 'Fournisseur' || (!orga && direction === 'DMG')
+
+  // Source de vérité : la famille d'institution du type de partenaire choisi
+  // par le chargé de relation à la création. C'est elle qui fixe déjà, côté
+  // back-office, le préfixe de référence du dossier, la checklist des pièces
+  // et la durée de validité — le portail lit donc la même chose.
+  const famille = t.afb_typejuridique?.afb_familledinstitution
+  let type = famille !== undefined && famille !== null ? entityTypeFromFamille(famille) : null
+
+  // Repli, uniquement si le type de partenaire n'est pas lisible (permission de
+  // table absente sur afb_partnertype, ou fiche ancienne sans type renseigné).
+  // Cette heuristique est CONNUE POUR SE TROMPER : la création de dossier écrit
+  // systématiquement DCONF, donc tout le monde ressort « partenaire ».
+  if (!type) {
+    const orga = b2c ? fmt(b2c, 'afb_typedorganisation') : null
+    const direction = fmt(t, 'afb_directionporteuse')
+    type = orga === 'Fournisseur' || (!orga && direction === 'DMG') ? 'fournisseur' : 'partenaire'
+  }
+
   return {
     afb_tiersid: t.afb_tiersid,
     afb_nom: t.afb_nomdupartenaire || '—',
-    afb_type: isFournisseur ? 'KYS' : 'KYP',
+    afb_type: CODE_PAR_TYPE[type] ?? 'KYP',
+    afb_entity_type: type, // 'partenaire' | 'fournisseur' | 'correspondant' | 'intragroupe'
     afb_statut: fmt(t, 'afb_statutdutiers'),
     afb_niveau_risque: fmt(t, 'afb_niveauderisque'),
     // Champs bruts conservés pour la mise à jour (onboarding)
@@ -70,6 +86,13 @@ const TIERS_SELECT =
   'afb_tiersid,afb_nomdupartenaire,afb_statutdutiers,afb_niveauderisque,afb_directionporteuse,' +
   'afb_pays,afb_ville,afb_adressecomplete,afb_numerorccmimmatriculation,' +
   'afb_emailcontactprincipal,afb_telephone,afb_codeswiftbic,afb_secteurdactivite,afb_documentsrequis'
+
+// Expansion du type de partenaire : c'est sa famille d'institution qui donne le
+// type d'entite. Necessite la permission de table afb_partnertype (Global, R) ;
+// sans elle l'expansion revient vide et mapTiers bascule sur le repli.
+const TIERS_EXPAND = '&$expand=afb_typejuridique($select=afb_familledinstitution)'
+// Meme expansion, imbriquee dans un $expand parent (syntaxe OData : point-virgule).
+const TIERS_EXPAND_IMBRIQUE = ';$expand=afb_typejuridique($select=afb_familledinstitution)'
 
 /** Entreprise retenue lorsque l'utilisateur en gère plusieurs. */
 const CLE_TIERS_CHOISI = 'afb_tiers_choisi'
@@ -95,7 +118,7 @@ export async function loadAccessibleTiers() {
     const c = await dv.get(
       SETS.contact,
       user.contactId,
-      `?$select=contactid&$expand=afb_Tiers($select=${TIERS_SELECT})`
+      `?$select=contactid&$expand=afb_Tiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
     ).catch(() => null)
     if (c?.afb_Tiers) {
       const m = mapTiers(c.afb_Tiers, null)
@@ -111,7 +134,7 @@ export async function loadAccessibleTiers() {
   // Contact.afb_Tiers n'est pas renseigné.
   const direct = await dv.list(
     SETS.tiers,
-    `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$select=${TIERS_SELECT}`
+    `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$select=${TIERS_SELECT}${TIERS_EXPAND}`
   ).catch(() => [])
   for (const t of direct) {
     const m = mapTiers(t, null)
@@ -123,7 +146,7 @@ export async function loadAccessibleTiers() {
     SETS.tiersExterneB2C,
     `?$filter=afb_emaildauthentification eq '${esc(email)}'` +
       `&$select=afb_tiersexterneb2cid,afb_typedorganisation` +
-      `&$expand=afb_nomdutiers($select=${TIERS_SELECT})`
+      `&$expand=afb_nomdutiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
   ).catch(() => [])
   for (const row of rows) {
     const m = mapTiers(row?.afb_nomdutiers, row)
