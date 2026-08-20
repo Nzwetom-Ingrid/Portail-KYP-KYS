@@ -15,8 +15,9 @@ import { useMemo, useState } from 'react';
 import type { Column } from '@/components/common/DataTable';
 import type { FilterConfig } from '@/components/common/FilterBar';
 
-/** Minuscules sans accents : « Société » et « societe » doivent se rencontrer. */
-function normaliser(valeur: unknown): string {
+/** Minuscules sans accents : « Société » et « societe » doivent se rencontrer.
+ *  Exportée : la barre de filtres s'en sert pour chercher dans ses listes. */
+export function normaliser(valeur: unknown): string {
   return String(valeur ?? '')
     .toLowerCase()
     .normalize('NFD')

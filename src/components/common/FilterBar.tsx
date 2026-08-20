@@ -1,7 +1,16 @@
 import { makeStyles, Input, Dropdown, Option } from '@fluentui/react-components';
-import { Search20Regular } from '@fluentui/react-icons';
-import type { ReactNode } from 'react';
+import { Search20Regular, Search16Regular } from '@fluentui/react-icons';
+import { useState, type ReactNode } from 'react';
 import { useT } from '@/i18n/i18n';
+import { normaliser } from '@/lib/tables/useTableFilters';
+
+/**
+ * Nombre d'options à partir duquel une liste déroulante reçoit son propre champ
+ * de recherche. En dessous, tout tient à l'écran et le champ serait du bruit ;
+ * au-delà — la liste des chargés en compte une quinzaine — chercher à l'œil
+ * devient pénible.
+ */
+const SEUIL_RECHERCHE_OPTIONS = 8;
 
 const useStyles = makeStyles({
   bar: {
@@ -33,6 +42,19 @@ const useStyles = makeStyles({
   },
   dropdown: {
     minWidth: '170px',
+  },
+  // Le champ reste visible pendant qu'on fait défiler une longue liste.
+  rechercheOptions: {
+    width: 'calc(100% - 8px)',
+    margin: '4px',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1,
+  },
+  aucuneOption: {
+    padding: '10px 12px',
+    fontSize: '12.5px',
+    color: 'var(--text-muted)',
   },
   trailing: {
     marginLeft: 'auto',
@@ -77,6 +99,8 @@ export function FilterBar({
 }: FilterBarProps) {
   const styles = useStyles();
   const { t } = useT();
+  // Une recherche par liste déroulante, conservée tant que la barre est montée.
+  const [recherches, setRecherches] = useState<Record<string, string>>({});
   return (
     <div className={styles.bar}>
       {onSearchChange !== undefined && (
@@ -90,6 +114,11 @@ export function FilterBar({
       )}
       <div className={styles.filterGroup}>
         {filters.map((f) => {
+          const recherche = recherches[f.key] ?? '';
+          const q = normaliser(recherche).trim();
+          const visibles = q
+            ? f.options.filter((o) => normaliser(o.label).includes(q))
+            : f.options;
           // Libellé du champ : le nom seul quand rien n'est coché, la valeur
           // quand il n'y en a qu'une, et un décompte au-delà — afficher trois
           // valeurs concaténées deviendrait illisible dans une liste étroite.
@@ -109,11 +138,30 @@ export function FilterBar({
               selectedOptions={f.values}
               onOptionSelect={(_, data) => f.onValuesChange(data.selectedOptions)}
             >
-              {f.options.map((o) => (
+              {f.options.length > SEUIL_RECHERCHE_OPTIONS && (
+                <Input
+                  className={styles.rechercheOptions}
+                  size="small"
+                  contentBefore={<Search16Regular />}
+                  placeholder={t('Filtrer la liste…')}
+                  value={recherche}
+                  onChange={(_, data) =>
+                    setRecherches((prec) => ({ ...prec, [f.key]: data.value }))
+                  }
+                  // Sans cela, les touches saisies pilotent la navigation de la
+                  // liste déroulante au lieu d'alimenter le champ.
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
+              {visibles.map((o) => (
                 <Option key={o.value} value={o.value} text={t(o.label)}>
                   {t(o.label)}
                 </Option>
               ))}
+              {visibles.length === 0 && (
+                <div className={styles.aucuneOption}>{t('Aucune valeur ne correspond.')}</div>
+              )}
             </Dropdown>
           );
         })}
