@@ -1,16 +1,8 @@
-import { makeStyles, Input, Dropdown, Option } from '@fluentui/react-components';
-import { Search20Regular, Search16Regular } from '@fluentui/react-icons';
+import { makeStyles, Input, Combobox, Option } from '@fluentui/react-components';
+import { Search20Regular } from '@fluentui/react-icons';
 import { useState, type ReactNode } from 'react';
 import { useT } from '@/i18n/i18n';
 import { normaliser } from '@/lib/tables/useTableFilters';
-
-/**
- * Nombre d'options à partir duquel une liste déroulante reçoit son propre champ
- * de recherche. En dessous, tout tient à l'écran et le champ serait du bruit ;
- * au-delà — la liste des chargés en compte une quinzaine — chercher à l'œil
- * devient pénible.
- */
-const SEUIL_RECHERCHE_OPTIONS = 8;
 
 const useStyles = makeStyles({
   bar: {
@@ -42,14 +34,6 @@ const useStyles = makeStyles({
   },
   dropdown: {
     minWidth: '170px',
-  },
-  // Le champ reste visible pendant qu'on fait défiler une longue liste.
-  rechercheOptions: {
-    width: 'calc(100% - 8px)',
-    margin: '4px',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1,
   },
   aucuneOption: {
     padding: '10px 12px',
@@ -101,6 +85,8 @@ export function FilterBar({
   const { t } = useT();
   // Une recherche par liste déroulante, conservée tant que la barre est montée.
   const [recherches, setRecherches] = useState<Record<string, string>>({});
+  // Quelle liste est ouverte : seule celle-ci affiche le texte saisi.
+  const [ouverte, setOuverte] = useState<string | null>(null);
   return (
     <div className={styles.bar}>
       {onSearchChange !== undefined && (
@@ -128,32 +114,33 @@ export function FilterBar({
               : f.values.length === 1
                 ? t(f.options.find((o) => o.value === f.values[0])?.label ?? f.values[0])
                 : `${t(f.label)} · ${f.values.length}`;
+          const ouvert = ouverte === f.key;
           return (
-            <Dropdown
+            // Combobox et non Dropdown : le champ de saisie EST le déclencheur,
+            // il conserve donc le focus pendant la frappe. Un champ glissé dans
+            // la liste d'un Dropdown ne le reçoit jamais — Fluent garde le focus
+            // sur la liste pour piloter la navigation au clavier.
+            <Combobox
               key={f.key}
               multiselect
+              freeform
               className={styles.dropdown}
               placeholder={t(f.label)}
-              value={libelle}
+              // Pendant que la liste est ouverte, le champ montre ce qu'on tape ;
+              // refermée, il retrouve le résumé de la sélection.
+              value={ouvert ? recherche : libelle}
               selectedOptions={f.values}
               onOptionSelect={(_, data) => f.onValuesChange(data.selectedOptions)}
+              onChange={(e) =>
+                setRecherches((prec) => ({ ...prec, [f.key]: e.target.value }))
+              }
+              onOpenChange={(_, data) => {
+                setOuverte(data.open ? f.key : null);
+                // On repart d'une liste complète à chaque ouverture, et on
+                // n'abandonne aucun texte résiduel à la fermeture.
+                setRecherches((prec) => ({ ...prec, [f.key]: '' }));
+              }}
             >
-              {f.options.length > SEUIL_RECHERCHE_OPTIONS && (
-                <Input
-                  className={styles.rechercheOptions}
-                  size="small"
-                  contentBefore={<Search16Regular />}
-                  placeholder={t('Filtrer la liste…')}
-                  value={recherche}
-                  onChange={(_, data) =>
-                    setRecherches((prec) => ({ ...prec, [f.key]: data.value }))
-                  }
-                  // Sans cela, les touches saisies pilotent la navigation de la
-                  // liste déroulante au lieu d'alimenter le champ.
-                  onKeyDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              )}
               {visibles.map((o) => (
                 <Option key={o.value} value={o.value} text={t(o.label)}>
                   {t(o.label)}
@@ -162,7 +149,7 @@ export function FilterBar({
               {visibles.length === 0 && (
                 <div className={styles.aucuneOption}>{t('Aucune valeur ne correspond.')}</div>
               )}
-            </Dropdown>
+            </Combobox>
           );
         })}
       </div>
