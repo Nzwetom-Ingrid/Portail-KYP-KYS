@@ -19,6 +19,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { RisqueBadge, SLABadge } from '@/components/common/StatusBadge';
 import { type ValidationDecision } from '@/lib/mockData';
 import { dossiersKypKys, tiers as tiersHooks, utilisateursInternes } from '@/lib/dataverse/entityHooks';
@@ -149,21 +150,6 @@ const useStyles = makeStyles({
   },
 });
 
-const NIVEAU_OPTIONS = [
-  { label: 'Tous niveaux', value: '' },
-  { label: 'Standard', value: 'Standard' },
-  { label: 'Élevé', value: 'Élevé' },
-  { label: 'Critique', value: 'Critique' },
-];
-
-const STATUT_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'En attente', value: 'En attente' },
-  { label: 'En cours', value: 'En cours' },
-  { label: 'Validé', value: 'Validé' },
-  { label: 'Rejeté', value: 'Rejeté' },
-];
-
 function niveauColor(n: ValidationDecision['niveau']) {
   if (n === 'Critique') return 'danger';
   if (n === 'Élevé') return 'warning';
@@ -194,10 +180,6 @@ export default function ValidationsDCONF() {
   const styles = useStyles();
   const { t } = useT();
   const { notifySuccess, notifyWarning, notifyInfo } = useNotifications();
-  const [search, setSearch] = useState('');
-  const [niveauFilter, setNiveauFilter] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
-  const [slaFilter, setSlaFilter] = useState('');
   const [openVal, setOpenVal] = useState<ValidationDecision | null>(null);
   const [activeTab, setActiveTab] = useState('synthese');
   const [confirmIntent, setConfirmIntent] = useState<ConfirmIntent | null>(null);
@@ -234,54 +216,7 @@ export default function ValidationsDCONF() {
     [rawDossiers],
   );
 
-  const filtered = useMemo(() => {
-    return validations.filter((v) => {
-      if (niveauFilter && v.niveau !== niveauFilter) return false;
-      if (statutFilter && v.statut !== statutFilter) return false;
-      if (slaFilter === 'Dépassé' && v.sla !== 'Dépassé') return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (!v.entite.toLowerCase().includes(q) && !v.dossier.toLowerCase().includes(q) && !v.id.toLowerCase().includes(q))
-          return false;
-      }
-      return true;
-    });
-  }, [validations, search, niveauFilter, statutFilter, slaFilter]);
 
-  const kpis = [
-    {
-      label: t('En attente'),
-      value: validations.filter((v) => v.statut === 'En attente').length,
-      meta: t('à arbitrer'),
-      color: 'var(--warning)',
-      pressed: statutFilter === 'En attente',
-      filter: () => setStatutFilter((cur) => (cur === 'En attente' ? '' : 'En attente')),
-    },
-    {
-      label: t('Niveau Critique'),
-      value: validations.filter((v) => v.niveau === 'Critique').length,
-      meta: t('double validation N+2'),
-      color: 'var(--accent)',
-      pressed: niveauFilter === 'Critique',
-      filter: () => setNiveauFilter((cur) => (cur === 'Critique' ? '' : 'Critique')),
-    },
-    {
-      label: t('SLA dépassé'),
-      value: validations.filter((v) => v.sla === 'Dépassé').length,
-      meta: t('escalade automatique'),
-      color: 'var(--accent-dark)',
-      pressed: slaFilter === 'Dépassé',
-      filter: () => setSlaFilter((cur) => (cur === 'Dépassé' ? '' : 'Dépassé')),
-    },
-    {
-      label: t('Validés ce mois'),
-      value: validations.filter((v) => v.statut === 'Validé').length,
-      meta: t('archivés'),
-      color: '#15803D',
-      pressed: statutFilter === 'Validé',
-      filter: () => setStatutFilter((cur) => (cur === 'Validé' ? '' : 'Validé')),
-    },
-  ];
 
   const open = (v: ValidationDecision) => {
     setOpenVal(v);
@@ -353,6 +288,7 @@ export default function ValidationsDCONF() {
     {
       key: 'entite',
       header: 'Dossier / Entité',
+      sortValue: (v) => v.entite, searchValue: (v) => `${v.entite} ${v.dossier} ${v.id}`,
       render: (v) => (
         <div className={styles.entityCell}>
           <span className={styles.entityName}>{v.entite}</span>
@@ -365,6 +301,7 @@ export default function ValidationsDCONF() {
     {
       key: 'type',
       header: 'Type',
+      sortValue: (v) => v.type, searchValue: (v) => v.type, filterable: true,
       render: (v) => (
         <Badge appearance="tint" color="subtle" size="small">
           {v.type}
@@ -374,16 +311,18 @@ export default function ValidationsDCONF() {
     {
       key: 'niveau',
       header: 'Niveau',
+      sortValue: (v) => v.niveau, searchValue: (v) => v.niveau, filterable: true,
       render: (v) => (
         <Badge appearance="filled" color={niveauColor(v.niveau)} size="small">
           {v.niveau}
         </Badge>
       ),
     },
-    { key: 'risque', header: 'Risque', render: (v) => <RisqueBadge risque={v.risque} /> },
+    { key: 'risque', header: 'Risque', sortValue: (v) => v.risque, searchValue: (v) => v.risque, filterable: true, render: (v) => <RisqueBadge risque={v.risque} /> },
     {
       key: 'score',
       header: 'Complétude',
+      sortValue: (v) => v.scoreComposite,
       render: (v) => (
         <span className={styles.scoreCell}>
           <span className={styles.scoreBar}>
@@ -396,12 +335,13 @@ export default function ValidationsDCONF() {
         </span>
       ),
     },
-    { key: 'soumisPar', header: 'Soumis par', render: (v) => v.soumisPar },
-    { key: 'soumisLe', header: 'Soumis le', render: (v) => v.soumisLe },
-    { key: 'sla', header: 'SLA', render: (v) => <SLABadge value={v.sla} /> },
+    { key: 'soumisPar', header: 'Soumis par', sortValue: (v) => v.soumisPar, searchValue: (v) => v.soumisPar, filterable: true, render: (v) => v.soumisPar },
+    { key: 'soumisLe', header: 'Soumis le', sortValue: (v) => v.soumisLe, searchValue: (v) => v.soumisLe, render: (v) => v.soumisLe },
+    { key: 'sla', header: 'SLA', sortValue: (v) => v.sla, searchValue: (v) => v.sla, render: (v) => <SLABadge value={v.sla} /> },
     {
       key: 'statut',
       header: 'Statut',
+      sortValue: (v) => v.statut, searchValue: (v) => v.statut, filterable: true,
       render: (v) => (
         <Badge appearance="tint" color={statutColor(v.statut)} size="small">
           {v.statut}
@@ -458,6 +398,46 @@ export default function ValidationsDCONF() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(validations, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
+  const kpis = [
+    {
+      label: t('En attente'),
+      value: validations.filter((v) => v.statut === 'En attente').length,
+      meta: t('à arbitrer'),
+      color: 'var(--warning)',
+      pressed: table.getFilter('statut') === 'En attente',
+      filter: () => table.toggleFilter('statut', 'En attente'),
+    },
+    {
+      label: t('Niveau Critique'),
+      value: validations.filter((v) => v.niveau === 'Critique').length,
+      meta: t('double validation N+2'),
+      color: 'var(--accent)',
+      pressed: table.getFilter('niveau') === 'Critique',
+      filter: () => table.toggleFilter('niveau', 'Critique'),
+    },
+    {
+      label: t('SLA dépassé'),
+      value: validations.filter((v) => v.sla === 'Dépassé').length,
+      meta: t('escalade automatique'),
+      color: 'var(--accent-dark)',
+      pressed: table.getFilter('sla') === 'Dépassé',
+      filter: () => table.toggleFilter('sla', 'Dépassé'),
+    },
+    {
+      label: t('Validés ce mois'),
+      value: validations.filter((v) => v.statut === 'Validé').length,
+      meta: t('archivés'),
+      color: '#15803D',
+      pressed: table.getFilter('statut') === 'Validé',
+      filter: () => table.toggleFilter('statut', 'Validé'),
+    },
+  ];
+
 
   return (
     <div>
@@ -519,10 +499,7 @@ export default function ValidationsDCONF() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher une décision, un dossier, une entité…"
-        filters={[
-          { key: 'niveau', label: 'Niveau', value: niveauFilter, options: NIVEAU_OPTIONS, onChange: setNiveauFilter },
-          { key: 'statut', label: 'Statut', value: statutFilter, options: STATUT_OPTIONS, onChange: setStatutFilter },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card

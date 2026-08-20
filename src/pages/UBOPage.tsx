@@ -27,6 +27,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type UBO } from '@/lib/mockData';
 import { ubo as uboHooks, tiers as tiersHooks, utilisateursInternes } from '@/lib/dataverse/entityHooks';
 import { useRoleStore } from '@/store/roleStore';
@@ -166,20 +167,6 @@ const useStyles = makeStyles({
   },
 });
 
-const VALIDATION_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'Validé', value: 'Validé' },
-  { label: 'En attente', value: 'En attente' },
-  { label: 'À revoir', value: 'À revoir' },
-];
-
-const NATURE_OPTIONS = [
-  { label: 'Toutes natures', value: '' },
-  { label: 'Direct', value: 'Direct' },
-  { label: 'Indirect', value: 'Indirect' },
-  { label: 'Effectif', value: 'Effectif' },
-];
-
 function initials(name: string) {
   const parts = name.split(' ').filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -217,10 +204,6 @@ export default function UBOPage() {
   }, [tiersData, usersData]);
 
   const ubos = useMemo(() => (rawUbos ?? []).map((u) => toUBO(u, resolvers)), [rawUbos, resolvers]);
-
-  const [search, setSearch] = useState('');
-  const [validationFilter, setValidationFilter] = useState('');
-  const [natureFilter, setNatureFilter] = useState('');
   const [ppeFilter, setPpeFilter] = useState(false);
   const [seuilFilter, setSeuilFilter] = useState(false);
   const [openUbo, setOpenUbo] = useState<UBO | null>(null);
@@ -240,19 +223,6 @@ export default function UBOPage() {
   const [uboPpe, setUboPpe] = useState(false);
   const [screenImmediate, setScreenImmediate] = useState(true);
 
-  const filtered = useMemo(() => {
-    return ubos.filter((u) => {
-      if (validationFilter && u.validation !== validationFilter) return false;
-      if (natureFilter && u.natureControle !== natureFilter) return false;
-      if (ppeFilter && !u.ppe) return false;
-      if (seuilFilter && u.partPct < 25) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (!u.nom.toLowerCase().includes(q) && !u.partenaire.toLowerCase().includes(q)) return false;
-      }
-      return true;
-    });
-  }, [ubos, search, validationFilter, natureFilter, ppeFilter, seuilFilter]);
 
   const kpis = {
     total: ubos.length,
@@ -353,6 +323,7 @@ export default function UBOPage() {
     {
       key: 'personne',
       header: 'Bénéficiaire',
+      sortValue: (u) => u.nom, searchValue: (u) => `${u.nom} ${u.nationalite ?? ''}`,
       render: (u) => (
         <div className={styles.personCell}>
           <span className={styles.avatar}>{initials(u.nom)}</span>
@@ -365,10 +336,11 @@ export default function UBOPage() {
         </div>
       ),
     },
-    { key: 'partenaire', header: 'Entité contrôlée', render: (u) => u.partenaire },
+    { key: 'partenaire', header: 'Entité contrôlée', sortValue: (u) => u.partenaire, searchValue: (u) => u.partenaire, filterable: true, render: (u) => u.partenaire },
     {
       key: 'part',
       header: 'Détention',
+      sortValue: (u) => u.partPct,
       render: (u) => (
         <div>
           <span className={styles.partCellValue}>{u.partPct.toFixed(1)}%</span>
@@ -381,6 +353,7 @@ export default function UBOPage() {
     {
       key: 'nature',
       header: 'Nature',
+      sortValue: (u) => u.natureControle, searchValue: (u) => u.natureControle, filterable: true,
       render: (u) => (
         <Badge appearance="tint" color="brand" size="small">
           {u.natureControle}
@@ -390,6 +363,11 @@ export default function UBOPage() {
     {
       key: 'ppe',
       header: 'PPE',
+      // Booleen : on trie et filtre sur le libelle affiche, pas sur true/false.
+      sortValue: (u) => (u.ppe ? 'Oui' : 'Non'),
+      searchValue: (u) => (u.ppe ? 'Oui PPE personne politiquement exposee' : 'Non'),
+      filterValue: (u) => (u.ppe ? 'Oui' : 'Non'),
+      filterable: true,
       render: (u) =>
         u.ppe ? (
           <Badge appearance="filled" color="danger" size="small">
@@ -404,6 +382,7 @@ export default function UBOPage() {
     {
       key: 'validation',
       header: 'Validation',
+      sortValue: (u) => u.validation, searchValue: (u) => u.validation, filterable: true,
       render: (u) => (
         <Badge appearance="tint" color={validationColor(u.validation)} size="small">
           {u.validation}
@@ -447,6 +426,11 @@ export default function UBOPage() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(ubos, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
 
   // Fiches nécessitant une revue : à revoir, ou PPE non encore validée.
   const reviewList = ubos.filter((u) => u.validation === 'À revoir' || (u.ppe && u.validation !== 'Validé'));
@@ -494,12 +478,12 @@ export default function UBOPage() {
       />
 
       <div className={styles.kpiRow}>
-        <div className={styles.kpi} onClick={() => { setValidationFilter(''); setNatureFilter(''); setPpeFilter(false); setSeuilFilter(false); }}>
+        <div className={styles.kpi} onClick={() => { table.setFilter('validation', ''); table.setFilter('nature', ''); setPpeFilter(false); setSeuilFilter(false); }}>
           <div className={styles.kpiLabel}>{t('Bénéficiaires')}</div>
           <div className={styles.kpiValue}>{kpis.total}</div>
           <div className={styles.kpiMeta}>{t('identifiés')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setValidationFilter('Validé')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('validation', 'Validé')}>
           <div className={styles.kpiLabel}>{t('Validés')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>
             {kpis.valides}
@@ -554,7 +538,7 @@ export default function UBOPage() {
               {reviewNames} — {t('vérifier les justificatifs et la chaîne de détention.')}
             </div>
           </div>
-          <Button appearance="subtle" size="small" onClick={() => setValidationFilter('À revoir')}>
+          <Button appearance="subtle" size="small" onClick={() => table.setFilter('validation', 'À revoir')}>
             {t('Voir les fiches')}
           </Button>
         </div>
@@ -564,10 +548,7 @@ export default function UBOPage() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher un bénéficiaire ou une entité…"
-        filters={[
-          { key: 'validation', label: 'Validation', value: validationFilter, options: VALIDATION_OPTIONS, onChange: setValidationFilter },
-          { key: 'nature', label: 'Nature', value: natureFilter, options: NATURE_OPTIONS, onChange: setNatureFilter },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card

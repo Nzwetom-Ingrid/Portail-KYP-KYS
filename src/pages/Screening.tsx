@@ -23,6 +23,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type ScreeningAlert } from '@/lib/mockData';
 import { resultatsScreening } from '@/lib/dataverse/entityHooks';
 import { toScreeningAlert, SOURCE_COLORS } from '@/lib/dataverse/screeningMappers';
@@ -107,23 +108,6 @@ const useStyles = makeStyles({
   matchValue: { color: '#1A1A1A', fontWeight: 500 },
 });
 
-const SOURCE_OPTIONS = [
-  { label: 'Toutes sources', value: '' },
-  { label: 'ONU', value: 'ONU' },
-  { label: 'OFAC', value: 'OFAC' },
-  { label: 'UE', value: 'UE' },
-  { label: 'PPE', value: 'PPE' },
-  { label: 'Interpol', value: 'Interpol' },
-];
-
-const STATUT_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'Nouveau', value: 'Nouveau' },
-  { label: 'En revue', value: 'En revue' },
-  { label: 'Faux positif', value: 'Faux positif' },
-  { label: 'Confirmé', value: 'Confirmé' },
-];
-
 function scoreColor(score: number) {
   if (score >= 80) return 'var(--accent)';
   if (score >= 60) return 'var(--warning)';
@@ -162,9 +146,6 @@ export default function Screening() {
     }));
   }, [alerts]);
 
-  const [search, setSearch] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
   const [openAlert, setOpenAlert] = useState<ScreeningAlert | null>(null);
   const [activeTab, setActiveTab] = useState('match');
   const [confirmIntent, setConfirmIntent] = useState<ConfirmIntent | null>(null);
@@ -179,22 +160,6 @@ export default function Screening() {
   const [sourcePPE, setSourcePPE] = useState(true);
   const [fullRefresh, setFullRefresh] = useState(false);
 
-  const filtered = useMemo(() => {
-    return alerts.filter((a) => {
-      if (sourceFilter && a.source !== sourceFilter) return false;
-      if (statutFilter && a.statut !== statutFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (
-          !a.cible.toLowerCase().includes(q) &&
-          !a.source.toLowerCase().includes(q) &&
-          !a.charge.toLowerCase().includes(q)
-        )
-          return false;
-      }
-      return true;
-    });
-  }, [alerts, search, sourceFilter, statutFilter]);
 
   const kpis = {
     total: alerts.length,
@@ -262,14 +227,15 @@ export default function Screening() {
   };
 
   const columns: Column<ScreeningAlert>[] = [
-    { key: 'id', header: 'Référence', render: (a) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{a.id}</span> },
-    { key: 'cible', header: 'Cible', render: (a) => <strong style={{ color: '#1A1A1A' }}>{a.cible}</strong> },
-    { key: 'type', header: 'Type', render: (a) => <Badge appearance="tint" color="subtle" size="small">{a.typeCible}</Badge> },
-    { key: 'source', header: 'Source', render: (a) => <Badge appearance="tint" color="brand" size="small">{a.source}</Badge> },
-    { key: 'match', header: 'Match', render: (a) => <Badge appearance="filled" color={matchColor(a.match)} size="small">{a.match}</Badge> },
+    { key: 'id', header: 'Référence', sortValue: (a) => a.id, searchValue: (a) => a.id, render: (a) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{a.id}</span> },
+    { key: 'cible', header: 'Cible', sortValue: (a) => a.cible, searchValue: (a) => a.cible, render: (a) => <strong style={{ color: '#1A1A1A' }}>{a.cible}</strong> },
+    { key: 'type', header: 'Type', sortValue: (a) => a.typeCible, searchValue: (a) => a.typeCible, filterable: true, render: (a) => <Badge appearance="tint" color="subtle" size="small">{a.typeCible}</Badge> },
+    { key: 'source', header: 'Source', sortValue: (a) => a.source, searchValue: (a) => a.source, filterable: true, render: (a) => <Badge appearance="tint" color="brand" size="small">{a.source}</Badge> },
+    { key: 'match', header: 'Match', sortValue: (a) => a.match, searchValue: (a) => a.match, filterable: true, render: (a) => <Badge appearance="filled" color={matchColor(a.match)} size="small">{a.match}</Badge> },
     {
       key: 'score',
       header: 'Score',
+      sortValue: (a) => a.score,
       render: (a) => (
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>
           <span className={styles.scoreBar}>
@@ -279,9 +245,9 @@ export default function Screening() {
         </span>
       ),
     },
-    { key: 'date', header: 'Détecté le', render: (a) => a.detecteLe },
-    { key: 'statut', header: 'Statut', render: (a) => <Badge appearance="tint" color={statutColor(a.statut)} size="small">{a.statut}</Badge> },
-    { key: 'charge', header: 'Chargé', render: (a) => a.charge },
+    { key: 'date', header: 'Détecté le', sortValue: (a) => a.detecteLe, searchValue: (a) => a.detecteLe, render: (a) => a.detecteLe },
+    { key: 'statut', header: 'Statut', sortValue: (a) => a.statut, searchValue: (a) => a.statut, filterable: true, render: (a) => <Badge appearance="tint" color={statutColor(a.statut)} size="small">{a.statut}</Badge> },
+    { key: 'charge', header: 'Chargé', sortValue: (a) => a.charge, searchValue: (a) => a.charge, filterable: true, render: (a) => a.charge },
     {
       key: 'actions',
       header: '',
@@ -313,6 +279,11 @@ export default function Screening() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(alerts, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
 
   return (
     <div>
@@ -355,22 +326,22 @@ export default function Screening() {
       />
 
       <div className={styles.kpiRow}>
-        <div className={styles.kpi} onClick={() => { setSourceFilter(''); setStatutFilter(''); }}>
+        <div className={styles.kpi} onClick={table.reset}>
           <div className={styles.kpiLabel}>{t('Alertes totales')}</div>
           <div className={styles.kpiValue}>{kpis.total}</div>
           <div className={styles.kpiMeta}>{t('7 derniers jours')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Nouveau')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Nouveau')}>
           <div className={styles.kpiLabel}>{t('À traiter')}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{kpis.aRevoir}</div>
           <div className={styles.kpiMeta}>{t('nouveau · en revue')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Confirmé')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Confirmé')}>
           <div className={styles.kpiLabel}>{t('Confirmés')}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{kpis.confirmes}</div>
           <div className={styles.kpiMeta}>{t('escalade DCONF')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Faux positif')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Faux positif')}>
           <div className={styles.kpiLabel}>{t('Faux positifs')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.fauxPositifs}</div>
           <div className={styles.kpiMeta}>{t('justifiés')}</div>
@@ -392,10 +363,7 @@ export default function Screening() {
               search={search}
               onSearchChange={setSearch}
               searchPlaceholder="Rechercher une cible…"
-              filters={[
-                { key: 'source', label: 'Source', value: sourceFilter, options: SOURCE_OPTIONS, onChange: setSourceFilter },
-                { key: 'statut', label: 'Statut', value: statutFilter, options: STATUT_OPTIONS, onChange: setStatutFilter },
-              ]}
+              filters={table.filterConfigs}
             />
           </div>
           {error ? (

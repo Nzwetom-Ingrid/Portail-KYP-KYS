@@ -30,6 +30,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { QuestionnaireResponsesReview } from '@/components/QuestionnaireResponsesReview';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type Questionnaire } from '@/lib/mockData';
 import { questionnaires as questionnairesHooks, utilisateursInternes, questionnaireSections, questions as questionsHooks, questionnaireAssignments, tiers as tiersHooks } from '@/lib/dataverse/entityHooks';
 import { seedAllQuestionnaires } from '@/lib/dataverse/seedQuestionnaires';
@@ -134,21 +135,6 @@ const useStyles = makeStyles({
   },
 });
 
-const FAMILLE_OPTIONS = [
-  { label: 'Toutes familles', value: '' },
-  { label: 'AML', value: 'AML' },
-  { label: 'KYC', value: 'KYC' },
-  { label: 'EXT', value: 'EXT' },
-  { label: 'RISK', value: 'RISK' },
-];
-
-const STATUT_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'Publié', value: 'Publié' },
-  { label: 'Brouillon', value: 'Brouillon' },
-  { label: 'Archivé', value: 'Archivé' },
-];
-
 function familleColor(f: Questionnaire['famille']) {
   if (f === 'AML') return 'danger';
   if (f === 'KYC') return 'brand';
@@ -232,10 +218,6 @@ export default function QuestionnairesList() {
     () => new Map((rawQ ?? []).map((q) => [q.afb_codedudocument ?? q.afb_questionnaireid, q.afb_questionnaireid])),
     [rawQ],
   );
-
-  const [search, setSearch] = useState('');
-  const [familleFilter, setFamilleFilter] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
   // KPI toggles : ne garder que les questionnaires effectivement affectés / dotés de questions.
   const [affectesFilter, setAffectesFilter] = useState(false);
   const [avecQuestionsFilter, setAvecQuestionsFilter] = useState(false);
@@ -294,19 +276,6 @@ export default function QuestionnairesList() {
     [partnersList, assignType, assignSearch],
   );
 
-  const filtered = useMemo(() => {
-    return questionnaires.filter((q) => {
-      if (familleFilter && q.famille !== familleFilter) return false;
-      if (statutFilter && q.statut !== statutFilter) return false;
-      if (affectesFilter && q.affectations <= 0) return false;
-      if (avecQuestionsFilter && q.nbQuestions <= 0) return false;
-      if (search) {
-        const s = search.toLowerCase();
-        if (!q.nom.toLowerCase().includes(s) && !q.famille.toLowerCase().includes(s)) return false;
-      }
-      return true;
-    });
-  }, [questionnaires, search, familleFilter, statutFilter, affectesFilter, avecQuestionsFilter]);
 
   const kpis = {
     publies: questionnaires.filter((q) => q.statut === 'Publié').length,
@@ -486,6 +455,7 @@ export default function QuestionnairesList() {
     {
       key: 'nom',
       header: 'Modèle',
+      sortValue: (q) => q.nom, searchValue: (q) => `${q.nom} ${q.id}`,
       render: (q) => (
         <div className={styles.nameCell}>
           <span className={styles.nameTitle}>{q.nom}</span>
@@ -496,16 +466,18 @@ export default function QuestionnairesList() {
     {
       key: 'famille',
       header: 'Famille',
+      sortValue: (q) => q.famille, searchValue: (q) => q.famille, filterable: true,
       render: (q) => (
         <Badge appearance="tint" color={familleColor(q.famille)} size="small">
           {q.famille}
         </Badge>
       ),
     },
-    { key: 'questions', header: 'Questions', render: (q) => `${q.nbQuestions} ${t('questions')}` },
+    { key: 'questions', header: 'Questions', sortValue: (q) => q.nbQuestions, render: (q) => `${q.nbQuestions} ${t('questions')}` },
     {
       key: 'affectations',
       header: 'Affectations',
+      sortValue: (q) => q.affectations,
       render: (q) => (
         <span style={{ fontWeight: 600, color: q.affectations > 0 ? '#1A1A1A' : '#C8C8C8' }}>
           {q.affectations}
@@ -515,13 +487,14 @@ export default function QuestionnairesList() {
     {
       key: 'statut',
       header: 'Statut',
+      sortValue: (q) => q.statut, searchValue: (q) => q.statut, filterable: true,
       render: (q) => (
         <Badge appearance="tint" color={statutColor(q.statut)} size="small">
           {q.statut}
         </Badge>
       ),
     },
-    { key: 'maj', header: 'Dernière MAJ', render: (q) => <span style={{ color: '#767676' }}>{q.dernierMaj}</span> },
+    { key: 'maj', header: 'Dernière MAJ', sortValue: (q) => q.dernierMaj, searchValue: (q) => q.dernierMaj, render: (q) => <span style={{ color: '#767676' }}>{q.dernierMaj}</span> },
     {
       key: 'actions',
       header: '',
@@ -551,6 +524,11 @@ export default function QuestionnairesList() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(questionnaires, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
 
   return (
     <div>
@@ -602,7 +580,7 @@ export default function QuestionnairesList() {
       />
 
       <div className={styles.kpiRow}>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Publié')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Publié')}>
           <div className={styles.kpiLabel}>{t('Modèles publiés')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.publies}</div>
           <div className={styles.kpiMeta}>{t('en production')}</div>
@@ -618,7 +596,7 @@ export default function QuestionnairesList() {
           <div className={styles.kpiValue}>{kpis.affectations}</div>
           <div className={styles.kpiMeta}>{t('partenaires destinataires')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Brouillon')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Brouillon')}>
           <div className={styles.kpiLabel}>{t('Brouillons')}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{kpis.brouillons}</div>
           <div className={styles.kpiMeta}>{t('en cours d’édition')}</div>
@@ -640,10 +618,7 @@ export default function QuestionnairesList() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher un questionnaire…"
-        filters={[
-          { key: 'famille', label: 'Famille', value: familleFilter, options: FAMILLE_OPTIONS, onChange: setFamilleFilter },
-          { key: 'statut', label: 'Statut', value: statutFilter, options: STATUT_OPTIONS, onChange: setStatutFilter },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card

@@ -266,10 +266,10 @@ export default function DocumentShare() {
   };
 
   const columns: Column<ShareRow>[] = [
-    { key: 'nom', header: 'Document', render: (r) => <span style={{ fontWeight: 600, color: '#1A1A1A' }}>{r.nom}</span> },
-    { key: 'dest', header: 'Destinataire', render: (r) => r.destinataire },
-    { key: 'date', header: 'Partagé le', render: (r) => r.date },
-    { key: 'exp', header: 'Validité', render: (r) => r.expiration },
+    { key: 'nom', header: 'Document', sortValue: (r) => r.nom, searchValue: (r) => r.nom, render: (r) => <span style={{ fontWeight: 600, color: '#1A1A1A' }}>{r.nom}</span> },
+    { key: 'dest', header: 'Destinataire', sortValue: (r) => r.destinataire, searchValue: (r) => r.destinataire, filterable: true, render: (r) => r.destinataire },
+    { key: 'date', header: 'Partagé le', sortValue: (r) => r.date, searchValue: (r) => r.date, render: (r) => r.date },
+    { key: 'exp', header: 'Validité', sortValue: (r) => r.expiration, searchValue: (r) => r.expiration, filterable: true, render: (r) => r.expiration },
     {
       key: 'reponses',
       header: 'Réponses',

@@ -26,6 +26,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type Evaluation } from '@/lib/mockData';
 import { evaluationsPartenaire, tiers as tiersHooks, grilleEvaluation, utilisateursInternes } from '@/lib/dataverse/entityHooks';
 import { toEvaluation } from '@/lib/dataverse/evaluationMappers';
@@ -134,21 +135,6 @@ const useStyles = makeStyles({
   ecartDetail: { fontSize: '12px', color: 'var(--accent-dark)', lineHeight: 1.5 },
 });
 
-const TYPE_OPTIONS = [
-  { label: 'Tous types', value: '' },
-  { label: 'SLA', value: 'SLA' },
-  { label: 'OPS', value: 'OPS' },
-  { label: 'RISK', value: 'RISK' },
-  { label: 'EXT', value: 'EXT' },
-];
-
-const STATUT_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'Conforme', value: 'Conforme' },
-  { label: 'À améliorer', value: 'À améliorer' },
-  { label: 'Non conforme', value: 'Non conforme' },
-];
-
 function scoreColor(score: number) {
   if (score >= 80) return '#15803D';
   if (score >= 60) return 'var(--warning)';
@@ -194,9 +180,6 @@ export default function Evaluations() {
   const styles = useStyles();
   const { t } = useT();
   const { notifySuccess, notifyInfo } = useNotifications();
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
   const [openEval, setOpenEval] = useState<Evaluation | null>(null);
   const [activeTab, setActiveTab] = useState('synthese');
   const [newOpen, setNewOpen] = useState(false);
@@ -229,22 +212,6 @@ export default function Evaluations() {
     return (rawEvals ?? []).map((e) => toEvaluation(e, { tiersById, usersById }));
   }, [rawEvals, tiersData, userData]);
 
-  const filtered = useMemo(() => {
-    return evaluations.filter((e) => {
-      if (typeFilter && e.typeEval !== typeFilter) return false;
-      if (statutFilter && e.statut !== statutFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (
-          !e.partenaire.toLowerCase().includes(q) &&
-          !e.id.toLowerCase().includes(q) &&
-          !e.evaluateur.toLowerCase().includes(q)
-        )
-          return false;
-      }
-      return true;
-    });
-  }, [evaluations, search, typeFilter, statutFilter]);
 
   // KPIs calculés à partir des évaluations réelles (même forme que le mock).
   const evalKpis = useMemo(() => {
@@ -383,11 +350,12 @@ export default function Evaluations() {
   const stepOneValid = tiersId !== '' && grilleId !== '' && evaluateurId !== '';
 
   const columns: Column<Evaluation>[] = [
-    { key: 'id', header: 'Réf.', render: (e) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{e.id}</span> },
-    { key: 'partenaire', header: 'Partenaire', render: (e) => <strong style={{ color: '#1A1A1A' }}>{e.partenaire}</strong> },
+    { key: 'id', header: 'Réf.', sortValue: (e) => e.id, searchValue: (e) => e.id, render: (e) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{e.id}</span> },
+    { key: 'partenaire', header: 'Partenaire', sortValue: (e) => e.partenaire, searchValue: (e) => e.partenaire, render: (e) => <strong style={{ color: '#1A1A1A' }}>{e.partenaire}</strong> },
     {
       key: 'type',
       header: 'Type',
+      sortValue: (e) => e.typeEval, searchValue: (e) => e.typeEval, filterable: true,
       render: (e) => (
         <Badge appearance="tint" color={typeColor(e.typeEval)} size="small" style={{ whiteSpace: 'nowrap' }}>
           {e.typeEval}
@@ -397,6 +365,7 @@ export default function Evaluations() {
     {
       key: 'score',
       header: 'Score',
+      sortValue: (e) => e.score,
       render: (e) => {
         const pct = (e.score / e.scoreMax) * 100;
         return (
@@ -414,14 +383,15 @@ export default function Evaluations() {
     {
       key: 'statut',
       header: 'Statut',
+      sortValue: (e) => e.statut, searchValue: (e) => e.statut, filterable: true,
       render: (e) => (
         <Badge appearance="tint" color={statutColor(e.statut)} size="small" style={{ whiteSpace: 'nowrap' }}>
           {e.statut}
         </Badge>
       ),
     },
-    { key: 'evaluateur', header: 'Évaluateur', render: (e) => e.evaluateur },
-    { key: 'date', header: 'Date', render: (e) => e.date },
+    { key: 'evaluateur', header: 'Évaluateur', sortValue: (e) => e.evaluateur, searchValue: (e) => e.evaluateur, filterable: true, render: (e) => e.evaluateur },
+    { key: 'date', header: 'Date', sortValue: (e) => e.date, searchValue: (e) => e.date, render: (e) => e.date },
     {
       key: 'actions',
       header: '',
@@ -435,6 +405,11 @@ export default function Evaluations() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(evaluations, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
 
   return (
     <div>
@@ -475,22 +450,22 @@ export default function Evaluations() {
       />
 
       <div className={styles.kpiRow}>
-        <div className={styles.kpi} onClick={() => { setTypeFilter(''); setStatutFilter(''); }}>
+        <div className={styles.kpi} onClick={() => table.reset()}>
           <div className={styles.kpiLabel}>{evalKpis.total.label}</div>
           <div className={styles.kpiValue}>{evalKpis.total.value}</div>
           <div className={styles.kpiMeta}>{t('cumul depuis janvier')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Conforme')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Conforme')}>
           <div className={styles.kpiLabel}>{evalKpis.conformes.label}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{evalKpis.conformes.value}</div>
           <div className={styles.kpiMeta}>{evalKpis.conformes.pct}% {t('du total')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('À améliorer')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'À améliorer')}>
           <div className={styles.kpiLabel}>{evalKpis.ameliorer.label}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{evalKpis.ameliorer.value}</div>
           <div className={styles.kpiMeta}>{evalKpis.ameliorer.pct}% {t('du total')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Non conforme')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Non conforme')}>
           <div className={styles.kpiLabel}>{evalKpis.nonConformes.label}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{evalKpis.nonConformes.value}</div>
           <div className={styles.kpiMeta}>{evalKpis.nonConformes.pct}% {t('— escalade')}</div>
@@ -539,10 +514,7 @@ export default function Evaluations() {
               search={search}
               onSearchChange={setSearch}
               searchPlaceholder="Rechercher un partenaire…"
-              filters={[
-                { key: 'type', label: 'Type', value: typeFilter, options: TYPE_OPTIONS, onChange: setTypeFilter },
-                { key: 'statut', label: 'Statut', value: statutFilter, options: STATUT_OPTIONS, onChange: setStatutFilter },
-              ]}
+              filters={table.filterConfigs}
             />
           </div>
           <DataTable
