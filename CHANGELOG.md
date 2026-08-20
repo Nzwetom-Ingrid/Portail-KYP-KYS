@@ -12,6 +12,13 @@ lecteur non technique.
 
 ### À traiter — relevé, non corrigé
 
+- **Demande de revue : invisible côté conformité.** Depuis le portail, la
+  demande est désormais enregistrée et horodatée, mais elle n'apparaît dans
+  aucun écran de l'application interne et ne déclenche aucune notification.
+  La DCONF ne la découvre qu'en interrogeant la table des documents, sur le
+  marqueur . Reste à construire : l'écran de traitement
+  côté back-office, et l'envoi depuis l'adresse de la banque.
+
 - **Authentification du portail : plusieurs portes ouvertes.** Les paramètres
   du site autorisent simultanément la connexion locale par mot de passe
   (`LocalLoginEnabled`), Azure AD, les fournisseurs externes, **et
