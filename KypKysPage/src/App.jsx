@@ -22,7 +22,7 @@ import Documents from './pages/Documents'
 import DocumentsRecus from './pages/DocumentsRecus'
 import { USE_DATAVERSE } from './config/dataverse'
 import { getCurrentUser } from './services/dataverse'
-import { getCurrentUserProfile } from './services/portal'
+import { getCurrentTiers, getCurrentUserProfile, loadAccessibleTiers, setCurrentTiers } from './services/portal'
 import { useIdleTimer } from './hooks/useIdleTimer'
 
 export default function App() {
@@ -35,6 +35,9 @@ export default function App() {
   // En local (mock), on considère l'utilisateur déjà authentifié.
   const [auth, setAuth] = useState(USE_DATAVERSE ? 'loading' : 'authenticated')
   const [profile, setProfile] = useState(null)
+  // Entreprises accessibles : une meme personne peut suivre plusieurs partenaires.
+  const [entreprises, setEntreprises] = useState([])
+  const [entrepriseActive, setEntrepriseActive] = useState(null)
 
   useEffect(() => {
     if (!USE_DATAVERSE) return // mode local : pas d'authentification Power Pages
@@ -57,8 +60,27 @@ export default function App() {
     getCurrentUserProfile()
       .then((p) => { if (!cancelled) setProfile(p) })
       .catch(() => {})
+    // Entreprises accessibles + celle actuellement retenue.
+    Promise.all([loadAccessibleTiers(), getCurrentTiers()])
+      .then(([liste, courant]) => {
+        if (cancelled) return
+        setEntreprises(liste)
+        setEntrepriseActive(courant?.afb_tiersid ?? null)
+      })
+      .catch(() => {})
     return () => { cancelled = true }
   }, [auth])
+
+  /**
+   * Bascule d'entreprise. On recharge la page plutôt que de propager le
+   * changement écran par écran : chaque page charge ses données au montage à
+   * partir du tiers courant, et un rechargement garantit qu'aucune donnée de
+   * l'entreprise précédente ne subsiste à l'écran.
+   */
+  const changerEntreprise = useCallback((tiersId) => {
+    setCurrentTiers(tiersId)
+    window.location.reload()
+  }, [])
 
   const notify = useCallback((message) => {
     setToast(message)
@@ -117,7 +139,17 @@ export default function App() {
       />
 
       <div className="main">
-        <Topbar view={view} onMenu={() => setMenuOpen((o) => !o)} onNotify={notify} profile={profile} search={search} onSearch={setSearch} />
+        <Topbar
+          view={view}
+          onMenu={() => setMenuOpen((o) => !o)}
+          onNotify={notify}
+          profile={profile}
+          search={search}
+          onSearch={setSearch}
+          entreprises={entreprises}
+          entrepriseActive={entrepriseActive}
+          onChangerEntreprise={changerEntreprise}
+        />
 
         {view === 'espace' && <MonEspace onNavigate={navigate} notify={notify} />}
         {view === 'onboarding' && <Onboarding notify={notify} />}

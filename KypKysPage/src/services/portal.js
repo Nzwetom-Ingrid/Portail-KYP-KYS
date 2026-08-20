@@ -71,12 +71,21 @@ const TIERS_SELECT =
   'afb_pays,afb_ville,afb_adressecomplete,afb_numerorccmimmatriculation,' +
   'afb_emailcontactprincipal,afb_telephone,afb_codeswiftbic,afb_secteurdactivite,afb_documentsrequis'
 
-export async function getCurrentTiers() {
-  if (_tiers) return _tiers
-  if (!dv.enabled) {
-    _tiers = MOCK_TIERS
-    return _tiers
-  }
+/** Entreprise retenue lorsque l'utilisateur en gère plusieurs. */
+const CLE_TIERS_CHOISI = 'afb_tiers_choisi'
+
+/**
+ * TOUTES les entreprises auxquelles l'utilisateur connecté a accès.
+ *
+ * Une même personne peut être rattachée à plusieurs partenaires — un dirigeant
+ * de groupe, un mandataire qui suit deux sociétés. Les trois voies de résolution
+ * sont donc explorées ENTIÈREMENT puis fusionnées, au lieu de s'arrêter à la
+ * première trouvée comme auparavant.
+ */
+export async function loadAccessibleTiers() {
+  if (!dv.enabled) return [MOCK_TIERS]
+
+  const trouves = new Map() // dédoublonné par identifiant de tiers
 
   // ---- Voie 1 (SÉCURISÉE) : tiers lié au Contact connecté via le lookup
   // afb_Tiers (relation afb_contact_Tiers_afb_tiers). Ne lit que SA propre
@@ -89,38 +98,78 @@ export async function getCurrentTiers() {
       `?$select=contactid&$expand=afb_Tiers($select=${TIERS_SELECT})`
     ).catch(() => null)
     if (c?.afb_Tiers) {
-      _tiers = mapTiers(c.afb_Tiers, null)
-      return _tiers
+      const m = mapTiers(c.afb_Tiers, null)
+      if (m) trouves.set(m.afb_tiersid, m)
     }
   }
 
   const email = await getCurrentUserEmail()
-  if (!email) return null
+  if (!email) return [...trouves.values()]
 
   // ---- Voie 2 (RECOMMANDÉE) : tiers dont « Email contact principal »
   // (afb_emailcontactprincipal) = e-mail de connexion. Robuste quand le lookup
-  // Contact.afb_Tiers n'est pas renseigné. Nécessite la permission de lecture
-  // (table afb_tiers) sur le rôle web du portail.
+  // Contact.afb_Tiers n'est pas renseigné.
   const direct = await dv.list(
     SETS.tiers,
-    `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$top=1&$select=${TIERS_SELECT}`
+    `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$select=${TIERS_SELECT}`
   ).catch(() => [])
-  if (direct[0]) {
-    _tiers = mapTiers(direct[0], null)
-    return _tiers
+  for (const t of direct) {
+    const m = mapTiers(t, null)
+    if (m) trouves.set(m.afb_tiersid, m)
   }
 
-  // ---- Voie 3 (REPLI) : identité externe B2C par e-mail (afb_tiersexterneb2c).
+  // ---- Voie 3 (REPLI) : identités externes B2C portant cet e-mail.
   const rows = await dv.list(
     SETS.tiersExterneB2C,
     `?$filter=afb_emaildauthentification eq '${esc(email)}'` +
-      `&$top=1&$select=afb_tiersexterneb2cid,afb_typedorganisation` +
+      `&$select=afb_tiersexterneb2cid,afb_typedorganisation` +
       `&$expand=afb_nomdutiers($select=${TIERS_SELECT})`
   ).catch(() => [])
+  for (const row of rows) {
+    const m = mapTiers(row?.afb_nomdutiers, row)
+    if (m) trouves.set(m.afb_tiersid, m)
+  }
 
-  const row = rows[0]
-  _tiers = mapTiers(row?.afb_nomdutiers, row)
+  return [...trouves.values()].sort((a, b) => (a.afb_nom || '').localeCompare(b.afb_nom || '', 'fr'))
+}
+
+/**
+ * Entreprise active. Lorsque l'utilisateur en gère plusieurs, c'est celle qu'il
+ * a choisie ; à défaut, la première. Le choix survit au rechargement.
+ */
+export async function getCurrentTiers() {
+  if (_tiers) return _tiers
+  if (!dv.enabled) {
+    _tiers = MOCK_TIERS
+    return _tiers
+  }
+
+  const accessibles = await loadAccessibleTiers()
+  if (!accessibles.length) return null
+
+  let choisi = null
+  try {
+    const id = localStorage.getItem(CLE_TIERS_CHOISI)
+    // Le choix mémorisé n'est retenu que s'il reste accessible : un accès peut
+    // avoir été révoqué depuis, et l'utilisateur se retrouverait sur une
+    // entreprise dont il ne voit plus rien.
+    choisi = id ? accessibles.find((t) => t.afb_tiersid === id) : null
+  } catch {
+    /* stockage indisponible (mode privé) : on prend la première */
+  }
+
+  _tiers = choisi ?? accessibles[0]
   return _tiers
+}
+
+/** Bascule d'entreprise. Le cache est vidé : tous les écrans se rechargent. */
+export function setCurrentTiers(tiersId) {
+  try {
+    localStorage.setItem(CLE_TIERS_CHOISI, tiersId)
+  } catch {
+    /* stockage indisponible : la bascule ne survivra pas au rechargement */
+  }
+  _tiers = null
 }
 
 // -------- Profil de l'utilisateur connecté (en-tête portail) ----

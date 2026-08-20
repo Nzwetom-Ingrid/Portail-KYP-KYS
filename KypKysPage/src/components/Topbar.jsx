@@ -15,7 +15,17 @@ const TITLES = {
 // Vues portant une liste filtrable par la recherche globale.
 const SEARCHABLE_VIEWS = ['documents', 'documents-recus', 'ubo', 'evaluations', 'questionnaires']
 
-export default function Topbar({ view, onMenu, onNotify, profile, search = '', onSearch }) {
+export default function Topbar({
+  view,
+  onMenu,
+  onNotify,
+  profile,
+  search = '',
+  onSearch,
+  entreprises = [],
+  entrepriseActive = null,
+  onChangerEntreprise,
+}) {
   const { t, lang, setLang } = useT()
   const meta = TITLES[view] ?? TITLES.espace
   const searchable = SEARCHABLE_VIEWS.includes(view)
@@ -51,6 +61,27 @@ export default function Topbar({ view, onMenu, onNotify, profile, search = '', o
           est masquée sur Mon espace / Onboarding — sans ça, ces éléments
           se recollaient au titre). */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
+
+      {/* Sélecteur d'entreprise — n'apparaît que si l'utilisateur en suit
+          plusieurs. Pour l'immense majorité des partenaires, rattachés à une
+          seule société, l'en-tête reste inchangé. */}
+      {entreprises.length > 1 && (
+        <label className="field" style={{ margin: 0, minWidth: 190 }}>
+          <select
+            value={entrepriseActive ?? ''}
+            onChange={(e) => onChangerEntreprise?.(e.target.value)}
+            aria-label={t('Entreprise active')}
+            style={{ height: 36, fontSize: 13 }}
+          >
+            {entreprises.map((e) => (
+              <option key={e.afb_tiersid} value={e.afb_tiersid}>
+                {e.afb_nom} · {e.afb_type}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
 
       {/* Sélecteur de langue FR / EN */}
       <div
