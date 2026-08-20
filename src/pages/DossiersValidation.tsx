@@ -29,6 +29,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { RisqueBadge, StatutBadge } from '@/components/common/StatusBadge';
 import {
   DetailDrawer,
@@ -416,30 +417,6 @@ const useStyles = makeStyles({
    Constantes
    ===================================================================== */
 
-const STATUT_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'En revue', value: 'En revue' },
-  { label: 'Validé', value: 'Validé' },
-  { label: 'Brouillon', value: 'Brouillon' },
-  { label: 'Expiré', value: 'Expiré' },
-  { label: 'Rejeté', value: 'Rejeté' },
-];
-
-const RISQUE_OPTIONS = [
-  { label: 'Tous risques', value: '' },
-  { label: 'Low', value: 'Low' },
-  { label: 'Medium', value: 'Medium' },
-  { label: 'High', value: 'High' },
-];
-
-const DIRECTION_OPTIONS = [
-  { label: 'Toutes directions', value: '' },
-  { label: 'DCONF', value: 'DCONF' },
-  { label: 'DMG', value: 'DMG' },
-  { label: 'TRESO', value: 'TRESO' },
-  { label: 'COMEX', value: 'COMEX' },
-];
-
 function getInitials(name: string) {
   const parts = name.split(' ').filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -629,32 +606,9 @@ export default function DossiersValidation() {
     }
   };
 
-  const [search, setSearch] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
-  const [risqueFilter, setRisqueFilter] = useState('');
-  const [directionFilter, setDirectionFilter] = useState('');
-
-  // Recherche globale (Header) : pré-remplit la recherche depuis ?q= à l'arrivée.
+  // Recherche globale (Header) : pre-remplit la recherche depuis ?q= a l'arrivee.
   const [searchParams] = useSearchParams();
-  // Re-joue à chaque changement d'URL : depuis /dossiers, une nouvelle recherche
-  // globale doit aussi rafraîchir le filtre de la page.
-  useEffect(() => {
-    const q = searchParams.get('q');
-    if (q) setSearch(q);
-  }, [searchParams]);
-
-  // Bascule un filtre : re-cliquer sur la même valeur le réinitialise.
-  const toggleStatut = (v: string) => setStatutFilter((cur) => (cur === v ? '' : v));
-  const toggleRisque = (v: string) => setRisqueFilter((cur) => (cur === v ? '' : v));
-
-  const anyFilterActive =
-    !!search || !!statutFilter || !!risqueFilter || !!directionFilter;
-  const resetFilters = () => {
-    setSearch('');
-    setStatutFilter('');
-    setRisqueFilter('');
-    setDirectionFilter('');
-  };
+  const qUrl = searchParams.get('q');
 
   /* Drawer & dialogs */
   const [openDossier, setOpenDossier] = useState<Dossier | null>(null);
@@ -664,64 +618,13 @@ export default function DossiersValidation() {
     null,
   );
 
-  const filtered = useMemo(() => {
-    return dossiers.filter((d) => {
-      if (statutFilter && d.statut !== statutFilter) return false;
-      if (risqueFilter && d.risque !== risqueFilter) return false;
-      if (directionFilter && d.direction !== directionFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (!d.entite.toLowerCase().includes(q) && !d.id.toLowerCase().includes(q)) return false;
-      }
-      return true;
-    });
-  }, [dossiers, search, statutFilter, risqueFilter, directionFilter]);
-
-  // Cartes KPI dynamiques + cliquables : chaque carte applique/retire son filtre.
-  const queue = [
-    {
-      label: t('En attente de revue'),
-      count: dossiers.filter((d) => d.statut === 'En revue').length,
-      color: 'var(--warning)',
-      meta: t('priorité hiérarchique'),
-      icon: <ClipboardTaskListLtr20Regular />,
-      active: statutFilter === 'En revue',
-      onClick: () => toggleStatut('En revue'),
-    },
-    {
-      label: t('Risque élevé'),
-      count: dossiers.filter((d) => d.risque === 'High').length,
-      color: '#8C040D',
-      meta: t('double validation'),
-      icon: <ShieldCheckmark20Regular />,
-      active: risqueFilter === 'High',
-      onClick: () => toggleRisque('High'),
-    },
-    {
-      label: t('Validés ce mois'),
-      count: dossiers.filter((d) => d.statut === 'Validé').length,
-      color: '#15803D',
-      meta: t('archivés'),
-      icon: <CheckmarkCircle20Filled />,
-      active: statutFilter === 'Validé',
-      onClick: () => toggleStatut('Validé'),
-    },
-    {
-      label: t('Rejetés'),
-      count: dossiers.filter((d) => d.statut === 'Rejeté').length,
-      color: '#B91C1C',
-      meta: t("renvoyés à l'émetteur"),
-      icon: <DismissCircle20Regular />,
-      active: statutFilter === 'Rejeté',
-      onClick: () => toggleStatut('Rejeté'),
-    },
-  ];
-
   const columns: Column<Dossier>[] = [
     {
       key: 'entite',
       header: 'Entité',
       sortValue: (d) => d.entite,
+      // L'entite porte aussi la reference du dossier : on doit pouvoir chercher les deux.
+      searchValue: (d) => `${d.entite} ${d.id}`,
       render: (d) => (
         <div className={styles.entityCell}>
           <div className={styles.avatar}>{getInitials(d.entite)}</div>
@@ -736,16 +639,19 @@ export default function DossiersValidation() {
       key: 'type',
       header: 'Type',
       sortValue: (d) => d.type,
+      searchValue: (d) => d.type,
+      filterable: true,
       render: (d) => (
         <Badge appearance="tint" color="subtle" size="small">
           {d.type}
         </Badge>
       ),
     },
-    { key: 'pays', header: 'Pays', sortValue: (d) => d.pays, render: (d) => d.pays ?? '—' },
-    { key: 'risque', header: 'Risque', sortValue: (d) => RISQUE_ORDRE[d.risque] ?? 99, render: (d) => <RisqueBadge risque={d.risque} /> },
-    { key: 'statut', header: 'Statut', sortValue: (d) => d.statut, render: (d) => <StatutBadge statut={d.statut} /> },
-    { key: 'charge', header: 'Chargé', sortValue: (d) => d.charge, render: (d) => d.charge ?? '—' },
+    { key: 'pays', header: 'Pays', sortValue: (d) => d.pays, searchValue: (d) => d.pays, filterable: true, render: (d) => d.pays ?? '—' },
+    { key: 'risque', header: 'Risque', sortValue: (d) => RISQUE_ORDRE[d.risque] ?? 99, searchValue: (d) => d.risque, filterable: true, render: (d) => <RisqueBadge risque={d.risque} /> },
+    { key: 'statut', header: 'Statut', sortValue: (d) => d.statut, searchValue: (d) => d.statut, filterable: true, render: (d) => <StatutBadge statut={d.statut} /> },
+    { key: 'charge', header: 'Chargé', sortValue: (d) => d.charge, searchValue: (d) => d.charge, filterable: true, render: (d) => d.charge ?? '—' },
+    { key: 'direction', header: 'Direction', sortValue: (d) => d.direction, searchValue: (d) => d.direction, filterable: true, render: (d) => d.direction ?? '—' },
     {
       key: 'actions',
       header: '',
@@ -784,6 +690,64 @@ export default function DossiersValidation() {
           </Tooltip>
         </div>
       ),
+    },
+  ];
+
+  // Recherche et filtres derives des colonnes : marquer une colonne
+  // filtrable suffit a lui donner sa liste deroulante, alimentee par les valeurs
+  // reellement presentes dans les donnees.
+  const table = useTableFilters(dossiers, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
+  // La recherche globale de l'en-tete pre-remplit celle de la page.
+  useEffect(() => {
+    if (qUrl) setSearch(qUrl);
+  }, [qUrl, setSearch]);
+
+  const anyFilterActive = table.actif;
+  const resetFilters = table.reset;
+  const toggleStatut = (v: string) => table.toggleFilter('statut', v);
+  const toggleRisque = (v: string) => table.toggleFilter('risque', v);
+
+
+  // Cartes KPI dynamiques + cliquables : chaque carte applique/retire son filtre.
+  const queue = [
+    {
+      label: t('En attente de revue'),
+      count: dossiers.filter((d) => d.statut === 'En revue').length,
+      color: 'var(--warning)',
+      meta: t('priorité hiérarchique'),
+      icon: <ClipboardTaskListLtr20Regular />,
+      active: table.getFilter('statut') === 'En revue',
+      onClick: () => toggleStatut('En revue'),
+    },
+    {
+      label: t('Risque élevé'),
+      count: dossiers.filter((d) => d.risque === 'High').length,
+      color: '#8C040D',
+      meta: t('double validation'),
+      icon: <ShieldCheckmark20Regular />,
+      active: table.getFilter('risque') === 'High',
+      onClick: () => toggleRisque('High'),
+    },
+    {
+      label: t('Validés ce mois'),
+      count: dossiers.filter((d) => d.statut === 'Validé').length,
+      color: '#15803D',
+      meta: t('archivés'),
+      icon: <CheckmarkCircle20Filled />,
+      active: table.getFilter('statut') === 'Validé',
+      onClick: () => toggleStatut('Validé'),
+    },
+    {
+      label: t('Rejetés'),
+      count: dossiers.filter((d) => d.statut === 'Rejeté').length,
+      color: '#B91C1C',
+      meta: t("renvoyés à l'émetteur"),
+      icon: <DismissCircle20Regular />,
+      active: table.getFilter('statut') === 'Rejeté',
+      onClick: () => toggleStatut('Rejeté'),
     },
   ];
 
@@ -854,18 +818,8 @@ export default function DossiersValidation() {
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Rechercher un dossier, une entité…"
-        filters={[
-          { key: 'statut', label: 'Statut', value: statutFilter, options: STATUT_OPTIONS, onChange: setStatutFilter },
-          { key: 'risque', label: 'Risque', value: risqueFilter, options: RISQUE_OPTIONS, onChange: setRisqueFilter },
-          {
-            key: 'direction',
-            label: 'Direction',
-            value: directionFilter,
-            options: DIRECTION_OPTIONS,
-            onChange: setDirectionFilter,
-          },
-        ]}
+        searchPlaceholder="Rechercher dans toutes les colonnes…"
+        filters={table.filterConfigs}
         trailing={
           anyFilterActive ? (
             <Button appearance="subtle" icon={<DismissCircle20Regular />} onClick={resetFilters}>

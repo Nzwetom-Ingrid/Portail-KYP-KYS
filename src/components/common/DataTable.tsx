@@ -121,6 +121,22 @@ export interface Column<T> {
    * JSX (badges, avatars), et trier des éléments React n'a pas de sens.
    */
   sortValue?: (row: T) => string | number | Date | null | undefined;
+  /**
+   * Texte pris en compte par la recherche globale. Même raison que pour le tri :
+   * la barre de recherche ne peut pas fouiller dans du JSX.
+   */
+  searchValue?: (row: T) => string | null | undefined;
+  /**
+   * Ajoute une liste déroulante de filtre pour cette colonne. Les valeurs
+   * proposées sont DÉDUITES des données affichées : pas de liste à maintenir en
+   * parallèle, et aucune option morte qui ne correspondrait à aucune ligne.
+   */
+  filterable?: boolean;
+  /**
+   * Valeur servant au filtrage, si elle diffère de `searchValue`. Utile quand
+   * l'affichage est enrichi (« Risque Low ») mais qu'on filtre sur « Low ».
+   */
+  filterValue?: (row: T) => string | null | undefined;
 }
 
 export type SortDirection = 'asc' | 'desc';
