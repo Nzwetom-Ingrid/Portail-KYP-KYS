@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Icon from '../components/Icon'
+import SearchableSelect from '../components/SearchableSelect'
 import { useT } from '../i18n/i18n'
 import {
   deleteDocument,
@@ -266,12 +267,13 @@ export default function Documents({ notify, search = '' }) {
             <label>
               <Icon name="folder" size={15} /> {t('Catégorie du document')} <span className="req">*</span>
             </label>
-            <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-              {categories.length === 0 && <option value="">{t('Chargement…')}</option>}
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.label}</option>
-              ))}
-            </select>
+            <SearchableSelect
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              options={categories.map((c) => ({ label: c.label, value: c.id }))}
+              placeholder={categories.length ? '— Sélectionner —' : 'Chargement…'}
+              disabled={categories.length === 0}
+            />
             <span className="field__hint">
               {t('Classe la pièce dans la bibliothèque (Identification, Conventions, Audit…).')}
             </span>
@@ -280,14 +282,12 @@ export default function Documents({ notify, search = '' }) {
             <label>
               <Icon name="fileText" size={15} /> {t('Pièce demandée')}
             </label>
-            <select value={docType} onChange={(e) => setDocType(e.target.value)}>
-              <option value="">{t('— Autre / non listée —')}</option>
-              {required.map((r) => (
-                <option key={r.key} value={r.key}>
-                  {r.name}{r.mandatory ? ' *' : ''}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              value={docType}
+              onChange={(e) => setDocType(e.target.value)}
+              placeholder="— Autre / non listée —"
+              options={required.map((r) => ({ label: r.name + (r.mandatory ? ' *' : ''), value: r.key }))}
+            />
             <span className="field__hint">
               {t('Rattache ce dépôt à une pièce attendue de votre dossier (suivi des manquants).')}
             </span>

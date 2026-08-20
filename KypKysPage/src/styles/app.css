@@ -1454,3 +1454,109 @@
   font-size: 13px;
   margin-top: 14px;
 }
+
+/* ============================================================
+   Liste déroulante avec recherche (SearchableSelect)
+   Remplace <select> sur les champs à forte cardinalité : pays,
+   secteurs d'activité, catégories documentaires.
+   ============================================================ */
+.ss {
+  position: relative;
+  width: 100%;
+}
+
+/* Le déclencheur reprend l'apparence d'un <select> du formulaire, pour ne pas
+   créer deux styles de champ côte à côte dans un même écran. */
+.ss__control {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface, #fff);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ss__control:hover:not(:disabled) { border-color: var(--brand, #c8102e); }
+.ss__control:disabled { opacity: .6; cursor: not-allowed; }
+.ss__control.is-open { border-color: var(--brand, #c8102e); }
+.ss__control:focus-visible { outline: 2px solid var(--brand, #c8102e); outline-offset: 2px; }
+.ss__placeholder { color: var(--muted); }
+
+.ss__menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px -12px rgba(20, 20, 20, .22);
+  overflow: hidden;
+}
+
+/* Le champ reste visible pendant qu'on fait défiler une longue liste. */
+.ss__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--muted);
+}
+
+.ss__search input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: transparent;
+}
+
+/* Hauteur plafonnée : 200 pays ne doivent pas déborder de l'écran. */
+.ss__list { max-height: 260px; overflow-y: auto; }
+
+.ss__group {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+
+.ss__option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ss__option:hover { background: var(--surface-2); }
+.ss__option.is-selected { color: var(--brand, #c8102e); font-weight: 600; }
+.ss__option:focus-visible { outline: 2px solid var(--brand, #c8102e); outline-offset: -2px; }
+
+.ss__empty {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}

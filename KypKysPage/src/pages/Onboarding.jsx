@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Icon from '../components/Icon'
+import SearchableSelect from '../components/SearchableSelect'
 import { useT } from '../i18n/i18n'
 import { submitOnboarding, getCurrentTiers, loadDocumentCategories, uploadDocument } from '../services/portal'
 import { COUNTRIES } from '../config/countries'
@@ -353,30 +354,32 @@ export default function Onboarding({ notify }) {
               </div>
               <div className="field">
                 <label>{t('Secteur d’activité')}</label>
-                <select value={form.secteur} onChange={set('secteur')}>
-                  <option value="">{t('— Sélectionner —')}</option>
-                  {/* Fiches créées avant la liste fermée : on garde la valeur libre
-                      visible plutôt que de la faire disparaître sans prévenir. */}
-                  {form.secteur && !isKnownSector(form.secteur) && (
-                    <option value={form.secteur}>{form.secteur} ({t('valeur actuelle')})</option>
-                  )}
-                  {SECTOR_GROUPS.map((g) => (
-                    <optgroup key={g.code} label={g.label}>
-                      {g.items.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
+                {/* 110 secteurs : la recherche est indispensable, faire défiler
+                    vingt groupes à l'aveugle ne mène nulle part. */}
+                <SearchableSelect
+                  value={form.secteur}
+                  onChange={set('secteur')}
+                  groups={[
+                    // Fiches créées avant la liste fermée : on garde la valeur
+                    // libre visible plutôt que de la faire disparaître sans rien dire.
+                    ...(form.secteur && !isKnownSector(form.secteur)
+                      ? [{ label: t('Valeur actuelle'), options: [{ label: form.secteur, value: form.secteur }] }]
+                      : []),
+                    ...SECTOR_GROUPS.map((g) => ({
+                      label: g.label,
+                      options: g.items.map((s) => ({ label: s, value: s })),
+                    })),
+                  ]}
+                />
               </div>
               <div className="field">
                 <label>{t('Pays')}</label>
-                <select value={form.pays} onChange={set('pays')}>
-                  <option value="">{t('— Sélectionner —')}</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                {/* Près de 200 pays : même raison que pour les secteurs. */}
+                <SearchableSelect
+                  value={form.pays}
+                  onChange={set('pays')}
+                  options={COUNTRIES.map((c) => ({ label: c, value: c }))}
+                />
               </div>
               <div className="field">
                 <label>{t('Ville')}</label>
