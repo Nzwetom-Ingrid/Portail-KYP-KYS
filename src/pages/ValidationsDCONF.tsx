@@ -20,6 +20,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
+import { SelectionBar } from '@/components/common/SelectionBar';
 import { RisqueBadge, SLABadge } from '@/components/common/StatusBadge';
 import { type ValidationDecision } from '@/lib/mockData';
 import { dossiersKypKys, tiers as tiersHooks, utilisateursInternes } from '@/lib/dataverse/entityHooks';
@@ -402,6 +403,9 @@ export default function ValidationsDCONF() {
   const table = useTableFilters(validations, columns);
   const { search, setSearch } = table;
   const filtered = table.rows;
+  const [selection, setSelection] = useState<Set<string>>(new Set());
+  // Exporter la selection si elle existe, sinon ce que les filtres laissent voir.
+  const aExporter = selection.size ? filtered.filter((r) => selection.has(r.id)) : filtered;
 
   const kpis = [
     {
@@ -452,7 +456,7 @@ export default function ValidationsDCONF() {
             onClick={() => {
               const ok = exportToCsv(
                 `validations-dconf-${new Date().toISOString().slice(0, 10)}.csv`,
-                filtered.map((v) => ({
+                aExporter.map((v) => ({
                   Référence: v.id,
                   Dossier: v.dossier,
                   Entité: v.entite,
@@ -518,13 +522,19 @@ export default function ValidationsDCONF() {
         ) : isLoading ? (
           <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des décisions…')}</div>
         ) : (
+          <>
+          <SelectionBar count={selection.size} onClear={() => setSelection(new Set())} />
           <DataTable
             columns={columns}
             rows={filtered}
             rowKey={(v) => v.id}
+            selectable
+            selectedKeys={selection}
+            onSelectionChange={setSelection}
             onRowClick={open}
             emptyMessage="Aucune décision ne correspond aux filtres."
           />
+          </>
         )}
       </Card>
 

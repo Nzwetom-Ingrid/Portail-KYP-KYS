@@ -30,6 +30,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
+import { SelectionBar } from '@/components/common/SelectionBar';
 import { RisqueBadge, StatutBadge } from '@/components/common/StatusBadge';
 import {
   DetailDrawer,
@@ -699,6 +700,8 @@ export default function DossiersValidation() {
   const table = useTableFilters(dossiers, columns);
   const { search, setSearch } = table;
   const filtered = table.rows;
+  // Selection de lignes : la page decide de ce qu'on peut en faire.
+  const [selection, setSelection] = useState<Set<string>>(new Set());
 
   // La recherche globale de l'en-tete pre-remplit celle de la page.
   useEffect(() => {
@@ -751,10 +754,14 @@ export default function DossiersValidation() {
     },
   ];
 
+  // Exporter la selection si elle existe, sinon tout ce que les filtres laissent
+  // voir : l'utilisateur exporte ce qu'il a sous les yeux.
+  const aExporter = selection.size ? filtered.filter((d) => selection.has(d.id)) : filtered;
+
   const exportDossiers = async () => {
     const ok = exportToCsv(
       `dossiers-${new Date().toISOString().slice(0, 10)}.csv`,
-      filtered.map((d) => ({
+      aExporter.map((d) => ({
         Référence: d.id,
         Entité: d.entite,
         Type: d.type,
@@ -845,13 +852,23 @@ export default function DossiersValidation() {
         ) : isLoading ? (
           <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des dossiers…')}</div>
         ) : (
+          <>
+          <SelectionBar count={selection.size} onClear={() => setSelection(new Set())}>
+            <Button size="small" appearance="outline" icon={<ArrowDownload20Regular />} onClick={exportDossiers}>
+              {t('Exporter la sélection')}
+            </Button>
+          </SelectionBar>
           <DataTable
             columns={columns}
             rows={filtered}
             rowKey={(d) => d.id}
+            selectable
+            selectedKeys={selection}
+            onSelectionChange={setSelection}
             emptyMessage="Aucun dossier ne correspond aux filtres."
             onRowClick={(d) => setOpenDossier(d)}
           />
+          </>
         )}
       </Card>
 

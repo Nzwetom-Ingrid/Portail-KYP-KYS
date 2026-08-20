@@ -23,6 +23,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
+import { SelectionBar } from '@/components/common/SelectionBar';
 import { type Utilisateur } from '@/lib/mockData';
 import { utilisateursInternes, journalAudit } from '@/lib/dataverse/entityHooks';
 import { toUtilisateur, DV_DIRECTION_CODE, DV_ROLE_CODE, DV_ACTIF_OUI, DV_ACTIF_NON } from '@/lib/dataverse/userMappers';
@@ -445,6 +446,9 @@ export default function Users() {
   const table = useTableFilters(users, columns);
   const { search, setSearch } = table;
   const filtered = table.rows;
+  const [selection, setSelection] = useState<Set<string>>(new Set());
+  // Exporter la selection si elle existe, sinon ce que les filtres laissent voir.
+  const aExporter = selection.size ? filtered.filter((r) => selection.has(r.id)) : filtered;
 
 
   return (
@@ -461,7 +465,7 @@ export default function Users() {
               onClick={() => {
                 const ok = exportToCsv(
                   `utilisateurs-${new Date().toISOString().slice(0, 10)}.csv`,
-                  filtered.map((u) => ({
+                  aExporter.map((u) => ({
                     Nom: u.nom,
                     Prénom: u.prenom,
                     Email: u.email,
@@ -531,13 +535,19 @@ export default function Users() {
         ) : isLoading ? (
           <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des utilisateurs…')}</div>
         ) : (
+          <>
+          <SelectionBar count={selection.size} onClear={() => setSelection(new Set())} />
           <DataTable
             columns={columns}
             rows={filtered}
             rowKey={(u) => u.id}
+            selectable
+            selectedKeys={selection}
+            onSelectionChange={setSelection}
             onRowClick={open}
             emptyMessage="Aucun utilisateur ne correspond aux filtres."
           />
+          </>
         )}
       </Card>
 

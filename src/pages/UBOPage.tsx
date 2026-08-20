@@ -28,6 +28,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
+import { SelectionBar } from '@/components/common/SelectionBar';
 import { type UBO } from '@/lib/mockData';
 import { ubo as uboHooks, tiers as tiersHooks, utilisateursInternes } from '@/lib/dataverse/entityHooks';
 import { useRoleStore } from '@/store/roleStore';
@@ -430,6 +431,9 @@ export default function UBOPage() {
   const table = useTableFilters(ubos, columns);
   const { search, setSearch } = table;
   const filtered = table.rows;
+  const [selection, setSelection] = useState<Set<string>>(new Set());
+  // Exporter la selection si elle existe, sinon ce que les filtres laissent voir.
+  const aExporter = selection.size ? filtered.filter((r) => selection.has(r.id)) : filtered;
 
 
   // Fiches nécessitant une revue : à revoir, ou PPE non encore validée.
@@ -450,7 +454,7 @@ export default function UBOPage() {
               onClick={() => {
                 const ok = exportToCsv(
                   `ubo-${new Date().toISOString().slice(0, 10)}.csv`,
-                  filtered.map((u) => ({
+                  aExporter.map((u) => ({
                     Nom: u.nom,
                     Nationalité: u.nationalite,
                     Partenaire: u.partenaire,
@@ -567,13 +571,19 @@ export default function UBOPage() {
         ) : isLoading ? (
           <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des bénéficiaires…')}</div>
         ) : (
+          <>
+          <SelectionBar count={selection.size} onClear={() => setSelection(new Set())} />
           <DataTable
             columns={columns}
             rows={filtered}
             rowKey={(u) => u.id}
+            selectable
+            selectedKeys={selection}
+            onSelectionChange={setSelection}
             onRowClick={open}
             emptyMessage="Aucun bénéficiaire ne correspond aux filtres."
           />
+          </>
         )}
       </Card>
 
