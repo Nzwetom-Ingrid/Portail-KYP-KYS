@@ -21,11 +21,11 @@ const useStyles = makeStyles({
     padding: '14px 26px',
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#8A8A8A',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.09em',
-    borderBottom: '1px solid #F1EFE9',
-    backgroundColor: '#FCFBF9',
+    borderBottom: '1px solid var(--glass-border)',
+    backgroundColor: 'var(--bg)',
     whiteSpace: 'nowrap',
     position: 'sticky',
     top: 0,
@@ -74,8 +74,8 @@ const useStyles = makeStyles({
   td: {
     padding: '17px 26px',
     fontSize: '13.5px',
-    color: '#3A3A3A',
-    borderBottom: '1px solid #F4F2EC',
+    color: 'var(--text-secondary)',
+    borderBottom: '1px solid var(--glass-border)',
     verticalAlign: 'middle',
   },
   tdRight: {
@@ -83,28 +83,28 @@ const useStyles = makeStyles({
   },
   tr: {
     transition: 'background-color 180ms cubic-bezier(0.16, 1, 0.3, 1)',
-    ':hover': { backgroundColor: '#FAF9F6' },
+    ':hover': { backgroundColor: 'var(--bg)' },
     ':last-child > td': { borderBottom: 'none' },
   },
   trClickable: {
     cursor: 'pointer',
     position: 'relative',
     ':hover': {
-      backgroundColor: '#FDF0F1',
+      backgroundColor: 'var(--glass-red-bg)',
     },
     ':active': {
-      backgroundColor: '#FDE0E3',
+      backgroundColor: 'var(--glass-red-bg)',
     },
     ':focus-visible': {
       outline: 'none',
-      backgroundColor: '#FDF0F1',
+      backgroundColor: 'var(--glass-red-bg)',
       boxShadow: 'inset 3px 0 0 var(--accent)',
     },
   },
   empty: {
     padding: '48px 24px',
     textAlign: 'center',
-    color: '#737373',
+    color: 'var(--text-muted)',
     fontSize: '13px',
   },
 });

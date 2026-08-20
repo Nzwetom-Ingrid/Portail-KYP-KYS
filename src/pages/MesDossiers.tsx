@@ -112,7 +112,7 @@ export default function MesDossiers() {
   };
 
   const columns: Column<Row>[] = [
-    { key: 'ref', header: 'Référence', render: (r) => <span style={{ fontWeight: 600, color: '#1A1A1A' }}>{r.reference}</span> },
+    { key: 'ref', header: 'Référence', render: (r) => <span style={{ fontWeight: 600, color: 'var(--text)' }}>{r.reference}</span> },
     { key: 'tiers', header: 'Tiers', render: (r) => r.tiers },
     {
       key: 'statut',
@@ -134,7 +134,7 @@ export default function MesDossiers() {
           <div style={{ flex: 1, height: 6, borderRadius: 999, background: '#F1EFE9', overflow: 'hidden' }}>
             <div style={{ width: `${Math.min(100, Math.max(0, r.taux))}%`, height: '100%', background: r.taux >= 100 ? '#15803D' : 'var(--accent)' }} />
           </div>
-          <span style={{ fontSize: 12, color: '#525252', fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.taux)}%</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.taux)}%</span>
         </div>
       ),
     },
@@ -171,7 +171,7 @@ export default function MesDossiers() {
         {error ? (
           <div style={{ padding: 20, color: 'var(--danger)' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
         ) : isLoading ? (
-          <div style={{ padding: 20, color: '#737373' }}>{t('Chargement des dossiers…')}</div>
+          <div style={{ padding: 20, color: 'var(--text-muted)' }}>{t('Chargement des dossiers…')}</div>
         ) : (
           <DataTable
             columns={columns}

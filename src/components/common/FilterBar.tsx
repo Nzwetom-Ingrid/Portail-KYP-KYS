@@ -19,8 +19,8 @@ const useStyles = makeStyles({
     gap: '12px',
     alignItems: 'center',
     padding: '16px 22px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid rgba(20, 20, 20, 0.05)',
+    backgroundColor: 'var(--glass-bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '18px',
     boxShadow: '0 1px 3px rgba(20, 20, 20, 0.04), 0 12px 32px -20px rgba(20, 20, 20, 0.12)',
     marginBottom: '20px',
@@ -106,7 +106,7 @@ export function FilterBar({
       {onSearchChange !== undefined && (
         <Input
           className={styles.searchField}
-          contentBefore={<Search20Regular style={{ color: '#737373' }} />}
+          contentBefore={<Search20Regular style={{ color: 'var(--text-muted)' }} />}
           placeholder={t(searchPlaceholder)}
           value={search ?? ''}
           onChange={(_, data) => onSearchChange(data.value)}

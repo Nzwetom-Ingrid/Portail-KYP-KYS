@@ -49,10 +49,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   kpi: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '18px 20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -61,18 +61,18 @@ const useStyles = makeStyles({
   kpiLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '6px',
   },
   kpiValue: { fontSize: '28px', fontWeight: 700, lineHeight: 1 },
-  kpiMeta: { fontSize: '12px', color: '#767676', marginTop: '6px' },
+  kpiMeta: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
   scoreCell: { display: 'flex', alignItems: 'center', gap: '10px' },
   scoreBar: {
     width: '80px',
     height: '6px',
-    backgroundColor: '#F4F4F4',
+    backgroundColor: 'var(--bg)',
     borderRadius: '999px',
     overflow: 'hidden',
   },
@@ -82,16 +82,16 @@ const useStyles = makeStyles({
   donutLegend: { display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 },
   legendRow: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' },
   legendDot: { width: '12px', height: '12px', borderRadius: '3px', flexShrink: 0 },
-  legendLabel: { flex: 1, color: '#404040' },
-  legendValue: { fontWeight: 600, color: '#1A1A1A' },
+  legendLabel: { flex: 1, color: 'var(--text-secondary)' },
+  legendValue: { fontWeight: 600, color: 'var(--text)' },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
   bigScore: {
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
     padding: '14px 16px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '10px',
     marginBottom: '12px',
   },
@@ -99,7 +99,7 @@ const useStyles = makeStyles({
   bigScoreBar: {
     flex: 1,
     height: '8px',
-    backgroundColor: '#F4F4F4',
+    backgroundColor: 'var(--bg)',
     borderRadius: '999px',
     overflow: 'hidden',
   },
@@ -108,18 +108,18 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '12px',
     padding: '10px 12px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
     marginBottom: '6px',
   },
-  sectionRowName: { flex: 1, fontSize: '13px', fontWeight: 500, color: '#1A1A1A' },
+  sectionRowName: { flex: 1, fontSize: '13px', fontWeight: 500, color: 'var(--text)' },
   ecart: {
     display: 'flex',
     gap: '10px',
     padding: '12px 14px',
     border: '1px solid #FCE4E6',
-    backgroundColor: '#FEF2F3',
+    backgroundColor: 'var(--glass-red-bg)',
     borderRadius: '8px',
     marginBottom: '8px',
   },
@@ -351,7 +351,7 @@ export default function Evaluations() {
 
   const columns: Column<Evaluation>[] = [
     { key: 'id', header: 'Réf.', sortValue: (e) => e.id, searchValue: (e) => e.id, render: (e) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{e.id}</span> },
-    { key: 'partenaire', header: 'Partenaire', sortValue: (e) => e.partenaire, searchValue: (e) => e.partenaire, render: (e) => <strong style={{ color: '#1A1A1A' }}>{e.partenaire}</strong> },
+    { key: 'partenaire', header: 'Partenaire', sortValue: (e) => e.partenaire, searchValue: (e) => e.partenaire, render: (e) => <strong style={{ color: 'var(--text)' }}>{e.partenaire}</strong> },
     {
       key: 'type',
       header: 'Type',
@@ -630,7 +630,7 @@ export default function Evaluations() {
                           }}
                         />
                       </div>
-                      <div style={{ marginTop: '8px', fontSize: '13px', color: '#767676' }}>
+                      <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>
                         {openEval.score} {t('points sur')} {openEval.scoreMax} {t('— statut')} {' '}
                         <strong style={{ color: scoreColor(openEval.score) }}>{openEval.statut}</strong>
                       </div>
@@ -681,7 +681,7 @@ export default function Evaluations() {
                 description={t('Points nécessitant un plan d\'action — suivi par le chargé de relation.')}
               >
                 {openEval.statut === 'Conforme' ? (
-                  <div style={{ fontSize: '13px', color: '#767676', padding: '20px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', padding: '20px', textAlign: 'center' }}>
                     {t('Aucun écart identifié — évaluation conforme.')}
                   </div>
                 ) : (

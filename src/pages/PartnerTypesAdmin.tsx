@@ -57,13 +57,13 @@ const useStyles = makeStyles({
     gap: '16px',
   },
   titleBlock: { flex: 1 },
-  title: { fontSize: '28px', fontWeight: 700, color: '#1A1A1A', marginBottom: '6px' },
-  subtitle: { fontSize: '14px', color: '#767676' },
+  title: { fontSize: '28px', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' },
+  subtitle: { fontSize: '14px', color: 'var(--text-muted)' },
   actions: { display: 'flex', gap: '8px' },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     overflow: 'hidden',
   },
@@ -80,32 +80,32 @@ const useStyles = makeStyles({
     padding: '14px 20px',
     fontSize: '11px',
     fontWeight: 600,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
-    borderBottom: '1px solid #F4F4F4',
-    backgroundColor: '#FAFAFA',
+    borderBottom: '1px solid var(--glass-border)',
+    backgroundColor: 'var(--bg)',
   },
   td: {
     padding: '14px 20px',
     fontSize: '13px',
-    color: '#404040',
-    borderBottom: '1px solid #F4F4F4',
+    color: 'var(--text-secondary)',
+    borderBottom: '1px solid var(--glass-border)',
   },
   tr: {
     cursor: 'pointer',
     transition: 'background 0.12s',
-    ':hover': { backgroundColor: '#FAFAFA' },
+    ':hover': { backgroundColor: 'var(--bg)' },
   },
-  codeCell: { fontFamily: 'monospace', fontWeight: 600, color: '#1A1A1A' },
-  count: { fontSize: '13px', color: '#767676', marginTop: '16px' },
+  codeCell: { fontFamily: 'monospace', fontWeight: 600, color: 'var(--text)' },
+  count: { fontSize: '13px', color: 'var(--text-muted)', marginTop: '16px' },
   checklistItem: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
     padding: '10px 12px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
     marginBottom: '6px',
   },
@@ -338,7 +338,7 @@ export default function PartnerTypesAdmin() {
                 {filtered.map((pt) => (
                   <tr key={pt.afb_typedepartenaireid} className={styles.tr} onClick={() => open(pt)}>
                     <td className={`${styles.td} ${styles.codeCell}`}>{pt.afb_code}</td>
-                    <td className={styles.td} style={{ fontWeight: 500, color: '#1A1A1A' }}>{pt.afb_libellefr}</td>
+                    <td className={styles.td} style={{ fontWeight: 500, color: 'var(--text)' }}>{pt.afb_libellefr}</td>
                     <td className={styles.td}>{pt.afb_libelleen ?? '—'}</td>
                     <td className={styles.td}>{getFamilleLabel(pt.afb_famille)}</td>
                     <td className={styles.td}>{pt.afb_seuilubodefaut}%</td>
@@ -439,8 +439,8 @@ export default function PartnerTypesAdmin() {
                   <div key={c.id} className={styles.checklistItem}>
                     <Document20Regular style={{ color: c.required ? 'var(--accent)' : '#C8C8C8' }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>{c.label}</div>
-                      <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{c.label}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                         {t('Validité')} {c.validity} {t('mois · poids')} {c.weight}/5
                       </div>
                     </div>
@@ -570,8 +570,8 @@ export default function PartnerTypesAdmin() {
               <Checkbox checked={c.required} onChange={() => toggleRequired(c.id)} />
               <Document20Regular style={{ color: c.required ? 'var(--accent)' : '#767676' }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>{c.label}</div>
-                <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{c.label}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                   {t('Validité')} {c.validity} {t('mois · poids')} {c.weight}/5
                 </div>
               </div>

@@ -34,10 +34,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   kpi: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '18px 20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -46,13 +46,13 @@ const useStyles = makeStyles({
   kpiLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '6px',
   },
   kpiValue: { fontSize: '28px', fontWeight: 700, lineHeight: 1 },
-  kpiMeta: { fontSize: '12px', color: '#767676', marginTop: '6px' },
+  kpiMeta: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
   resultatCell: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -60,8 +60,8 @@ const useStyles = makeStyles({
     fontWeight: 600,
     fontSize: '13px',
   },
-  timestampCell: { fontFamily: 'monospace', fontSize: '12px', color: '#404040' },
-  ipCell: { fontFamily: 'monospace', fontSize: '12px', color: '#767676' },
+  timestampCell: { fontFamily: 'monospace', fontSize: '12px', color: 'var(--text-secondary)' },
+  ipCell: { fontFamily: 'monospace', fontSize: '12px', color: 'var(--text-muted)' },
   payload: {
     fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
     fontSize: '12px',
@@ -78,8 +78,8 @@ const useStyles = makeStyles({
     display: 'flex',
     gap: '10px',
     padding: '12px 14px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
     marginBottom: '14px',
   },
@@ -163,7 +163,7 @@ export default function AuditLogs() {
 
   const columns: Column<AuditLog>[] = [
     { key: 'horodatage', header: 'Horodatage', sortValue: (l) => l.horodatage, searchValue: (l) => l.horodatage, render: (l) => <span className={styles.timestampCell}>{l.horodatage}</span> },
-    { key: 'utilisateur', header: 'Utilisateur', sortValue: (l) => l.utilisateur, searchValue: (l) => l.utilisateur, filterable: true, render: (l) => <strong style={{ color: '#1A1A1A' }}>{l.utilisateur}</strong> },
+    { key: 'utilisateur', header: 'Utilisateur', sortValue: (l) => l.utilisateur, searchValue: (l) => l.utilisateur, filterable: true, render: (l) => <strong style={{ color: 'var(--text)' }}>{l.utilisateur}</strong> },
     {
       key: 'categorie',
       header: 'Catégorie',
@@ -174,7 +174,7 @@ export default function AuditLogs() {
         </Badge>
       ),
     },
-    { key: 'cible', header: 'Cible', sortValue: (l) => l.cible, searchValue: (l) => l.cible, render: (l) => <span style={{ color: '#767676' }}>{l.cible}</span> },
+    { key: 'cible', header: 'Cible', sortValue: (l) => l.cible, searchValue: (l) => l.cible, render: (l) => <span style={{ color: 'var(--text-muted)' }}>{l.cible}</span> },
     { key: 'resultat', header: 'Résultat', sortValue: (l) => l.resultat, searchValue: (l) => l.resultat, filterable: true, render: (l) => <ResultatBadge r={l.resultat} /> },
     {
       key: 'actions',
@@ -271,7 +271,7 @@ export default function AuditLogs() {
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement du journal…')}</div>
+          <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>{t('Chargement du journal…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -313,8 +313,8 @@ export default function AuditLogs() {
         {openLog && (
           <>
             <div className={styles.banner}>
-              <LockClosed20Regular style={{ color: '#404040', flexShrink: 0, marginTop: '1px' }} />
-              <div style={{ fontSize: '12.5px', color: '#404040', lineHeight: 1.5 }}>
+              <LockClosed20Regular style={{ color: 'var(--text-secondary)', flexShrink: 0, marginTop: '1px' }} />
+              <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                 <strong>{t('Journal en lecture seule.')}</strong> {t("Conformément à l'Article 12 COBAC R-2023/01, les événements d'audit ne sont pas modifiables et sont conservés 10 ans avec scellement cryptographique (chaîne de hash).")}
               </div>
             </div>

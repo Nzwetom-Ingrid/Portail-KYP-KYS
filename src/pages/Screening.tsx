@@ -47,10 +47,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   kpi: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '18px 20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -59,17 +59,17 @@ const useStyles = makeStyles({
   kpiLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '6px',
   },
   kpiValue: { fontSize: '28px', fontWeight: 700, lineHeight: 1 },
-  kpiMeta: { fontSize: '12px', color: '#767676', marginTop: '6px' },
+  kpiMeta: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
   scoreBar: {
     width: '60px',
     height: '6px',
-    backgroundColor: '#F4F4F4',
+    backgroundColor: 'var(--bg)',
     borderRadius: '999px',
     overflow: 'hidden',
     display: 'inline-block',
@@ -82,18 +82,18 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '12px',
     padding: '8px 0',
-    borderBottom: '1px solid #F4F4F4',
+    borderBottom: '1px solid var(--glass-border)',
     ':last-child': { borderBottom: 'none' },
   },
   sourceDot: { width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0 },
-  sourceLabel: { flex: 1, fontSize: '13px', color: '#404040', fontWeight: 500 },
-  sourceCount: { fontSize: '13px', color: '#1A1A1A', fontWeight: 700 },
+  sourceLabel: { flex: 1, fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 },
+  sourceCount: { fontSize: '13px', color: 'var(--text)', fontWeight: 700 },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
   matchBanner: {
     display: 'flex',
     gap: '14px',
     padding: '16px 18px',
-    backgroundColor: '#FEF2F3',
+    backgroundColor: 'var(--glass-red-bg)',
     border: '1px solid #FCE4E6',
     borderRadius: '10px',
     marginBottom: '14px',
@@ -104,8 +104,8 @@ const useStyles = makeStyles({
     gap: '14px 24px',
     fontSize: '13px',
   },
-  matchLabel: { fontSize: '11px', color: '#767676', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' },
-  matchValue: { color: '#1A1A1A', fontWeight: 500 },
+  matchLabel: { fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' },
+  matchValue: { color: 'var(--text)', fontWeight: 500 },
 });
 
 function scoreColor(score: number) {
@@ -228,7 +228,7 @@ export default function Screening() {
 
   const columns: Column<ScreeningAlert>[] = [
     { key: 'id', header: 'Référence', sortValue: (a) => a.id, searchValue: (a) => a.id, render: (a) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{a.id}</span> },
-    { key: 'cible', header: 'Cible', sortValue: (a) => a.cible, searchValue: (a) => a.cible, render: (a) => <strong style={{ color: '#1A1A1A' }}>{a.cible}</strong> },
+    { key: 'cible', header: 'Cible', sortValue: (a) => a.cible, searchValue: (a) => a.cible, render: (a) => <strong style={{ color: 'var(--text)' }}>{a.cible}</strong> },
     { key: 'type', header: 'Type', sortValue: (a) => a.typeCible, searchValue: (a) => a.typeCible, filterable: true, render: (a) => <Badge appearance="tint" color="subtle" size="small">{a.typeCible}</Badge> },
     { key: 'source', header: 'Source', sortValue: (a) => a.source, searchValue: (a) => a.source, filterable: true, render: (a) => <Badge appearance="tint" color="brand" size="small">{a.source}</Badge> },
     { key: 'match', header: 'Match', sortValue: (a) => a.match, searchValue: (a) => a.match, filterable: true, render: (a) => <Badge appearance="filled" color={matchColor(a.match)} size="small">{a.match}</Badge> },
@@ -371,7 +371,7 @@ export default function Screening() {
               {t('Erreur de chargement depuis Dataverse :')} {error.message}
             </div>
           ) : isLoading ? (
-            <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des alertes…')}</div>
+            <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>{t('Chargement des alertes…')}</div>
           ) : (
             <DataTable
               columns={columns}
@@ -391,7 +391,7 @@ export default function Screening() {
               <span className={styles.sourceCount}>{s.count}</span>
             </div>
           ))}
-          <div style={{ marginTop: '14px', fontSize: '12px', color: '#767676', lineHeight: 1.5 }}>
+          <div style={{ marginTop: '14px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {t('Toutes les sources sont interrogées quotidiennement à 03h00 (heure de Douala) via API externe.')}
           </div>
         </Card>
@@ -486,7 +486,7 @@ export default function Screening() {
                 </DrawerSection>
 
                 <DrawerSection title={t('Note du chargé')}>
-                  <p style={{ fontSize: '13px', color: '#404040', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                     {t("Homonymie possible avec un dirigeant d'une banque correspondante. Date de naissance différente (1972 vs 1968 dans la liste). Lieu de résidence ne correspond pas.")} <strong>{t('À classer en faux positif')}</strong>
                     {' '}{t('après vérification supplémentaire de la pièce d’identité.')}
                   </p>
@@ -603,7 +603,7 @@ export default function Screening() {
               label={t('Réinitialiser les décisions précédentes (faux positifs, confirmés)')}
             />
           </Field>
-          <div style={{ fontSize: '12px', color: '#767676', lineHeight: 1.5 }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
             <strong>{t('Note :')}</strong> {t('sans réinitialisation, les décisions historiques sont préservées. Avec réinitialisation, chaque match est ré-instruit indépendamment des décisions passées.')}
           </div>
         </FormSection>

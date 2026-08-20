@@ -56,10 +56,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   kpi: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '18px 20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -68,18 +68,18 @@ const useStyles = makeStyles({
   kpiLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '6px',
   },
-  kpiValue: { fontSize: '28px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 },
-  kpiMeta: { fontSize: '12px', color: '#767676', marginTop: '6px' },
+  kpiValue: { fontSize: '28px', fontWeight: 700, color: 'var(--text)', lineHeight: 1 },
+  kpiMeta: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
   avatar: {
     width: '36px',
     height: '36px',
     borderRadius: '50%',
-    backgroundColor: '#FCE4E6',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     display: 'inline-flex',
     alignItems: 'center',
@@ -92,7 +92,7 @@ const useStyles = makeStyles({
     width: '52px',
     height: '52px',
     borderRadius: '50%',
-    backgroundColor: '#FCE4E6',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     display: 'inline-flex',
     alignItems: 'center',
@@ -102,37 +102,37 @@ const useStyles = makeStyles({
   },
   personCell: { display: 'flex', alignItems: 'center' },
   personMeta: { display: 'flex', flexDirection: 'column' },
-  personName: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
-  personSub: { fontSize: '11px', color: '#767676' },
+  personName: { fontSize: '13px', fontWeight: 600, color: 'var(--text)' },
+  personSub: { fontSize: '11px', color: 'var(--text-muted)' },
   partBar: {
     width: '100%',
     height: '6px',
-    backgroundColor: '#F4F4F4',
+    backgroundColor: 'var(--bg)',
     borderRadius: '999px',
     overflow: 'hidden',
     marginTop: '4px',
   },
   partFill: { height: '100%', backgroundColor: 'var(--accent)', borderRadius: '999px' },
-  partCellValue: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
+  partCellValue: { fontSize: '13px', fontWeight: 600, color: 'var(--text)' },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
   uboHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
     padding: '4px 0 14px',
-    borderBottom: '1px solid #F4F4F4',
+    borderBottom: '1px solid var(--glass-border)',
     marginBottom: '14px',
   },
   uboHeaderMeta: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  uboHeaderName: { fontSize: '16px', fontWeight: 600, color: '#1A1A1A' },
-  uboHeaderSub: { fontSize: '12px', color: '#767676' },
+  uboHeaderName: { fontSize: '16px', fontWeight: 600, color: 'var(--text)' },
+  uboHeaderSub: { fontSize: '12px', color: 'var(--text-muted)' },
   chainNode: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
     padding: '12px 14px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
     marginBottom: '8px',
   },
@@ -141,13 +141,13 @@ const useStyles = makeStyles({
     borderLeft: '2px solid #FCE4E6',
     paddingLeft: '16px',
   },
-  chainNodeName: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
-  chainNodeSub: { fontSize: '11px', color: '#767676' },
+  chainNodeName: { fontSize: '13px', fontWeight: 600, color: 'var(--text)' },
+  chainNodeSub: { fontSize: '11px', color: 'var(--text-muted)' },
   pct: {
     fontSize: '12px',
     fontWeight: 700,
     color: 'var(--accent)',
-    backgroundColor: '#FEF2F3',
+    backgroundColor: 'var(--glass-red-bg)',
     padding: '3px 8px',
     borderRadius: '999px',
     marginLeft: 'auto',
@@ -163,7 +163,7 @@ const useStyles = makeStyles({
     marginBottom: '6px',
   },
   screeningSourceFail: {
-    backgroundColor: '#FEF2F3',
+    backgroundColor: 'var(--glass-red-bg)',
     borderTopColor: '#FCE4E6', borderRightColor: '#FCE4E6', borderBottomColor: '#FCE4E6', borderLeftColor: '#FCE4E6',
   },
 });
@@ -526,7 +526,7 @@ export default function UBOPage() {
             display: 'flex',
             gap: '12px',
             padding: '14px 18px',
-            backgroundColor: '#FEF2F3',
+            backgroundColor: 'var(--glass-red-bg)',
             border: '1px solid #FCE4E6',
             borderRadius: '12px',
             marginBottom: '16px',
@@ -538,7 +538,7 @@ export default function UBOPage() {
               {reviewList.length} {t('fiche')}{reviewList.length > 1 ? 's' : ''} {t('UBO nécessite')}
               {reviewList.length > 1 ? 'nt' : ''} {t('une revue')}
             </div>
-            <div style={{ fontSize: '12px', color: '#767676', marginTop: '2px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
               {reviewNames} — {t('vérifier les justificatifs et la chaîne de détention.')}
             </div>
           </div>
@@ -569,7 +569,7 @@ export default function UBOPage() {
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des bénéficiaires…')}</div>
+          <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>{t('Chargement des bénéficiaires…')}</div>
         ) : (
           <>
           <SelectionBar count={selection.size} onClear={() => setSelection(new Set())} />
@@ -726,7 +726,7 @@ export default function UBOPage() {
                     </span>
                   </div>
                 </div>
-                <div style={{ marginTop: '14px', fontSize: '12px', color: '#767676', lineHeight: 1.5 }}>
+                <div style={{ marginTop: '14px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
                   {openUbo.partPct >= 25
                     ? t('Au-delà du seuil COBAC 25 % — bénéficiaire effectif à déclarer et à screener.')
                     : openUbo.partPct >= 10

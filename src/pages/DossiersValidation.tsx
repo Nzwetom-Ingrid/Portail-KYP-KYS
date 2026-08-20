@@ -101,10 +101,10 @@ const useStyles = makeStyles({
   },
   queueCard: {
     position: 'relative',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '14px',
     padding: '20px 22px 18px',
-    border: '1px solid #ECEAE4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)',
     overflow: 'hidden',
     minHeight: '128px',
@@ -119,7 +119,7 @@ const useStyles = makeStyles({
     ':hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 12px 24px -6px rgba(15, 15, 15, 0.08), 0 4px 8px -2px rgba(15, 15, 15, 0.04)',
-      borderTopColor: '#E0DDD3', borderRightColor: '#E0DDD3', borderBottomColor: '#E0DDD3', borderLeftColor: '#E0DDD3',
+      borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
     },
     '::before': {
       content: '""',
@@ -139,7 +139,7 @@ const useStyles = makeStyles({
   queueLabel: {
     fontSize: '11.5px',
     fontWeight: 700,
-    color: '#737373',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: '4px',
@@ -154,7 +154,7 @@ const useStyles = makeStyles({
   },
   queueMeta: {
     fontSize: '12px',
-    color: '#737373',
+    color: 'var(--text-muted)',
     marginTop: 'auto',
     display: 'inline-flex',
     alignItems: 'center',
@@ -170,8 +170,8 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FAF9F6',
-    border: '1px solid #ECEAE4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
   },
 
   /* Entity cell */
@@ -184,7 +184,7 @@ const useStyles = makeStyles({
     width: '34px',
     height: '34px',
     borderRadius: '10px',
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     display: 'flex',
     alignItems: 'center',
@@ -195,10 +195,10 @@ const useStyles = makeStyles({
     letterSpacing: '-0.01em',
   },
   entityMeta: { display: 'flex', flexDirection: 'column', minWidth: 0 },
-  entityName: { fontSize: '13.5px', fontWeight: 600, color: '#1A1A1A', letterSpacing: '-0.005em' },
+  entityName: { fontSize: '13.5px', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.005em' },
   entityCode: {
     fontSize: '11px',
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     fontFamily: '"JetBrains Mono", monospace',
   },
   rowActions: {
@@ -219,8 +219,8 @@ const useStyles = makeStyles({
     textAlign: 'left',
     padding: '16px 16px 14px',
     borderRadius: '12px',
-    border: '1.5px solid #ECEAE4',
-    backgroundColor: '#FFFFFF',
+    border: '1.5px solid var(--glass-border)',
+    backgroundColor: 'var(--glass-bg)',
     cursor: 'pointer',
     transition: 'all 220ms cubic-bezier(0.16, 1, 0.3, 1)',
     display: 'flex',
@@ -234,7 +234,7 @@ const useStyles = makeStyles({
   },
   typeCardActive: {
     borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)',
-    backgroundColor: '#FDFAFA',
+    backgroundColor: 'var(--bg)',
     boxShadow: '0 6px 16px -4px rgba(200, 16, 46, 0.18), inset 0 0 0 1px var(--accent)',
     ':hover': {
       borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)',
@@ -248,25 +248,25 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FAF9F6',
-    color: '#404040',
-    border: '1px solid #ECEAE4',
+    backgroundColor: 'var(--bg)',
+    color: 'var(--text-secondary)',
+    border: '1px solid var(--glass-border)',
     marginBottom: '4px',
   },
   typeIconActive: {
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   typeTitle: {
     fontSize: '13.5px',
     fontWeight: 700,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     letterSpacing: '-0.01em',
   },
   typeDescription: {
     fontSize: '11.5px',
-    color: '#525252',
+    color: 'var(--text-secondary)',
     lineHeight: 1.5,
   },
   typeValidity: {
@@ -278,7 +278,7 @@ const useStyles = makeStyles({
     fontSize: '10.5px',
     fontWeight: 600,
     color: '#854020',
-    backgroundColor: '#FDF6E3',
+    backgroundColor: 'var(--warning-bg)',
     border: '1px solid #FAEDC5',
     borderRadius: '999px',
     width: 'fit-content',
@@ -305,8 +305,8 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: '2px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #F4F2EC',
+    backgroundColor: 'var(--glass-bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '12px',
     overflow: 'hidden',
   },
@@ -316,14 +316,14 @@ const useStyles = makeStyles({
     gap: '12px',
     padding: '12px 14px',
     fontSize: '13px',
-    color: '#1A1A1A',
-    borderBottom: '1px solid #F4F2EC',
+    color: 'var(--text)',
+    borderBottom: '1px solid var(--glass-border)',
     transition: 'background-color 160ms',
     ':last-child': { borderBottom: 'none' },
-    ':hover': { backgroundColor: '#FAF9F6' },
+    ':hover': { backgroundColor: 'var(--bg)' },
   },
   docName: { flex: 1, minWidth: 0, fontWeight: 500 },
-  docHint: { fontSize: '11.5px', color: '#737373', fontWeight: 400 },
+  docHint: { fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: 400 },
   docTag: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -336,14 +336,14 @@ const useStyles = makeStyles({
     border: '1px solid transparent',
   },
   docTagMandatory: {
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     color: '#8C040D',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   docTagOptional: {
-    backgroundColor: '#F4F2EC',
-    color: '#525252',
-    borderTopColor: '#ECEAE4', borderRightColor: '#ECEAE4', borderBottomColor: '#ECEAE4', borderLeftColor: '#ECEAE4',
+    backgroundColor: 'var(--bg)',
+    color: 'var(--text-secondary)',
+    borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
   },
   docViewLink: {
     fontSize: '12px',
@@ -355,7 +355,7 @@ const useStyles = makeStyles({
     padding: '4px 8px',
     borderRadius: '6px',
     transition: 'background-color 160ms',
-    ':hover': { backgroundColor: '#FDF0F1' },
+    ':hover': { backgroundColor: 'var(--glass-red-bg)' },
   },
 
   /* Stats grid in drawer */
@@ -365,15 +365,15 @@ const useStyles = makeStyles({
     gap: '10px',
   },
   riskCell: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #F4F2EC',
+    backgroundColor: 'var(--glass-bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '10px',
     padding: '12px 14px',
   },
   riskLabel: {
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
     marginBottom: '6px',
@@ -381,8 +381,8 @@ const useStyles = makeStyles({
 
   /* Complement modal */
   complementDocList: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #ECEAE4',
+    backgroundColor: 'var(--glass-bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '10px',
     maxHeight: '240px',
     overflowY: 'auto',
@@ -393,23 +393,23 @@ const useStyles = makeStyles({
     gap: '10px',
     padding: '10px 12px',
     fontSize: '13px',
-    color: '#1A1A1A',
-    borderBottom: '1px solid #F4F2EC',
+    color: 'var(--text)',
+    borderBottom: '1px solid var(--glass-border)',
     cursor: 'pointer',
     transition: 'background-color 160ms',
     ':last-child': { borderBottom: 'none' },
-    ':hover': { backgroundColor: '#FAF9F6' },
+    ':hover': { backgroundColor: 'var(--bg)' },
   },
 
   helperBanner: {
     display: 'flex',
     gap: '12px',
     padding: '14px 16px',
-    backgroundColor: '#FAF9F6',
-    border: '1px solid #ECEAE4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '10px',
     fontSize: '12.5px',
-    color: '#525252',
+    color: 'var(--text-secondary)',
     lineHeight: 1.55,
   },
 });
@@ -840,7 +840,7 @@ export default function DossiersValidation() {
         flush
         title={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <ClipboardTaskListLtr20Regular style={{ color: '#737373' }} /> {t('Dossiers à traiter')}
+            <ClipboardTaskListLtr20Regular style={{ color: 'var(--text-muted)' }} /> {t('Dossiers à traiter')}
           </span>
         }
         subtitle={`${filtered.length} dossiers — file de validation`}
@@ -850,7 +850,7 @@ export default function DossiersValidation() {
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des dossiers…')}</div>
+          <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>{t('Chargement des dossiers…')}</div>
         ) : (
           <>
           <SelectionBar count={selection.size} onClear={() => setSelection(new Set())}>
@@ -1260,13 +1260,13 @@ function DossierDrawer({
         }
       >
         {partnerDocs.length === 0 ? (
-          <p style={{ fontSize: '13px', color: '#737373', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
             {t("Le partenaire n'a encore déposé aucun document sur son espace.")}
           </p>
         ) : (
           <div className={styles.docList}>
             {partnerDocs.map((doc) => {
-              const st = DOC_STATUT[doc.statut ?? 1] ?? { label: '—', color: '#737373', bg: '#F5F5F5' };
+              const st = DOC_STATUT[doc.statut ?? 1] ?? { label: '—', color: 'var(--text-muted)', bg: '#F5F5F5' };
               return (
                 <div key={doc.id} className={styles.docRow}>
                   <div className={styles.docName}>
@@ -1384,7 +1384,7 @@ function DossierDrawer({
         description={t('Conclusion du dossier — décision en cours et dernier commentaire transmis au tiers.')}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-          <span style={{ fontSize: '12px', color: '#737373' }}>{t('Statut :')}</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('Statut :')}</span>
           <StatutBadge statut={dossier.statut} />
         </div>
         <div
@@ -1394,8 +1394,8 @@ function DossierDrawer({
             lineHeight: 1.6,
             whiteSpace: 'pre-wrap',
             padding: '12px 14px',
-            backgroundColor: '#FAF9F6',
-            border: '1px solid #ECEAE4',
+            backgroundColor: 'var(--bg)',
+            border: '1px solid var(--glass-border)',
             borderRadius: '10px',
           }}
         >
@@ -1411,7 +1411,7 @@ function DossierDrawer({
       description={t('Trace non modifiable — Art. 38 COBAC. Conservée 10 ans.')}
     >
       {timeline.length === 0 ? (
-        <p style={{ fontSize: '13px', color: '#737373', margin: 0 }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
           {t("Aucune action enregistrée pour ce dossier dans le journal d'audit.")}
         </p>
       ) : (
@@ -1667,7 +1667,7 @@ function NewDossierDialog({
             value={email}
             onChange={(_, d) => setEmail(d.value)}
             placeholder="contact@entreprise.com"
-            contentBefore={<Mail20Regular style={{ color: '#737373' }} />}
+            contentBefore={<Mail20Regular style={{ color: 'var(--text-muted)' }} />}
           />
         </Field>
       </FormSection>
@@ -1680,7 +1680,7 @@ function NewDossierDialog({
           <div className={styles.docList}>
             {checklist.map((d, i) => (
               <div key={d.key} className={styles.docRow}>
-                <DocumentText20Regular style={{ color: '#737373', flexShrink: 0 }} />
+                <DocumentText20Regular style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                 <div className={styles.docName}>
                   {d.name}
                   {d.hint && <span className={styles.docHint}> · {d.hint}</span>}
@@ -1780,7 +1780,7 @@ function ComplementDialog({
             <Input
               readOnly
               value={dossier.email ?? t('Aucune adresse enregistrée sur le tiers')}
-              contentBefore={<Mail20Regular style={{ color: '#737373' }} />}
+              contentBefore={<Mail20Regular style={{ color: 'var(--text-muted)' }} />}
             />
           </Field>
           <Field label={t('Échéance souhaitée')}>
@@ -1788,7 +1788,7 @@ function ComplementDialog({
               type="date"
               value={deadline}
               onChange={(_, d) => setDeadline(d.value)}
-              contentBefore={<Calendar20Regular style={{ color: '#737373' }} />}
+              contentBefore={<Calendar20Regular style={{ color: 'var(--text-muted)' }} />}
             />
           </Field>
         </FieldRow>

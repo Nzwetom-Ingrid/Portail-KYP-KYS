@@ -62,10 +62,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   kpi: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '18px 20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -74,22 +74,22 @@ const useStyles = makeStyles({
   kpiLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '6px',
   },
-  kpiValue: { fontSize: '28px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 },
-  kpiMeta: { fontSize: '12px', color: '#767676', marginTop: '6px' },
+  kpiValue: { fontSize: '28px', fontWeight: 700, color: 'var(--text)', lineHeight: 1 },
+  kpiMeta: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
   nameCell: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  nameTitle: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
-  nameRef: { fontSize: '11px', color: '#767676', fontFamily: 'monospace' },
+  nameTitle: { fontSize: '13px', fontWeight: 600, color: 'var(--text)' },
+  nameRef: { fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
   section: {
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
     padding: '14px 16px',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: 'var(--bg)',
     marginBottom: '10px',
   },
   sectionHeader: {
@@ -98,23 +98,23 @@ const useStyles = makeStyles({
     alignItems: 'center',
     marginBottom: '10px',
     paddingBottom: '8px',
-    borderBottom: '1px solid #E5E7EB',
+    borderBottom: '1px solid var(--glass-border)',
   },
-  sectionTitle: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
+  sectionTitle: { fontSize: '13px', fontWeight: 600, color: 'var(--text)' },
   questionRow: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
     padding: '6px 0',
     fontSize: '12.5px',
-    color: '#404040',
+    color: 'var(--text-secondary)',
   },
   questionTag: {
     fontSize: '10px',
     fontWeight: 700,
-    color: '#767676',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E7EB',
+    color: 'var(--text-muted)',
+    backgroundColor: 'var(--glass-bg)',
+    border: '1px solid var(--glass-border)',
     padding: '2px 6px',
     borderRadius: '4px',
     textTransform: 'uppercase',
@@ -125,11 +125,11 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '6px',
     padding: '4px 8px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '6px',
     fontSize: '12px',
-    color: '#404040',
+    color: 'var(--text-secondary)',
     marginRight: '6px',
     marginBottom: '6px',
   },
@@ -494,7 +494,7 @@ export default function QuestionnairesList() {
         </Badge>
       ),
     },
-    { key: 'maj', header: 'Dernière MAJ', sortValue: (q) => q.dernierMaj, searchValue: (q) => q.dernierMaj, render: (q) => <span style={{ color: '#767676' }}>{q.dernierMaj}</span> },
+    { key: 'maj', header: 'Dernière MAJ', sortValue: (q) => q.dernierMaj, searchValue: (q) => q.dernierMaj, render: (q) => <span style={{ color: 'var(--text-muted)' }}>{q.dernierMaj}</span> },
     {
       key: 'actions',
       header: '',
@@ -635,7 +635,7 @@ export default function QuestionnairesList() {
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des questionnaires…')}</div>
+          <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>{t('Chargement des questionnaires…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -750,7 +750,7 @@ export default function QuestionnairesList() {
                   />
                 </DrawerSection>
                 <DrawerSection title={t('Description')}>
-                  <p style={{ fontSize: '13px', color: '#404040', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                     {openQ.famille === 'AML'
                       ? t('Questionnaire de Lutte contre le Blanchiment et le Financement du Terrorisme — couvre 9 catégories (Wolfsberg, US Patriot Act, FATCA). Aligné sur les exigences COBAC R-2023/01 Art. 41-48 pour les correspondants bancaires transfrontaliers.')
                       : openQ.famille === 'KYC'
@@ -1031,7 +1031,7 @@ export default function QuestionnairesList() {
           </div>
           <div style={{ display: 'grid', gap: '8px', maxHeight: 340, overflowY: 'auto' }}>
             {filteredPartners.length === 0 && (
-              <p style={{ fontSize: 13, color: '#737373', margin: 0 }}>{t('Aucun partenaire ne correspond au filtre.')}</p>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>{t('Aucun partenaire ne correspond au filtre.')}</p>
             )}
             {filteredPartners.map((p) => (
               <label
@@ -1041,13 +1041,13 @@ export default function QuestionnairesList() {
                   alignItems: 'center',
                   gap: '10px',
                   padding: '10px 12px',
-                  border: '1px solid #F4F4F4',
+                  border: '1px solid var(--glass-border)',
                   borderRadius: '8px',
                   backgroundColor: partenaires.includes(p.id) ? '#FEF2F3' : '#FFFFFF',
                   borderTopColor: partenaires.includes(p.id) ? '#FCE4E6' : '#F4F4F4', borderRightColor: partenaires.includes(p.id) ? '#FCE4E6' : '#F4F4F4', borderBottomColor: partenaires.includes(p.id) ? '#FCE4E6' : '#F4F4F4', borderLeftColor: partenaires.includes(p.id) ? '#FCE4E6' : '#F4F4F4',
                   cursor: 'pointer',
                   fontSize: '13px',
-                  color: '#1A1A1A',
+                  color: 'var(--text)',
                 }}
               >
                 <Checkbox

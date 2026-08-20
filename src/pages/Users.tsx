@@ -47,10 +47,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   kpi: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '18px 20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -59,19 +59,19 @@ const useStyles = makeStyles({
   kpiLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '6px',
   },
-  kpiValue: { fontSize: '28px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 },
-  kpiMeta: { fontSize: '12px', color: '#767676', marginTop: '6px' },
+  kpiValue: { fontSize: '28px', fontWeight: 700, color: 'var(--text)', lineHeight: 1 },
+  kpiMeta: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
   userCell: { display: 'flex', alignItems: 'center', gap: '12px' },
   avatar: {
     width: '36px',
     height: '36px',
     borderRadius: '50%',
-    backgroundColor: '#FCE4E6',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     display: 'flex',
     alignItems: 'center',
@@ -84,7 +84,7 @@ const useStyles = makeStyles({
     width: '64px',
     height: '64px',
     borderRadius: '50%',
-    backgroundColor: '#FCE4E6',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     display: 'inline-flex',
     alignItems: 'center',
@@ -93,15 +93,15 @@ const useStyles = makeStyles({
     fontWeight: 700,
   },
   userMeta: { display: 'flex', flexDirection: 'column', minWidth: 0 },
-  userName: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
-  userEmail: { fontSize: '11px', color: '#767676' },
+  userName: { fontSize: '13px', fontWeight: 600, color: 'var(--text)' },
+  userEmail: { fontSize: '11px', color: 'var(--text-muted)' },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
   userHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
     paddingBottom: '14px',
-    borderBottom: '1px solid #F4F4F4',
+    borderBottom: '1px solid var(--glass-border)',
     marginBottom: '14px',
   },
   perm: {
@@ -109,12 +109,12 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '10px',
     padding: '10px 12px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
     marginBottom: '6px',
   },
-  permName: { fontSize: '13px', fontWeight: 500, color: '#1A1A1A', flex: 1 },
+  permName: { fontSize: '13px', fontWeight: 500, color: 'var(--text)', flex: 1 },
 });
 
 // Correspondance des valeurs du formulaire vers les codes de choix Dataverse.
@@ -415,7 +415,7 @@ export default function Users() {
         </span>
       ),
     },
-    { key: 'connexion', header: 'Dernière connexion', sortValue: (u) => u.derniereConnexion, searchValue: (u) => u.derniereConnexion, render: (u) => <span style={{ color: '#767676' }}>{u.derniereConnexion}</span> },
+    { key: 'connexion', header: 'Dernière connexion', sortValue: (u) => u.derniereConnexion, searchValue: (u) => u.derniereConnexion, render: (u) => <span style={{ color: 'var(--text-muted)' }}>{u.derniereConnexion}</span> },
     {
       key: 'statut',
       header: 'Statut',
@@ -533,7 +533,7 @@ export default function Users() {
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des utilisateurs…')}</div>
+          <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>{t('Chargement des utilisateurs…')}</div>
         ) : (
           <>
           <SelectionBar count={selection.size} onClear={() => setSelection(new Set())} />
@@ -606,10 +606,10 @@ export default function Users() {
             <div className={styles.userHeader}>
               <div className={styles.avatarLarge}>{initials(openUser.prenom, openUser.nom)}</div>
               <div>
-                <div style={{ fontSize: '17px', fontWeight: 600, color: '#1A1A1A' }}>
+                <div style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text)' }}>
                   {openUser.prenom} {openUser.nom}
                 </div>
-                <div style={{ fontSize: '13px', color: '#767676' }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                   {openUser.role} · {openUser.direction}
                 </div>
               </div>

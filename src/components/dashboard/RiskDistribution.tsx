@@ -3,27 +3,27 @@ import { mockRiskDistribution } from '@/lib/mockData';
 
 const useStyles = makeStyles({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '14px',
     padding: '24px 26px',
-    border: '1px solid #ECEAE4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)',
     transition: 'border-color 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms',
     ':hover': {
-      borderTopColor: '#E0DDD3', borderRightColor: '#E0DDD3', borderBottomColor: '#E0DDD3', borderLeftColor: '#E0DDD3',
+      borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
       boxShadow: '0 2px 6px rgba(15, 15, 15, 0.04)',
     },
   },
   title: {
     fontSize: '15px',
     fontWeight: 600,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     letterSpacing: '-0.01em',
     marginBottom: '4px',
   },
   subtitle: {
     fontSize: '12px',
-    color: '#737373',
+    color: 'var(--text-muted)',
     marginBottom: '24px',
     lineHeight: 1.4,
   },
@@ -39,7 +39,7 @@ const useStyles = makeStyles({
     borderRadius: '8px',
     transition: 'background-color 180ms cubic-bezier(0.16, 1, 0.3, 1)',
     ':hover': {
-      backgroundColor: '#FAF9F6',
+      backgroundColor: 'var(--bg)',
     },
   },
   rowHeader: {
@@ -61,23 +61,23 @@ const useStyles = makeStyles({
   },
   rowLabel: {
     fontWeight: 600,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     letterSpacing: '-0.005em',
   },
   rowValue: {
     fontWeight: 700,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     fontVariantNumeric: 'tabular-nums',
   },
   rowPct: {
     fontWeight: 500,
-    color: '#737373',
+    color: 'var(--text-muted)',
     fontSize: '12px',
     marginLeft: '6px',
   },
   bar: {
     height: '8px',
-    backgroundColor: '#F4F2EC',
+    backgroundColor: 'var(--bg)',
     borderRadius: '999px',
     overflow: 'hidden',
     position: 'relative',

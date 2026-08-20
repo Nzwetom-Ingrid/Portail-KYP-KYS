@@ -266,7 +266,7 @@ export default function DocumentShare() {
   };
 
   const columns: Column<ShareRow>[] = [
-    { key: 'nom', header: 'Document', sortValue: (r) => r.nom, searchValue: (r) => r.nom, render: (r) => <span style={{ fontWeight: 600, color: '#1A1A1A' }}>{r.nom}</span> },
+    { key: 'nom', header: 'Document', sortValue: (r) => r.nom, searchValue: (r) => r.nom, render: (r) => <span style={{ fontWeight: 600, color: 'var(--text)' }}>{r.nom}</span> },
     { key: 'dest', header: 'Destinataire', sortValue: (r) => r.destinataire, searchValue: (r) => r.destinataire, filterable: true, render: (r) => r.destinataire },
     { key: 'date', header: 'Partagé le', sortValue: (r) => r.date, searchValue: (r) => r.date, render: (r) => r.date },
     { key: 'exp', header: 'Validité', sortValue: (r) => r.expiration, searchValue: (r) => r.expiration, filterable: true, render: (r) => r.expiration },
@@ -276,7 +276,7 @@ export default function DocumentShare() {
       render: (r) => {
         const n = responsesByParent.get(r.id)?.length ?? 0;
         return n === 0 ? (
-          <span style={{ color: '#A3A3A3' }}>—</span>
+          <span style={{ color: 'var(--text-muted)' }}>—</span>
         ) : (
           <Button size="small" appearance="subtle" icon={<MailInbox20Regular />} onClick={() => setOpenResp(r)}>
             {n}
@@ -325,7 +325,7 @@ export default function DocumentShare() {
         {error ? (
           <div style={{ padding: 20, color: 'var(--danger)' }}>{t('Erreur de chargement depuis Dataverse :')} {error.message}</div>
         ) : isLoading ? (
-          <div style={{ padding: 20, color: '#737373' }}>{t('Chargement des documents…')}</div>
+          <div style={{ padding: 20, color: 'var(--text-muted)' }}>{t('Chargement des documents…')}</div>
         ) : (
           <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} emptyMessage={t('Aucun document partagé pour le moment.')} />
         )}
@@ -401,9 +401,9 @@ export default function DocumentShare() {
               {t('Effacer')}
             </Button>
           </div>
-          <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid #F1EFE9', borderRadius: 10 }}>
+          <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid var(--glass-border)', borderRadius: 10 }}>
             {filteredPartners.length === 0 ? (
-              <div style={{ padding: 16, fontSize: 13, color: '#737373' }}>{t('Aucun tiers ne correspond au filtre.')}</div>
+              <div style={{ padding: 16, fontSize: 13, color: 'var(--text-muted)' }}>{t('Aucun tiers ne correspond au filtre.')}</div>
             ) : (
               filteredPartners.map((p) => (
                 <label
@@ -412,7 +412,7 @@ export default function DocumentShare() {
                 >
                   <Checkbox checked={recipients.includes(p.id)} onChange={() => toggleRecipient(p.id)} />
                   <span style={{ flex: 1, fontSize: 13.5 }}>{p.label}</span>
-                  <span style={{ fontSize: 11, color: '#8A8A8A' }}>{t(p.type)}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t(p.type)}</span>
                 </label>
               ))
             )}
@@ -438,19 +438,19 @@ export default function DocumentShare() {
               {t('Réponses du tiers')} — {openResp?.nom}
             </DialogTitle>
             <DialogContent>
-              <p style={{ fontSize: 12.5, color: '#737373', marginTop: 0 }}>
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
                 {t('Documents envoyés par le tiers en réponse à ce document (facture, complément…).')}
               </p>
               {respList.length === 0 ? (
-                <div style={{ padding: '12px 0', color: '#737373', fontSize: 13 }}>{t('Aucune réponse.')}</div>
+                <div style={{ padding: '12px 0', color: 'var(--text-muted)', fontSize: 13 }}>{t('Aucune réponse.')}</div>
               ) : (
                 respList.map((r) => (
                   <div
                     key={r.id}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid #F1EFE9' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid var(--glass-border)' }}
                   >
-                    <span style={{ flex: 1, fontSize: 13.5, color: '#1A1A1A' }}>{r.nom}</span>
-                    <span style={{ fontSize: 12, color: '#8A8A8A' }}>{r.date}</span>
+                    <span style={{ flex: 1, fontSize: 13.5, color: 'var(--text)' }}>{r.nom}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.date}</span>
                     <Tooltip content={t('Voir')} relationship="label" withArrow>
                       <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => openDoc(r, false)} aria-label={t('Voir')} />
                     </Tooltip>

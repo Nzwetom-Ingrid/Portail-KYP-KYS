@@ -26,55 +26,55 @@ const useBadgeStyles = makeStyles({
   },
   // Risque
   riskLow: {
-    backgroundColor: '#E8F5EC',
+    backgroundColor: 'var(--success-bg)',
     color: '#0F5E2D',
     borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
   },
   riskMedium: {
-    backgroundColor: '#FDF6E3',
+    backgroundColor: 'var(--warning-bg)',
     color: '#854020',
     borderTopColor: '#FAEDC5', borderRightColor: '#FAEDC5', borderBottomColor: '#FAEDC5', borderLeftColor: '#FAEDC5',
   },
   riskHigh: {
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     color: '#8C040D',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   // Statut
   statBrouillon: {
-    backgroundColor: '#F4F4F4',
-    color: '#404040',
-    borderTopColor: '#E5E7EB', borderRightColor: '#E5E7EB', borderBottomColor: '#E5E7EB', borderLeftColor: '#E5E7EB',
+    backgroundColor: 'var(--bg)',
+    color: 'var(--text-secondary)',
+    borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
   },
   statRevue: {
-    backgroundColor: '#FDF6E3',
+    backgroundColor: 'var(--warning-bg)',
     color: '#854020',
     borderTopColor: '#FAEDC5', borderRightColor: '#FAEDC5', borderBottomColor: '#FAEDC5', borderLeftColor: '#FAEDC5',
   },
   statValide: {
-    backgroundColor: '#E8F5EC',
+    backgroundColor: 'var(--success-bg)',
     color: '#0F5E2D',
     borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
   },
   statExpire: {
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     color: '#8C040D',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   statRejete: {
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     color: '#8C040D',
     borderTopColor: '#FDE0E3', borderRightColor: '#FDE0E3', borderBottomColor: '#FDE0E3', borderLeftColor: '#FDE0E3',
   },
   statActif: {
-    backgroundColor: '#E8F5EC',
+    backgroundColor: 'var(--success-bg)',
     color: '#0F5E2D',
     borderTopColor: '#C7E9D2', borderRightColor: '#C7E9D2', borderBottomColor: '#C7E9D2', borderLeftColor: '#C7E9D2',
   },
   statInactif: {
-    backgroundColor: '#F4F2EC',
-    color: '#525252',
-    borderTopColor: '#ECEAE4', borderRightColor: '#ECEAE4', borderBottomColor: '#ECEAE4', borderLeftColor: '#ECEAE4',
+    backgroundColor: 'var(--bg)',
+    color: 'var(--text-secondary)',
+    borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
   },
 });
 

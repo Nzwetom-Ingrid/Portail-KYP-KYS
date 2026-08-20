@@ -9,10 +9,10 @@ import {
 const useStyles = makeStyles({
   card: {
     position: 'relative',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '20px',
     padding: '24px 24px 20px',
-    border: '1px solid rgba(20, 20, 20, 0.05)',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 3px rgba(20, 20, 20, 0.04), 0 12px 32px -18px rgba(20, 20, 20, 0.14)',
     transition: 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 280ms, border-color 280ms',
     cursor: 'pointer',
@@ -54,7 +54,7 @@ const useStyles = makeStyles({
       width: '22px',
       height: '22px',
       borderRadius: '999px',
-      backgroundColor: '#FAF9F6',
+      backgroundColor: 'var(--bg)',
       backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' height=\'14\' viewBox=\'0 0 16 16\' fill=\'none\'><path d=\'M6 3l5 5-5 5\' stroke=\'%23737373\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/></svg>")',
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center',
@@ -80,7 +80,7 @@ const useStyles = makeStyles({
   label: {
     fontSize: '11.5px',
     fontWeight: 700,
-    color: '#737373',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: '8px',
@@ -102,7 +102,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '8px',
     fontSize: '12px',
-    color: '#737373',
+    color: 'var(--text-muted)',
     marginTop: 'auto',
   },
   metaPill: {
@@ -116,18 +116,18 @@ const useStyles = makeStyles({
   },
   metaPositive: {
     color: '#0F5E2D',
-    backgroundColor: '#E8F5EC',
+    backgroundColor: 'var(--success-bg)',
   },
   metaWarning: {
     color: '#854020',
-    backgroundColor: '#FDF6E3',
+    backgroundColor: 'var(--warning-bg)',
   },
   metaCritical: {
     color: '#8C040D',
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
   },
   period: {
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     fontSize: '11.5px',
   },
   cta: {

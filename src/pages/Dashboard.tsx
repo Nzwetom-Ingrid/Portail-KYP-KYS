@@ -70,7 +70,7 @@ const useStyles = makeStyles({
   title: {
     fontSize: '33px',
     fontWeight: 700,
-    color: '#141414',
+    color: 'var(--text)',
     marginBottom: '10px',
     lineHeight: 1.12,
     letterSpacing: '-0.03em',
@@ -78,7 +78,7 @@ const useStyles = makeStyles({
   },
   subtitle: {
     fontSize: '14.5px',
-    color: '#5A5A5A',
+    color: 'var(--text-secondary)',
     lineHeight: 1.6,
     maxWidth: '760px',
     margin: 0,
@@ -92,7 +92,7 @@ const useStyles = makeStyles({
   sectionLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.10em',
     marginBottom: '12px',
@@ -104,7 +104,7 @@ const useStyles = makeStyles({
       content: '""',
       flex: 1,
       height: '1px',
-      backgroundColor: '#ECEAE4',
+      backgroundColor: 'var(--bg)',
     },
   },
   kpiGrid: {
@@ -499,7 +499,7 @@ export default function Dashboard() {
                   style={{
                     flex: 1,
                     height: '8px',
-                    backgroundColor: '#F4F4F4',
+                    backgroundColor: 'var(--bg)',
                     borderRadius: '999px',
                     overflow: 'hidden',
                   }}
@@ -513,11 +513,11 @@ export default function Dashboard() {
                     }}
                   />
                 </div>
-                <strong style={{ fontSize: '13px', color: '#1A1A1A', minWidth: '40px' }}>
+                <strong style={{ fontSize: '13px', color: 'var(--text)', minWidth: '40px' }}>
                   {openDossier.progression}%
                 </strong>
               </div>
-              <p style={{ fontSize: '12px', color: '#767676', margin: 0 }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
                 {t('Dossier en cours de constitution — 14 pièces sur 18 fournies.')}
               </p>
             </DrawerSection>
@@ -660,13 +660,13 @@ export default function Dashboard() {
               display: 'flex',
               gap: '10px',
               padding: '12px 14px',
-              backgroundColor: '#FAF9F6',
-              border: '1px solid #ECEAE4',
+              backgroundColor: 'var(--bg)',
+              border: '1px solid var(--glass-border)',
               borderRadius: '8px',
             }}
           >
             <CheckmarkCircle20Filled style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '1px' }} />
-            <div style={{ fontSize: '12.5px', color: '#525252', lineHeight: 1.5 }}>
+            <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               {t('Une fois soumis, le système crée la fiche dans le référentiel, charge la checklist KYC adaptée au type de tiers, et envoie l’e-mail d’invitation avec lien sécurisé (validité 72 h).')}
             </div>
           </div>

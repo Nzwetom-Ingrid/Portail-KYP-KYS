@@ -20,13 +20,13 @@ const useStyles = makeStyles({
     padding: '5px 12px 5px 5px',
     borderRadius: '999px',
     cursor: 'pointer',
-    border: '1px solid #ECEAE4',
-    backgroundColor: '#FFFFFF',
+    border: '1px solid var(--glass-border)',
+    backgroundColor: 'var(--glass-bg)',
     transition: 'all 220ms cubic-bezier(0.16, 1, 0.3, 1)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)',
     ':hover': {
-      borderTopColor: '#E0DDD3', borderRightColor: '#E0DDD3', borderBottomColor: '#E0DDD3', borderLeftColor: '#E0DDD3',
-      backgroundColor: '#FCFBF8',
+      borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
+      backgroundColor: 'var(--bg)',
       boxShadow: '0 2px 6px rgba(15, 15, 15, 0.06)',
       transform: 'translateY(-1px)',
     },
@@ -42,7 +42,7 @@ const useStyles = makeStyles({
   },
   triggerStatic: {
     cursor: 'default',
-    ':hover': { transform: 'none', boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)', backgroundColor: '#FFFFFF' },
+    ':hover': { transform: 'none', boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)', backgroundColor: 'var(--glass-bg)' },
   },
   userInfo: {
     display: 'flex',
@@ -53,12 +53,12 @@ const useStyles = makeStyles({
   userName: {
     fontSize: '13px',
     fontWeight: 600,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     letterSpacing: '-0.005em',
   },
   userRole: {
     fontSize: '10.5px',
-    color: '#737373',
+    color: 'var(--text-muted)',
     fontWeight: 500,
     marginTop: '1px',
     letterSpacing: '0.02em',
@@ -68,19 +68,19 @@ const useStyles = makeStyles({
     fontWeight: 600,
   },
   chevron: {
-    color: '#737373',
+    color: 'var(--text-muted)',
   },
   popoverSurface: {
     minWidth: '300px',
     padding: '6px',
     borderRadius: '14px',
-    border: '1px solid #ECEAE4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 16px 40px -8px rgba(15, 15, 15, 0.14)',
   },
   menuLabel: {
     fontSize: '10px',
     fontWeight: 700,
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.10em',
     padding: '10px 12px 6px',
@@ -108,11 +108,11 @@ const useStyles = makeStyles({
   menuItemLabel: {
     fontSize: '13px',
     fontWeight: 500,
-    color: '#1A1A1A',
+    color: 'var(--text)',
   },
   menuItemDesc: {
     fontSize: '11px',
-    color: '#737373',
+    color: 'var(--text-muted)',
     lineHeight: 1.4,
   },
   activeBadge: {

@@ -6,14 +6,14 @@ import { mockProgression } from '@/lib/mockData';
 
 const useStyles = makeStyles({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '14px',
     padding: '24px 26px',
-    border: '1px solid #ECEAE4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)',
     transition: 'border-color 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms',
     ':hover': {
-      borderTopColor: '#E0DDD3', borderRightColor: '#E0DDD3', borderBottomColor: '#E0DDD3', borderLeftColor: '#E0DDD3',
+      borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
       boxShadow: '0 2px 6px rgba(15, 15, 15, 0.04)',
     },
   },
@@ -28,13 +28,13 @@ const useStyles = makeStyles({
   title: {
     fontSize: '15px',
     fontWeight: 600,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     letterSpacing: '-0.01em',
     marginBottom: '3px',
   },
   subtitle: {
     fontSize: '12px',
-    color: '#737373',
+    color: 'var(--text-muted)',
     lineHeight: 1.4,
   },
   legend: {
@@ -47,7 +47,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '6px',
     fontSize: '11.5px',
-    color: '#525252',
+    color: 'var(--text-secondary)',
     fontWeight: 500,
   },
   legendDot: {
@@ -104,14 +104,14 @@ export function ProgressionChart() {
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #ECEAE4',
+              backgroundColor: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border)',
               borderRadius: '10px',
               fontSize: '12px',
               boxShadow: '0 8px 20px -4px rgba(15, 15, 15, 0.10)',
               padding: '10px 14px',
             }}
-            labelStyle={{ fontWeight: 700, color: '#1A1A1A', marginBottom: '4px' }}
+            labelStyle={{ fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}
             cursor={{ stroke: '#ECEAE4', strokeWidth: 1, strokeDasharray: '4 4' }}
           />
           <Area

@@ -48,10 +48,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   template: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     transition: 'all 0.15s',
     cursor: 'pointer',
@@ -60,22 +60,22 @@ const useStyles = makeStyles({
     gap: '10px',
     ':hover': {
       borderTopColor: 'var(--accent)', borderRightColor: 'var(--accent)', borderBottomColor: 'var(--accent)', borderLeftColor: 'var(--accent)',
-      backgroundColor: '#FEF2F3',
+      backgroundColor: 'var(--glass-red-bg)',
     },
   },
   templateIcon: {
     width: '40px',
     height: '40px',
     borderRadius: '10px',
-    backgroundColor: '#FCE4E6',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '20px',
   },
-  templateTitle: { fontSize: '14px', fontWeight: 600, color: '#1A1A1A' },
-  templateDesc: { fontSize: '12px', color: '#767676', lineHeight: 1.5, flex: 1 },
+  templateTitle: { fontSize: '14px', fontWeight: 600, color: 'var(--text)' },
+  templateDesc: { fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, flex: 1 },
   templateAction: {
     display: 'flex',
     alignItems: 'center',
@@ -86,8 +86,8 @@ const useStyles = makeStyles({
     marginTop: '4px',
   },
   nameCell: { display: 'flex', flexDirection: 'column' },
-  nameTitle: { fontSize: '13px', fontWeight: 600, color: '#1A1A1A' },
-  nameRef: { fontSize: '11px', color: '#767676', fontFamily: 'monospace' },
+  nameTitle: { fontSize: '13px', fontWeight: 600, color: 'var(--text)' },
+  nameRef: { fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' },
 });
 
 /** Modèles de rapports — chacun lit une table Dataverse réelle. */
@@ -349,7 +349,7 @@ export default function Reports() {
           marginBottom: '8px',
           fontSize: '12px',
           fontWeight: 700,
-          color: '#767676',
+          color: 'var(--text-muted)',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
         }}
@@ -422,7 +422,7 @@ export default function Reports() {
               ))}
             </Dropdown>
           </Field>
-          <div style={{ fontSize: '12.5px', color: '#767676', lineHeight: 1.5 }}>
+          <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {t(TEMPLATES.find((tpl) => tpl.id === template)?.description ?? '')}
           </div>
         </FormSection>
@@ -436,7 +436,7 @@ export default function Reports() {
               <Input type="date" value={periodeEnd} onChange={(_, d) => setPeriodeEnd(d.value)} />
             </Field>
           </FieldRow>
-          <div style={{ fontSize: '12px', color: '#767676' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             {t('Les lignes datées hors période sont exclues ; celles sans date sont conservées.')}
           </div>
         </FormSection>

@@ -52,18 +52,18 @@ const useStyles = makeStyles({
   surface: {
     width: '600px',
     maxWidth: '92vw',
-    backgroundColor: '#FAF9F6',
+    backgroundColor: 'var(--bg)',
     display: 'flex',
     flexDirection: 'column',
-    borderLeft: '1px solid #ECEAE4',
+    borderLeft: '1px solid var(--glass-border)',
     boxShadow: '-12px 0 32px -8px rgba(15, 15, 15, 0.10)',
   },
   surfaceLarge: {
     width: '740px',
   },
   header: {
-    backgroundColor: '#FFFFFF',
-    borderBottom: '1px solid #F4F2EC',
+    backgroundColor: 'var(--glass-bg)',
+    borderBottom: '1px solid var(--glass-border)',
     padding: '22px 26px 16px',
     flexShrink: 0,
   },
@@ -84,7 +84,7 @@ const useStyles = makeStyles({
     letterSpacing: '0.10em',
     marginBottom: '8px',
     padding: '3px 10px',
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     borderRadius: '999px',
     border: '1px solid #FDE0E3',
   },
@@ -99,7 +99,7 @@ const useStyles = makeStyles({
   },
   subtitle: {
     fontSize: '12.5px',
-    color: '#525252',
+    color: 'var(--text-secondary)',
     marginTop: '8px',
     lineHeight: 1.55,
   },
@@ -124,8 +124,8 @@ const useStyles = makeStyles({
     flex: 1,
   },
   tabsWrapper: {
-    backgroundColor: '#FFFFFF',
-    borderBottom: '1px solid #F4F2EC',
+    backgroundColor: 'var(--glass-bg)',
+    borderBottom: '1px solid var(--glass-border)',
     padding: '0 16px',
     flexShrink: 0,
   },
@@ -138,8 +138,8 @@ const useStyles = makeStyles({
     fontWeight: 700,
     lineHeight: '18px',
     textAlign: 'center',
-    backgroundColor: '#F4F2EC',
-    color: '#525252',
+    backgroundColor: 'var(--bg)',
+    color: 'var(--text-secondary)',
     borderRadius: '999px',
   },
   tabAlert: {
@@ -151,7 +151,7 @@ const useStyles = makeStyles({
     fontWeight: 700,
     lineHeight: '18px',
     textAlign: 'center',
-    backgroundColor: '#FDF0F1',
+    backgroundColor: 'var(--glass-red-bg)',
     color: 'var(--accent)',
     borderRadius: '999px',
   },
@@ -161,8 +161,8 @@ const useStyles = makeStyles({
     padding: '22px 26px 26px',
   },
   footer: {
-    backgroundColor: '#FFFFFF',
-    borderTop: '1px solid #F4F2EC',
+    backgroundColor: 'var(--glass-bg)',
+    borderTop: '1px solid var(--glass-border)',
     padding: '16px 26px',
     display: 'flex',
     gap: '10px',
@@ -298,15 +298,15 @@ export function DetailDrawer({
 
 const useSectionStyles = makeStyles({
   section: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
-    border: '1px solid #F4F2EC',
+    border: '1px solid var(--glass-border)',
     padding: '20px 22px',
     marginBottom: '14px',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.03)',
     transition: 'border-color 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms',
     ':hover': {
-      borderTopColor: '#ECEAE4', borderRightColor: '#ECEAE4', borderBottomColor: '#ECEAE4', borderLeftColor: '#ECEAE4',
+      borderTopColor: 'var(--glass-border)', borderRightColor: 'var(--glass-border)', borderBottomColor: 'var(--glass-border)', borderLeftColor: 'var(--glass-border)',
       boxShadow: '0 2px 6px rgba(15, 15, 15, 0.04)',
     },
   },
@@ -320,7 +320,7 @@ const useSectionStyles = makeStyles({
   sectionTitle: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#737373',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   },
@@ -341,7 +341,7 @@ const useSectionStyles = makeStyles({
   fieldLabel: {
     fontSize: '10.5px',
     fontWeight: 600,
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
     marginBottom: '5px',
@@ -349,15 +349,15 @@ const useSectionStyles = makeStyles({
   fieldValue: {
     fontSize: '13.5px',
     fontWeight: 500,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     wordBreak: 'break-word',
   },
   fieldValueMono: {
     fontFamily: '"JetBrains Mono", monospace',
     fontSize: '12.5px',
     fontWeight: 600,
-    color: '#404040',
-    backgroundColor: '#F4F2EC',
+    color: 'var(--text-secondary)',
+    backgroundColor: 'var(--bg)',
     padding: '2px 8px',
     borderRadius: '5px',
     display: 'inline-block',
@@ -381,7 +381,7 @@ export function DrawerSection({ title, action, description, children }: DrawerSe
         {action}
       </div>
       {description && (
-        <p style={{ fontSize: '12.5px', color: '#525252', margin: '0 0 12px', lineHeight: 1.55 }}>
+        <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.55 }}>
           {description}
         </p>
       )}
@@ -447,7 +447,7 @@ const useTimelineStyles = makeStyles({
     width: '12px',
     height: '12px',
     borderRadius: '50%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     border: '2px solid var(--accent)',
     boxShadow: '0 0 0 3px #FFFFFF, 0 0 8px rgba(200, 16, 46, 0.20)',
   },
@@ -461,18 +461,18 @@ const useTimelineStyles = makeStyles({
   itemTitle: {
     fontSize: '13px',
     fontWeight: 600,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     letterSpacing: '-0.005em',
   },
   itemMeta: {
     fontSize: '11px',
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     fontFamily: '"JetBrains Mono", monospace',
     fontWeight: 500,
   },
   itemBody: {
     fontSize: '12.5px',
-    color: '#525252',
+    color: 'var(--text-secondary)',
     lineHeight: 1.55,
   },
 });

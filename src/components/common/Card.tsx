@@ -4,9 +4,9 @@ import { useT } from '@/i18n/i18n';
 
 const useStyles = makeStyles({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '20px',
-    border: '1px solid rgba(20, 20, 20, 0.05)',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 3px rgba(20, 20, 20, 0.04), 0 12px 32px -18px rgba(20, 20, 20, 0.14)',
     overflow: 'hidden',
     transition: 'border-color 260ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 260ms, transform 260ms',
@@ -31,8 +31,8 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: '12px',
-    borderBottom: '1px solid #F4F2EC',
-    backgroundColor: '#FFFFFF',
+    borderBottom: '1px solid var(--glass-border)',
+    backgroundColor: 'var(--glass-bg)',
   },
   headerNoBorder: {
     borderBottom: 'none',
@@ -47,13 +47,13 @@ const useStyles = makeStyles({
   title: {
     fontSize: '15px',
     fontWeight: 600,
-    color: '#1A1A1A',
+    color: 'var(--text)',
     lineHeight: 1.3,
     letterSpacing: '-0.01em',
   },
   subtitle: {
     fontSize: '12px',
-    color: '#737373',
+    color: 'var(--text-muted)',
     lineHeight: 1.45,
   },
   body: {

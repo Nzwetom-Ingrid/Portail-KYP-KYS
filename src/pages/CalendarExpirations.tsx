@@ -52,10 +52,10 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   bucket: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     borderRadius: '12px',
     padding: '18px 20px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 1px 2px rgba(15, 15, 15, 0.04)',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -64,27 +64,27 @@ const useStyles = makeStyles({
   bucketLabel: {
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '6px',
   },
   bucketValue: { fontSize: '28px', fontWeight: 700, lineHeight: 1 },
-  bucketMeta: { fontSize: '12px', color: '#767676', marginTop: '6px' },
+  bucketMeta: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
   timeline: { display: 'flex', flexDirection: 'column', gap: '14px' },
   timelineRow: { display: 'flex', gap: '14px', alignItems: 'center' },
   timelineDate: {
     minWidth: '80px',
     fontSize: '11px',
     fontWeight: 700,
-    color: '#767676',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
   },
   timelineBar: {
     flex: 1,
     height: '8px',
-    backgroundColor: '#F4F4F4',
+    backgroundColor: 'var(--bg)',
     borderRadius: '999px',
     overflow: 'hidden',
   },
@@ -94,7 +94,7 @@ const useStyles = makeStyles({
     textAlign: 'right',
     fontSize: '13px',
     fontWeight: 600,
-    color: '#1A1A1A',
+    color: 'var(--text)',
   },
   daysCell: { fontWeight: 600 },
   rowActions: { display: 'flex', gap: '4px', justifyContent: 'flex-end' },
@@ -103,24 +103,24 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '12px',
     padding: '10px 12px',
-    backgroundColor: '#FAFAFA',
-    border: '1px solid #F4F4F4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
     marginBottom: '6px',
   },
   versionBadge: {
     fontSize: '10px',
     fontWeight: 700,
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E7EB',
-    color: '#404040',
+    backgroundColor: 'var(--glass-bg)',
+    border: '1px solid var(--glass-border)',
+    color: 'var(--text-secondary)',
     padding: '2px 6px',
     borderRadius: '4px',
     textTransform: 'uppercase',
     letterSpacing: '0.3px',
   },
   versionCurrent: {
-    backgroundColor: '#FEF2F3',
+    backgroundColor: 'var(--glass-red-bg)',
     borderTopColor: '#FCE4E6', borderRightColor: '#FCE4E6', borderBottomColor: '#FCE4E6', borderLeftColor: '#FCE4E6',
     color: 'var(--accent-dark)',
   },
@@ -129,14 +129,14 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '10px',
     padding: '10px 12px',
-    border: '1px solid #F4F4F4',
+    border: '1px solid var(--glass-border)',
     borderRadius: '8px',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'var(--glass-bg)',
     cursor: 'pointer',
     fontSize: '13px',
   },
   partnerOptionChecked: {
-    backgroundColor: '#FEF2F3',
+    backgroundColor: 'var(--glass-red-bg)',
     borderTopColor: '#FCE4E6', borderRightColor: '#FCE4E6', borderBottomColor: '#FCE4E6', borderLeftColor: '#FCE4E6',
   },
 });
@@ -275,7 +275,7 @@ export default function CalendarExpirations() {
   ];
 
   const columns: Column<DocExpiration>[] = [
-    { key: 'doc', header: 'Document', sortValue: (d) => d.typeDoc, searchValue: (d) => d.typeDoc, filterable: true, render: (d) => <strong style={{ color: '#1A1A1A' }}>{d.typeDoc}</strong> },
+    { key: 'doc', header: 'Document', sortValue: (d) => d.typeDoc, searchValue: (d) => d.typeDoc, filterable: true, render: (d) => <strong style={{ color: 'var(--text)' }}>{d.typeDoc}</strong> },
     { key: 'ref', header: 'Référence', sortValue: (d) => d.reference, searchValue: (d) => d.reference, render: (d) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{d.reference}</span> },
     { key: 'partenaire', header: 'Partenaire', sortValue: (d) => d.partenaire, searchValue: (d) => d.partenaire, filterable: true, render: (d) => d.partenaire },
     { key: 'expire', header: 'Expire le', sortValue: (d) => d.expireLe, searchValue: (d) => d.expireLe, render: (d) => d.expireLe },
@@ -351,7 +351,7 @@ export default function CalendarExpirations() {
       key: 'j30',
       label: 'J-30',
       count: expirations.filter((d) => d.joursRestants > 7 && d.joursRestants <= 30).length,
-      color: '#404040',
+      color: 'var(--text-secondary)',
       meta: t('à anticiper'),
       pressed: fenetreFilter === 'j30',
       onClick: () => {
@@ -363,7 +363,7 @@ export default function CalendarExpirations() {
       key: 'j60',
       label: 'J-60',
       count: expirations.filter((d) => d.joursRestants > 30 && d.joursRestants <= 60).length,
-      color: '#404040',
+      color: 'var(--text-secondary)',
       meta: t('à planifier'),
       pressed: fenetreFilter === 'j60',
       onClick: () => {
@@ -464,15 +464,15 @@ export default function CalendarExpirations() {
                     alignItems: 'center',
                     gap: '12px',
                     padding: '10px 14px',
-                    backgroundColor: '#FEF2F3',
+                    backgroundColor: 'var(--glass-red-bg)',
                     borderRadius: '8px',
                     border: '1px solid #FCE4E6',
                     cursor: 'pointer',
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>{d.partenaire}</div>
-                    <div style={{ fontSize: '12px', color: '#767676' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{d.partenaire}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                       {d.typeDoc} · {d.reference}
                     </div>
                   </div>
@@ -506,7 +506,7 @@ export default function CalendarExpirations() {
             {t('Erreur de chargement depuis Dataverse :')} {error.message}
           </div>
         ) : isLoading ? (
-          <div style={{ padding: '24px', color: '#767676', fontSize: '13px' }}>{t('Chargement des documents…')}</div>
+          <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>{t('Chargement des documents…')}</div>
         ) : (
           <DataTable
             columns={columns}
@@ -604,13 +604,13 @@ export default function CalendarExpirations() {
                   <div key={v.version} className={styles.versionRow}>
                     <Document20Regular style={{ color: v.status === 'current' ? 'var(--accent)' : '#767676' }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#1A1A1A' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
                         <span className={`${styles.versionBadge} ${v.status === 'current' ? styles.versionCurrent : ''}`}>
                           {v.version}
                         </span>{' '}
                         — {v.date}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#767676', marginTop: '2px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                         {t('Déposé par')} {v.auteur} · {v.taille}
                       </div>
                     </div>
@@ -687,13 +687,13 @@ export default function CalendarExpirations() {
               display: 'flex',
               gap: '10px',
               padding: '12px 14px',
-              backgroundColor: '#FAF9F6',
-              border: '1px solid #ECEAE4',
+              backgroundColor: 'var(--bg)',
+              border: '1px solid var(--glass-border)',
               borderRadius: '8px',
             }}
           >
             <CheckmarkCircle20Filled style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '1px' }} />
-            <div style={{ fontSize: '12.5px', color: '#525252', lineHeight: 1.5 }}>
+            <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               <strong>
                 {filterBucket === 'expired'
                   ? expirations.filter((d) => d.joursRestants < 0).length

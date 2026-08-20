@@ -34,7 +34,7 @@ const useStyles = makeStyles({
   title: {
     fontSize: '33px',
     fontWeight: 700,
-    color: '#141414',
+    color: 'var(--text)',
     margin: 0,
     marginBottom: '10px',
     lineHeight: 1.12,
@@ -42,7 +42,7 @@ const useStyles = makeStyles({
   },
   subtitle: {
     fontSize: '14.5px',
-    color: '#5A5A5A',
+    color: 'var(--text-secondary)',
     lineHeight: 1.6,
     margin: 0,
     maxWidth: '780px',

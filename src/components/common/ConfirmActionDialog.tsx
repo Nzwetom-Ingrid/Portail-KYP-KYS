@@ -116,7 +116,7 @@ const useStyles = makeStyles({
     maxWidth: '540px',
     padding: 0,
     borderRadius: '16px',
-    border: '1px solid #ECEAE4',
+    border: '1px solid var(--glass-border)',
     boxShadow: '0 24px 64px -12px rgba(15, 15, 15, 0.22), 0 8px 24px -8px rgba(15, 15, 15, 0.10)',
     overflow: 'hidden',
     animation: 'scaleIn 280ms cubic-bezier(0.16, 1, 0.3, 1)',
@@ -151,15 +151,15 @@ const useStyles = makeStyles({
     fontSize: '11px',
     fontWeight: 600,
     fontFamily: '"JetBrains Mono", monospace',
-    backgroundColor: '#F4F2EC',
-    border: '1px solid #ECEAE4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '6px',
-    color: '#525252',
+    color: 'var(--text-secondary)',
     marginBottom: '8px',
   },
   description: {
     fontSize: '13.5px',
-    color: '#404040',
+    color: 'var(--text-secondary)',
     lineHeight: 1.6,
     marginTop: '14px',
   },
@@ -167,11 +167,11 @@ const useStyles = makeStyles({
     display: 'flex',
     gap: '12px',
     padding: '14px 16px',
-    backgroundColor: '#FAF9F6',
-    border: '1px solid #ECEAE4',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '10px',
     fontSize: '12.5px',
-    color: '#525252',
+    color: 'var(--text-secondary)',
     lineHeight: 1.55,
     marginTop: '18px',
   },
@@ -185,7 +185,7 @@ const useStyles = makeStyles({
   },
   motifCount: {
     fontSize: '11px',
-    color: '#A3A3A3',
+    color: 'var(--text-muted)',
     textAlign: 'right',
     marginTop: '6px',
     fontFamily: '"JetBrains Mono", monospace',
@@ -194,7 +194,7 @@ const useStyles = makeStyles({
     padding: '18px 30px 24px',
     gap: '10px',
     borderTop: 'none',
-    backgroundColor: '#FAF9F6',
+    backgroundColor: 'var(--bg)',
   },
 });
 
@@ -263,7 +263,7 @@ export function ConfirmActionDialog({
                 </div>
                 <div className={styles.titleBlock}>
                   {entityRef && <span className={styles.entityChip}>{entityRef}</span>}
-                  <DialogTitle style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#1A1A1A' }}>
+                  <DialogTitle style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text)' }}>
                     {title}
                   </DialogTitle>
                 </div>

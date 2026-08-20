@@ -129,7 +129,7 @@ export function QuestionnaireBuilder({ questionnaireId }: { questionnaireId: str
   const [busy, setBusy] = useState(false);
 
   if (!questionnaireId) {
-    return <p style={{ fontSize: 13, color: '#737373' }}>Questionnaire introuvable.</p>;
+    return <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Questionnaire introuvable.</p>;
   }
   if (secLoading || qLoading) return <Spinner size="tiny" label="Chargement des questions…" />;
 
@@ -385,7 +385,7 @@ export function QuestionnaireBuilder({ questionnaireId }: { questionnaireId: str
       </div>
 
       {sections.length === 0 && !secForm && (
-        <p style={{ fontSize: 13, color: '#737373', margin: 0 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
           Aucune section. Ajoutez une première section pour commencer à construire le questionnaire.
         </p>
       )}
@@ -395,7 +395,7 @@ export function QuestionnaireBuilder({ questionnaireId }: { questionnaireId: str
         return (
           <div key={sec.afb_questionnairesectionid} style={{ border: '1px solid #EDEDED', borderRadius: 10, padding: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <strong style={{ flex: 1, fontSize: 14, color: '#1A1A1A' }}>{sec.afb_intituleenfrancais}</strong>
+              <strong style={{ flex: 1, fontSize: 14, color: 'var(--text)' }}>{sec.afb_intituleenfrancais}</strong>
               <Badge appearance="tint" color="subtle" size="small">{qs.length} question{qs.length > 1 ? 's' : ''}</Badge>
               <Tooltip content="Renommer la section" relationship="label">
                 <Button size="small" appearance="subtle" icon={<Edit20Regular />} disabled={busy}
@@ -409,7 +409,7 @@ export function QuestionnaireBuilder({ questionnaireId }: { questionnaireId: str
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {qs.map((q) => (
-                <div key={q.afb_questionid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', background: '#FAFAFA', borderRadius: 6 }}>
+                <div key={q.afb_questionid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', background: 'var(--bg)', borderRadius: 6 }}>
                   <Badge appearance="outline" size="small">{typeLabel(q.afb_typedequestion as number)}</Badge>
                   <span style={{ flex: 1, fontSize: 13 }}>{q.afb_libelleenfrancais}</span>
                   {q.afb_obligatoire === 0 && <Badge appearance="tint" color="danger" size="small">Requis</Badge>}
