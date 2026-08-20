@@ -74,6 +74,17 @@ import { exportToCsv } from '@/lib/exportCsv';
 // Le risque se trie par GRAVITE, pas par ordre alphabetique : un tri A-Z
 // placerait « High » avant « Low », ce qui n'a aucun sens pour une file de
 // validation ou l'on cherche d'abord les dossiers les plus exposes.
+/** Directions internes pouvant porter une relation d'affaires. */
+const DIRECTIONS = [
+  { value: 'DCONF', label: 'DCONF — Direction de la Conformité' },
+  { value: 'DMG', label: 'DMG — Direction Management Général' },
+  { value: 'TRESO', label: 'TRESO — Trésorerie' },
+  { value: 'COMEX', label: 'COMEX — Commerce Extérieur' },
+];
+
+/** Libellé du formulaire → valeur de choix afb_directionporteuse. */
+const DIRECTION_FORM_TO_DV: Record<string, number> = { TRESO: 0, DCONF: 1, DMG: 2, COMEX: 747010001 };
+
 const RISQUE_ORDRE: Record<string, number> = { Low: 1, Medium: 2, High: 3 };
 
 const STATUT_DOSSIER_TO_DV = { valider: 0, enRevue: 1, completer: 2, suspendre: 747010001, rejeter: 747010002 } as const;
@@ -1489,6 +1500,7 @@ function NewDossierDialog({
   const [pays, setPays] = useState('Cameroun');
   const [chargeId, setChargeId] = useState('');
   const [email, setEmail] = useState('');
+  const [direction, setDirection] = useState('DCONF');
 
   // Type de partenaire sélectionné + EntityType dérivé (checklist / validité / préfixe).
   const selectedPt = (ptData ?? []).find((p) => p.afb_partnertypeid === typeId);
@@ -1544,7 +1556,7 @@ function NewDossierDialog({
       const newTiers = await createTiers.mutateAsync({
         afb_nomdupartenaire: nom.trim(),
         afb_pays: pays.trim(),
-        afb_directionporteuse: 1, // DCONF par défaut
+        afb_directionporteuse: DIRECTION_FORM_TO_DV[direction] ?? 1,
         afb_niveauderisque: 2, // Standard par défaut (peut être affiné ultérieurement)
         afb_statutdutiers: 0, // Partenaireactif
         afb_datedecreationsysteme: new Date().toISOString(),
@@ -1661,6 +1673,23 @@ function NewDossierDialog({
             </Dropdown>
           </Field>
         </FieldRow>
+        <Field
+          label={t('Direction porteuse')}
+          required
+          hint={t('Direction interne qui porte la relation. Ce champ était écrit en dur à DCONF : tout tiers créé ici était rattaché à la conformité, quelle que soit la réalité.')}
+        >
+          <Dropdown
+            value={t(DIRECTIONS.find((d) => d.value === direction)?.label ?? '')}
+            selectedOptions={[direction]}
+            onOptionSelect={(_, d) => setDirection(d.optionValue ?? 'DCONF')}
+          >
+            {DIRECTIONS.map((d) => (
+              <Option key={d.value} value={d.value} text={t(d.label)}>
+                {t(d.label)}
+              </Option>
+            ))}
+          </Dropdown>
+        </Field>
         <Field label={t('Email du destinataire')} required hint={t("Le tiers recevra le lien d'onboarding sur cette adresse (validité 72 h).")}>
           <Input
             type="email"
