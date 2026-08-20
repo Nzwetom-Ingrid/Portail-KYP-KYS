@@ -40,24 +40,23 @@ export interface TableFilters<T> {
   /** true si au moins un critère est actif — pour proposer « tout effacer ». */
   actif: boolean;
   reset: () => void;
-  /** Valeur courante d'un filtre — pour refléter l'état ailleurs dans la page. */
-  getFilter: (key: string) => string;
-  /** Pose un filtre depuis l'extérieur (carte KPI cliquable, lien profond…). */
+/** Valeurs retenues sur une colonne — pour refléter l'état ailleurs dans la page. */
+  getFilter: (key: string) => string[];
+  /** true si cette valeur précise est retenue (état actif d'une carte KPI). */
+  hasFilter: (key: string, valeur: string) => boolean;
+  /** Remplace la sélection d'une colonne par cette seule valeur. */
   setFilter: (key: string, valeur: string) => void;
-  /** Pose la valeur, ou l'efface si elle est déjà active. */
+  /** Ajoute la valeur à la sélection, ou l'en retire si elle y est déjà. */
   toggleFilter: (key: string, valeur: string) => void;
 }
 
 export function useTableFilters<T>(
   toutesLesLignes: T[],
   colonnes: Column<T>[],
-  options?: {
-    /** Libellé de l'option « aucun filtre », par colonne. Défaut : « Tous ». */
-    labelTous?: (colonne: Column<T>) => string;
-  },
 ): TableFilters<T> {
   const [search, setSearch] = useState('');
-  const [valeurs, setValeurs] = useState<Record<string, string>>({});
+  // Une colonne peut porter PLUSIEURS valeurs retenues, combinees en « OU ».
+  const [valeurs, setValeurs] = useState<Record<string, string[]>>({});
 
   const colonnesFiltrables = useMemo(
     () => colonnes.filter((c) => c.filterable),
@@ -76,16 +75,15 @@ export function useTableFilters<T>(
       return {
         key: colonne.key,
         label: colonne.header,
-        value: valeurs[colonne.key] ?? '',
-        onChange: (valeur: string) =>
-          setValeurs((prec) => ({ ...prec, [colonne.key]: valeur })),
-        options: [
-          { label: options?.labelTous?.(colonne) ?? `Tous · ${colonne.header}`, value: '' },
-          ...distinctes.map((v) => ({ label: v, value: v })),
-        ],
+        values: valeurs[colonne.key] ?? [],
+        onValuesChange: (nouvelles: string[]) =>
+          setValeurs((prec) => ({ ...prec, [colonne.key]: nouvelles })),
+        // Pas d'option « Tous » : en multi-selection, ne rien cocher signifie
+        // deja « tout », et une telle option cohabiterait mal avec les autres.
+        options: distinctes.map((v) => ({ label: v, value: v })),
       };
     });
-  }, [colonnesFiltrables, toutesLesLignes, valeurs, options]);
+  }, [colonnesFiltrables, toutesLesLignes, valeurs]);
 
   const rows = useMemo(() => {
     const termes = normaliser(search).trim().split(/\s+/).filter(Boolean);
@@ -93,8 +91,8 @@ export function useTableFilters<T>(
     return toutesLesLignes.filter((ligne) => {
       // Filtres : tous doivent être satisfaits (ET), un filtre vide ne filtre rien.
       for (const colonne of colonnesFiltrables) {
-        const attendu = valeurs[colonne.key];
-        if (attendu && valeurFiltre(colonne, ligne) !== attendu) return false;
+        const attendues = valeurs[colonne.key];
+        if (attendues?.length && !attendues.includes(valeurFiltre(colonne, ligne))) return false;
       }
       if (termes.length === 0) return true;
 
@@ -110,10 +108,10 @@ export function useTableFilters<T>(
     });
   }, [toutesLesLignes, colonnes, colonnesFiltrables, valeurs, search]);
 
-  const actif = search.trim() !== '' || Object.values(valeurs).some(Boolean);
+  const actif = search.trim() !== '' || Object.values(valeurs).some((v) => v.length > 0);
 
   const setFilter = (key: string, valeur: string) =>
-    setValeurs((prec) => ({ ...prec, [key]: valeur }));
+    setValeurs((prec) => ({ ...prec, [key]: valeur ? [valeur] : [] }));
 
   return {
     search,
@@ -125,9 +123,16 @@ export function useTableFilters<T>(
       setSearch('');
       setValeurs({});
     },
-    getFilter: (key) => valeurs[key] ?? '',
+    getFilter: (key) => valeurs[key] ?? [],
+    hasFilter: (key, valeur) => (valeurs[key] ?? []).includes(valeur),
     setFilter,
     toggleFilter: (key, valeur) =>
-      setValeurs((prec) => ({ ...prec, [key]: prec[key] === valeur ? '' : valeur })),
+      setValeurs((prec) => {
+        const courant = prec[key] ?? [];
+        return {
+          ...prec,
+          [key]: courant.includes(valeur) ? courant.filter((v) => v !== valeur) : [...courant, valeur],
+        };
+      }),
   };
 }

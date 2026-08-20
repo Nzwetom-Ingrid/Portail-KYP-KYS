@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type AuditLog } from '@/lib/mockData';
 import { journalAudit, utilisateursInternes } from '@/lib/dataverse/entityHooks';
 import { toAuditLog } from '@/lib/dataverse/auditMappers';
@@ -84,23 +85,6 @@ const useStyles = makeStyles({
   },
 });
 
-const CATEGORIE_OPTIONS = [
-  { label: 'Toutes catégories', value: '' },
-  { label: 'Validation', value: 'Validation' },
-  { label: 'Connexion', value: 'Connexion' },
-  { label: 'Modification', value: 'Modification' },
-  { label: 'Export', value: 'Export' },
-  { label: 'Administration', value: 'Administration' },
-  { label: 'Screening', value: 'Screening' },
-];
-
-const RESULTAT_OPTIONS = [
-  { label: 'Tous résultats', value: '' },
-  { label: 'Succès', value: 'Succès' },
-  { label: 'Échec', value: 'Échec' },
-  { label: 'Avertissement', value: 'Avertissement' },
-];
-
 function categorieColor(c: AuditLog['categorie']) {
   if (c === 'Validation') return 'brand';
   if (c === 'Administration') return 'danger';
@@ -143,9 +127,6 @@ export default function AuditLogs() {
   const styles = useStyles();
   const { t } = useT();
   const { notifySuccess } = useNotifications();
-  const [search, setSearch] = useState('');
-  const [categorieFilter, setCategorieFilter] = useState('');
-  const [resultatFilter, setResultatFilter] = useState('');
   const [openLog, setOpenLog] = useState<AuditLog | null>(null);
   const [activeTab, setActiveTab] = useState('synthese');
 
@@ -175,38 +156,26 @@ export default function AuditLogs() {
     [logs],
   );
 
-  const filtered = useMemo(() => {
-    return logs.filter((l) => {
-      if (categorieFilter && l.categorie !== categorieFilter) return false;
-      if (resultatFilter && l.resultat !== resultatFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (!l.utilisateur.toLowerCase().includes(q) && !l.action.toLowerCase().includes(q) && !l.cible.toLowerCase().includes(q))
-          return false;
-      }
-      return true;
-    });
-  }, [logs, search, categorieFilter, resultatFilter]);
-
   const open = (l: AuditLog) => {
     setOpenLog(l);
     setActiveTab('synthese');
   };
 
   const columns: Column<AuditLog>[] = [
-    { key: 'horodatage', header: 'Horodatage', render: (l) => <span className={styles.timestampCell}>{l.horodatage}</span> },
-    { key: 'utilisateur', header: 'Utilisateur', render: (l) => <strong style={{ color: '#1A1A1A' }}>{l.utilisateur}</strong> },
+    { key: 'horodatage', header: 'Horodatage', sortValue: (l) => l.horodatage, searchValue: (l) => l.horodatage, render: (l) => <span className={styles.timestampCell}>{l.horodatage}</span> },
+    { key: 'utilisateur', header: 'Utilisateur', sortValue: (l) => l.utilisateur, searchValue: (l) => l.utilisateur, filterable: true, render: (l) => <strong style={{ color: '#1A1A1A' }}>{l.utilisateur}</strong> },
     {
       key: 'categorie',
       header: 'Catégorie',
+      sortValue: (l) => l.categorie, searchValue: (l) => l.categorie, filterable: true,
       render: (l) => (
         <Badge appearance="tint" color={categorieColor(l.categorie)} size="small">
           {l.categorie}
         </Badge>
       ),
     },
-    { key: 'cible', header: 'Cible', render: (l) => <span style={{ color: '#767676' }}>{l.cible}</span> },
-    { key: 'resultat', header: 'Résultat', render: (l) => <ResultatBadge r={l.resultat} /> },
+    { key: 'cible', header: 'Cible', sortValue: (l) => l.cible, searchValue: (l) => l.cible, render: (l) => <span style={{ color: '#767676' }}>{l.cible}</span> },
+    { key: 'resultat', header: 'Résultat', sortValue: (l) => l.resultat, searchValue: (l) => l.resultat, filterable: true, render: (l) => <ResultatBadge r={l.resultat} /> },
     {
       key: 'actions',
       header: '',
@@ -220,6 +189,11 @@ export default function AuditLogs() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(logs, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
 
   return (
     <div>
@@ -254,22 +228,22 @@ export default function AuditLogs() {
       />
 
       <div className={styles.kpiRow}>
-        <div className={styles.kpi} onClick={() => { setCategorieFilter(''); setResultatFilter(''); }}>
+        <div className={styles.kpi} onClick={table.reset}>
           <div className={styles.kpiLabel}>{t('Événements 24h')}</div>
           <div className={styles.kpiValue}>{counts.total24h}</div>
           <div className={styles.kpiMeta}>{t('toutes catégories')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setResultatFilter('Succès')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('resultat', 'Succès')}>
           <div className={styles.kpiLabel}>{t('Succès')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{counts.succes24h}</div>
           <div className={styles.kpiMeta}>{t('actions abouties')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setResultatFilter('Avertissement')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('resultat', 'Avertissement')}>
           <div className={styles.kpiLabel}>{t('Avertissements')}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--warning)' }}>{counts.avertissements24h}</div>
           <div className={styles.kpiMeta}>{t('à examiner')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setResultatFilter('Échec')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('resultat', 'Échec')}>
           <div className={styles.kpiLabel}>{t('Échecs')}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--danger)' }}>{counts.echecs24h}</div>
           <div className={styles.kpiMeta}>{t('connexions / actions refusées')}</div>
@@ -280,10 +254,7 @@ export default function AuditLogs() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher par utilisateur, action ou cible…"
-        filters={[
-          { key: 'categorie', label: 'Catégorie', value: categorieFilter, options: CATEGORIE_OPTIONS, onChange: setCategorieFilter },
-          { key: 'resultat', label: 'Résultat', value: resultatFilter, options: RESULTAT_OPTIONS, onChange: setResultatFilter },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card

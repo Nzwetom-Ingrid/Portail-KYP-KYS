@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   Badge,
   Button,
@@ -23,6 +23,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { exportToCsv } from '@/lib/exportCsv';
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
@@ -108,11 +109,6 @@ const ICON_MAP: Record<string, ReactNode> = {
   branch: <Branch20Regular />,
 };
 
-const TYPE_OPTIONS = [
-  { label: 'Tous types', value: '' },
-  ...TEMPLATES.map((t) => ({ label: t.type, value: t.type })),
-];
-
 type GeneratedReport = {
   id: string;
   nom: string;
@@ -151,8 +147,6 @@ export default function Reports() {
 
   // Exports générés pendant la session (pas de table « rapport » côté Dataverse)
   const [generated, setGenerated] = useState<GeneratedReport[]>([]);
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
   const [newOpen, setNewOpen] = useState(false);
 
   // Formulaire
@@ -277,23 +271,12 @@ export default function Reports() {
     setNewOpen(true);
   };
 
-  const filtered = useMemo(
-    () =>
-      generated.filter((r) => {
-        if (typeFilter && r.type !== typeFilter) return false;
-        if (search) {
-          const q = search.toLowerCase();
-          if (!r.nom.toLowerCase().includes(q) && !r.type.toLowerCase().includes(q)) return false;
-        }
-        return true;
-      }),
-    [generated, search, typeFilter],
-  );
 
   const columns: Column<GeneratedReport>[] = [
     {
       key: 'nom',
       header: 'Rapport',
+      sortValue: (r) => r.nom, searchValue: (r) => `${r.nom} ${r.fichier ?? ''}`,
       render: (r) => (
         <div className={styles.nameCell}>
           <span className={styles.nameTitle}>{r.nom}</span>
@@ -304,15 +287,16 @@ export default function Reports() {
     {
       key: 'type',
       header: 'Type',
+      sortValue: (r) => r.type, searchValue: (r) => r.type, filterable: true,
       render: (r) => (
         <Badge appearance="tint" color="brand" size="small">
           {r.type}
         </Badge>
       ),
     },
-    { key: 'perimetre', header: 'Périmètre', render: (r) => r.perimetre },
-    { key: 'lignes', header: 'Lignes', render: (r) => r.lignes },
-    { key: 'date', header: 'Généré le', render: (r) => frDate(r.date) },
+    { key: 'perimetre', header: 'Périmètre', sortValue: (r) => r.perimetre, searchValue: (r) => r.perimetre, filterable: true, render: (r) => r.perimetre },
+    { key: 'lignes', header: 'Lignes', sortValue: (r) => r.lignes, render: (r) => r.lignes },
+    { key: 'date', header: 'Généré le', sortValue: (r) => r.date, searchValue: (r) => frDate(r.date), render: (r) => frDate(r.date) },
     {
       key: 'statut',
       header: 'Statut',
@@ -341,6 +325,11 @@ export default function Reports() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(generated, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
 
   return (
     <div>
@@ -384,9 +373,7 @@ export default function Reports() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher un rapport généré…"
-        filters={[
-          { key: 'type', label: 'Type', value: typeFilter, options: TYPE_OPTIONS, onChange: setTypeFilter },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card

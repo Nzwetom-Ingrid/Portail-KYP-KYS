@@ -409,7 +409,7 @@ export default function ValidationsDCONF() {
       value: validations.filter((v) => v.statut === 'En attente').length,
       meta: t('à arbitrer'),
       color: 'var(--warning)',
-      pressed: table.getFilter('statut') === 'En attente',
+      pressed: table.hasFilter('statut', 'En attente'),
       filter: () => table.toggleFilter('statut', 'En attente'),
     },
     {
@@ -417,7 +417,7 @@ export default function ValidationsDCONF() {
       value: validations.filter((v) => v.niveau === 'Critique').length,
       meta: t('double validation N+2'),
       color: 'var(--accent)',
-      pressed: table.getFilter('niveau') === 'Critique',
+      pressed: table.hasFilter('niveau', 'Critique'),
       filter: () => table.toggleFilter('niveau', 'Critique'),
     },
     {
@@ -425,7 +425,7 @@ export default function ValidationsDCONF() {
       value: validations.filter((v) => v.sla === 'Dépassé').length,
       meta: t('escalade automatique'),
       color: 'var(--accent-dark)',
-      pressed: table.getFilter('sla') === 'Dépassé',
+      pressed: table.hasFilter('sla', 'Dépassé'),
       filter: () => table.toggleFilter('sla', 'Dépassé'),
     },
     {
@@ -433,7 +433,7 @@ export default function ValidationsDCONF() {
       value: validations.filter((v) => v.statut === 'Validé').length,
       meta: t('archivés'),
       color: '#15803D',
-      pressed: table.getFilter('statut') === 'Validé',
+      pressed: table.hasFilter('statut', 'Validé'),
       filter: () => table.toggleFilter('statut', 'Validé'),
     },
   ];

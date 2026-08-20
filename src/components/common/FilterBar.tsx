@@ -51,8 +51,13 @@ export interface FilterConfig {
   key: string;
   label: string;
   options: FilterOption[];
-  value: string;
-  onChange: (value: string) => void;
+  /**
+   * Valeurs retenues. Plusieurs valeurs se combinent en « OU » : cocher
+   * « Validé » et « Rejeté » montre les deux, ce qu'un filtre à choix unique
+   * obligeait à faire en deux passes. Tableau vide = aucun filtre.
+   */
+  values: string[];
+  onValuesChange: (values: string[]) => void;
 }
 
 interface FilterBarProps {
@@ -84,22 +89,34 @@ export function FilterBar({
         />
       )}
       <div className={styles.filterGroup}>
-        {filters.map((f) => (
-          <Dropdown
-            key={f.key}
-            className={styles.dropdown}
-            placeholder={t(f.label)}
-            value={t(f.options.find((o) => o.value === f.value)?.label ?? f.label)}
-            selectedOptions={[f.value]}
-            onOptionSelect={(_, data) => f.onChange(data.optionValue ?? '')}
-          >
-            {f.options.map((o) => (
-              <Option key={o.value} value={o.value} text={t(o.label)}>
-                {t(o.label)}
-              </Option>
-            ))}
-          </Dropdown>
-        ))}
+        {filters.map((f) => {
+          // Libellé du champ : le nom seul quand rien n'est coché, la valeur
+          // quand il n'y en a qu'une, et un décompte au-delà — afficher trois
+          // valeurs concaténées deviendrait illisible dans une liste étroite.
+          const libelle =
+            f.values.length === 0
+              ? t(f.label)
+              : f.values.length === 1
+                ? t(f.options.find((o) => o.value === f.values[0])?.label ?? f.values[0])
+                : `${t(f.label)} · ${f.values.length}`;
+          return (
+            <Dropdown
+              key={f.key}
+              multiselect
+              className={styles.dropdown}
+              placeholder={t(f.label)}
+              value={libelle}
+              selectedOptions={f.values}
+              onOptionSelect={(_, data) => f.onValuesChange(data.selectedOptions)}
+            >
+              {f.options.map((o) => (
+                <Option key={o.value} value={o.value} text={t(o.label)}>
+                  {t(o.label)}
+                </Option>
+              ))}
+            </Dropdown>
+          );
+        })}
       </div>
       {trailing && <div className={styles.trailing}>{trailing}</div>}
     </div>

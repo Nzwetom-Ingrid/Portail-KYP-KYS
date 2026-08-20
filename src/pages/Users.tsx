@@ -22,6 +22,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type Utilisateur } from '@/lib/mockData';
 import { utilisateursInternes, journalAudit } from '@/lib/dataverse/entityHooks';
 import { toUtilisateur, DV_DIRECTION_CODE, DV_ROLE_CODE, DV_ACTIF_OUI, DV_ACTIF_NON } from '@/lib/dataverse/userMappers';
@@ -114,30 +115,6 @@ const useStyles = makeStyles({
   },
   permName: { fontSize: '13px', fontWeight: 500, color: '#1A1A1A', flex: 1 },
 });
-
-const ROLE_OPTIONS = [
-  { label: 'Tous rôles', value: '' },
-  { label: 'Super Admin', value: 'Super Admin' },
-  { label: 'Admin Direction', value: 'Admin Direction' },
-  { label: 'Chargé KYC', value: 'Chargé KYC' },
-  { label: 'Utilisateur AFB', value: 'Utilisateur AFB' },
-  { label: 'Auditeur externe', value: 'Auditeur externe' },
-];
-
-const DIRECTION_OPTIONS = [
-  { label: 'Toutes directions', value: '' },
-  { label: 'DCONF', value: 'DCONF' },
-  { label: 'DMG', value: 'DMG' },
-  { label: 'TRESO', value: 'TRESO' },
-  { label: 'COMEX', value: 'COMEX' },
-];
-
-const STATUT_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'Actif', value: 'Actif' },
-  { label: 'Inactif', value: 'Inactif' },
-  { label: 'Suspendu', value: 'Suspendu' },
-];
 
 // Correspondance des valeurs du formulaire vers les codes de choix Dataverse.
 const DIR_FORM_TO_CODE: Record<string, number> = {
@@ -277,11 +254,6 @@ export default function Users() {
       }),
     [rawUsers, statsByUser],
   );
-
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [directionFilter, setDirectionFilter] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
   const [openUser, setOpenUser] = useState<Utilisateur | null>(null);
   const [activeTab, setActiveTab] = useState('profil');
   const [newOpen, setNewOpen] = useState(false);
@@ -298,19 +270,6 @@ export default function Users() {
   const [uSendInvite, setUSendInvite] = useState(true);
   const [uMfa, setUMfa] = useState(true);
 
-  const filtered = useMemo(() => {
-    return users.filter((u) => {
-      if (roleFilter && u.role !== roleFilter) return false;
-      if (directionFilter && u.direction !== directionFilter) return false;
-      if (statutFilter && u.statut !== statutFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        const fullName = `${u.prenom} ${u.nom}`.toLowerCase();
-        if (!fullName.includes(q) && !u.email.toLowerCase().includes(q)) return false;
-      }
-      return true;
-    });
-  }, [users, search, roleFilter, directionFilter, statutFilter]);
 
   const kpis = {
     total: users.length,
@@ -423,6 +382,7 @@ export default function Users() {
     {
       key: 'user',
       header: 'Utilisateur',
+      sortValue: (u) => `${u.nom} ${u.prenom}`, searchValue: (u) => `${u.prenom} ${u.nom} ${u.email}`,
       render: (u) => (
         <div className={styles.userCell}>
           <div className={styles.avatar}>{initials(u.prenom, u.nom)}</div>
@@ -436,26 +396,29 @@ export default function Users() {
     {
       key: 'role',
       header: 'Rôle',
+      sortValue: (u) => u.role, searchValue: (u) => u.role, filterable: true,
       render: (u) => (
         <Badge appearance="tint" color={roleColor(u.role)} size="small">
           {u.role}
         </Badge>
       ),
     },
-    { key: 'direction', header: 'Direction', render: (u) => u.direction },
+    { key: 'direction', header: 'Direction', sortValue: (u) => u.direction, searchValue: (u) => u.direction, filterable: true, render: (u) => u.direction },
     {
       key: 'dossiers',
       header: 'Dossiers traités',
+      sortValue: (u) => u.dossiersTraites,
       render: (u) => (
         <span style={{ fontWeight: 600, color: u.dossiersTraites > 0 ? '#1A1A1A' : '#C8C8C8' }}>
           {u.dossiersTraites > 0 ? u.dossiersTraites : '—'}
         </span>
       ),
     },
-    { key: 'connexion', header: 'Dernière connexion', render: (u) => <span style={{ color: '#767676' }}>{u.derniereConnexion}</span> },
+    { key: 'connexion', header: 'Dernière connexion', sortValue: (u) => u.derniereConnexion, searchValue: (u) => u.derniereConnexion, render: (u) => <span style={{ color: '#767676' }}>{u.derniereConnexion}</span> },
     {
       key: 'statut',
       header: 'Statut',
+      sortValue: (u) => u.statut, searchValue: (u) => u.statut, filterable: true,
       render: (u) => (
         <Badge appearance="tint" color={statutColor(u.statut)} size="small">
           {u.statut}
@@ -478,6 +441,11 @@ export default function Users() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(users, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
 
   return (
     <div>
@@ -518,22 +486,22 @@ export default function Users() {
       />
 
       <div className={styles.kpiRow}>
-        <div className={styles.kpi} onClick={() => { setRoleFilter(''); setDirectionFilter(''); setStatutFilter(''); }}>
+        <div className={styles.kpi} onClick={table.reset}>
           <div className={styles.kpiLabel}>{t('Comptes')}</div>
           <div className={styles.kpiValue}>{kpis.total}</div>
           <div className={styles.kpiMeta}>{t('tous statuts confondus')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Actif')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Actif')}>
           <div className={styles.kpiLabel}>{t('Actifs')}</div>
           <div className={styles.kpiValue} style={{ color: '#15803D' }}>{kpis.actifs}</div>
           <div className={styles.kpiMeta}>{t('connectés sous 30 jours')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setRoleFilter('Super Admin')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('role', 'Super Admin')}>
           <div className={styles.kpiLabel}>{t('Administrateurs')}</div>
           <div className={styles.kpiValue}>{kpis.admins}</div>
           <div className={styles.kpiMeta}>{t('Super Admin + Admin Direction')}</div>
         </div>
-        <div className={styles.kpi} onClick={() => setStatutFilter('Suspendu')}>
+        <div className={styles.kpi} onClick={() => table.setFilter('statut', 'Suspendu')}>
           <div className={styles.kpiLabel}>{t('Suspendus')}</div>
           <div className={styles.kpiValue} style={{ color: 'var(--danger)' }}>{kpis.suspendus}</div>
           <div className={styles.kpiMeta}>{t('accès révoqué')}</div>
@@ -544,11 +512,7 @@ export default function Users() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher un utilisateur ou un email…"
-        filters={[
-          { key: 'role', label: 'Rôle', value: roleFilter, options: ROLE_OPTIONS, onChange: setRoleFilter },
-          { key: 'direction', label: 'Direction', value: directionFilter, options: DIRECTION_OPTIONS, onChange: setDirectionFilter },
-          { key: 'statut', label: 'Statut', value: statutFilter, options: STATUT_OPTIONS, onChange: setStatutFilter },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card

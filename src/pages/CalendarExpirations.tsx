@@ -24,6 +24,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type DocExpiration } from '@/lib/mockData';
 import {
   documents as documentsHooks,
@@ -140,21 +141,7 @@ const useStyles = makeStyles({
   },
 });
 
-const STATUT_OPTIONS = [
-  { label: 'Tous statuts', value: '' },
-  { label: 'Expiré', value: 'Expiré' },
-  { label: 'À renouveler', value: 'À renouveler' },
-  { label: 'Valide', value: 'Valide' },
-];
 
-const TYPE_OPTIONS = [
-  { label: 'Tous types', value: '' },
-  { label: 'RCCM', value: 'RCCM' },
-  { label: 'Attestation fiscale', value: 'Attestation fiscale' },
-  { label: 'CNI dirigeant', value: 'CNI dirigeant' },
-  { label: 'Agrément BEAC', value: 'Agrément BEAC' },
-  { label: 'KBIS / Registre', value: 'KBIS / Registre' },
-];
 
 function statutColor(s: DocExpiration['statut']) {
   if (s === 'Expiré') return 'danger';
@@ -223,10 +210,6 @@ export default function CalendarExpirations() {
             ? d.joursRestants > 7 && d.joursRestants <= 30
             : true,
     );
-
-  const [search, setSearch] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
   const [fenetreFilter, setFenetreFilter] = useState<'' | 'j30' | 'j60'>('');
   const [openDoc, setOpenDoc] = useState<DocExpiration | null>(null);
   const [activeTab, setActiveTab] = useState('detail');
@@ -241,72 +224,7 @@ export default function CalendarExpirations() {
   );
   const [escalation, setEscalation] = useState(true);
 
-  const filtered = useMemo(() => {
-    return expirations.filter((d) => {
-      if (statutFilter && d.statut !== statutFilter) return false;
-      if (typeFilter && d.typeDoc !== typeFilter) return false;
-      if (fenetreFilter === 'j30' && !(d.joursRestants > 7 && d.joursRestants <= 30)) return false;
-      if (fenetreFilter === 'j60' && !(d.joursRestants > 30 && d.joursRestants <= 60)) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (!d.partenaire.toLowerCase().includes(q) && !d.reference.toLowerCase().includes(q)) return false;
-      }
-      return true;
-    });
-  }, [expirations, search, statutFilter, typeFilter, fenetreFilter]);
 
-  const buckets = [
-    {
-      key: 'expired',
-      label: t('Dépassés'),
-      count: expirations.filter((d) => d.joursRestants < 0).length,
-      color: 'var(--danger)',
-      meta: t('relance immédiate'),
-      pressed: statutFilter === 'Expiré',
-      // Les deux familles de filtres (statut / fenêtre) s'excluent : on efface l'autre.
-      onClick: () => {
-        setFenetreFilter('');
-        setStatutFilter((cur) => (cur === 'Expiré' ? '' : 'Expiré'));
-      },
-    },
-    {
-      key: 'j7',
-      label: 'J-7',
-      count: expirations.filter((d) => d.joursRestants >= 0 && d.joursRestants <= 7).length,
-      color: 'var(--warning)',
-      meta: t('à renouveler'),
-      pressed: statutFilter === 'À renouveler',
-      onClick: () => {
-        setFenetreFilter('');
-        setStatutFilter((cur) => (cur === 'À renouveler' ? '' : 'À renouveler'));
-      },
-    },
-    {
-      key: 'j30',
-      label: 'J-30',
-      count: expirations.filter((d) => d.joursRestants > 7 && d.joursRestants <= 30).length,
-      color: '#404040',
-      meta: t('à anticiper'),
-      pressed: fenetreFilter === 'j30',
-      onClick: () => {
-        setStatutFilter('');
-        setFenetreFilter((cur) => (cur === 'j30' ? '' : 'j30'));
-      },
-    },
-    {
-      key: 'j60',
-      label: 'J-60',
-      count: expirations.filter((d) => d.joursRestants > 30 && d.joursRestants <= 60).length,
-      color: '#404040',
-      meta: t('à planifier'),
-      pressed: fenetreFilter === 'j60',
-      onClick: () => {
-        setStatutFilter('');
-        setFenetreFilter((cur) => (cur === 'j60' ? '' : 'j60'));
-      },
-    },
-  ];
-  const maxBucket = Math.max(...buckets.map((b) => b.count), 1);
 
   const open = (d: DocExpiration) => {
     setOpenDoc(d);
@@ -357,13 +275,14 @@ export default function CalendarExpirations() {
   ];
 
   const columns: Column<DocExpiration>[] = [
-    { key: 'doc', header: 'Document', render: (d) => <strong style={{ color: '#1A1A1A' }}>{d.typeDoc}</strong> },
-    { key: 'ref', header: 'Référence', render: (d) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{d.reference}</span> },
-    { key: 'partenaire', header: 'Partenaire', render: (d) => d.partenaire },
-    { key: 'expire', header: 'Expire le', render: (d) => d.expireLe },
+    { key: 'doc', header: 'Document', sortValue: (d) => d.typeDoc, searchValue: (d) => d.typeDoc, filterable: true, render: (d) => <strong style={{ color: '#1A1A1A' }}>{d.typeDoc}</strong> },
+    { key: 'ref', header: 'Référence', sortValue: (d) => d.reference, searchValue: (d) => d.reference, render: (d) => <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{d.reference}</span> },
+    { key: 'partenaire', header: 'Partenaire', sortValue: (d) => d.partenaire, searchValue: (d) => d.partenaire, filterable: true, render: (d) => d.partenaire },
+    { key: 'expire', header: 'Expire le', sortValue: (d) => d.expireLe, searchValue: (d) => d.expireLe, render: (d) => d.expireLe },
     {
       key: 'jours',
       header: 'Échéance',
+      sortValue: (d) => d.joursRestants,
       render: (d) => (
         <span className={styles.daysCell} style={{ color: daysColor(d.joursRestants) }}>
           {daysLabel(d.joursRestants)}
@@ -373,13 +292,14 @@ export default function CalendarExpirations() {
     {
       key: 'statut',
       header: 'Statut',
+      sortValue: (d) => d.statut, searchValue: (d) => d.statut, filterable: true,
       render: (d) => (
         <Badge appearance="tint" color={statutColor(d.statut)} size="small">
           {d.statut}
         </Badge>
       ),
     },
-    { key: 'charge', header: 'Chargé', render: (d) => d.charge },
+    { key: 'charge', header: 'Chargé', sortValue: (d) => d.charge, searchValue: (d) => d.charge, filterable: true, render: (d) => d.charge },
     {
       key: 'actions',
       header: '',
@@ -396,6 +316,65 @@ export default function CalendarExpirations() {
       ),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(expirations, columns);
+  const { search, setSearch } = table;
+  const filtered = table.rows;
+
+  const buckets = [
+    {
+      key: 'expired',
+      label: t('Dépassés'),
+      count: expirations.filter((d) => d.joursRestants < 0).length,
+      color: 'var(--danger)',
+      meta: t('relance immédiate'),
+      pressed: table.hasFilter('statut', 'Expiré'),
+      // Les deux familles de filtres (statut / fenêtre) s'excluent : on efface l'autre.
+      onClick: () => {
+        setFenetreFilter('');
+        table.toggleFilter('statut', 'Expiré');
+      },
+    },
+    {
+      key: 'j7',
+      label: 'J-7',
+      count: expirations.filter((d) => d.joursRestants >= 0 && d.joursRestants <= 7).length,
+      color: 'var(--warning)',
+      meta: t('à renouveler'),
+      pressed: table.hasFilter('statut', 'À renouveler'),
+      onClick: () => {
+        setFenetreFilter('');
+        table.toggleFilter('statut', 'À renouveler');
+      },
+    },
+    {
+      key: 'j30',
+      label: 'J-30',
+      count: expirations.filter((d) => d.joursRestants > 7 && d.joursRestants <= 30).length,
+      color: '#404040',
+      meta: t('à anticiper'),
+      pressed: fenetreFilter === 'j30',
+      onClick: () => {
+        table.setFilter('statut', '');
+        setFenetreFilter((cur) => (cur === 'j30' ? '' : 'j30'));
+      },
+    },
+    {
+      key: 'j60',
+      label: 'J-60',
+      count: expirations.filter((d) => d.joursRestants > 30 && d.joursRestants <= 60).length,
+      color: '#404040',
+      meta: t('à planifier'),
+      pressed: fenetreFilter === 'j60',
+      onClick: () => {
+        table.setFilter('statut', '');
+        setFenetreFilter((cur) => (cur === 'j60' ? '' : 'j60'));
+      },
+    },
+  ];
+
+  const maxBucket = Math.max(...buckets.map((b) => b.count), 1);
+
 
   return (
     <div>
@@ -510,10 +489,7 @@ export default function CalendarExpirations() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher un document, un partenaire, une référence…"
-        filters={[
-          { key: 'statut', label: 'Statut', value: statutFilter, options: STATUT_OPTIONS, onChange: setStatutFilter },
-          { key: 'type', label: 'Type', value: typeFilter, options: TYPE_OPTIONS, onChange: setTypeFilter },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card

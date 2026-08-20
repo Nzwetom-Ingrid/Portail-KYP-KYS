@@ -15,6 +15,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { DetailDrawer, DrawerSection, FieldGrid } from '@/components/common/DetailDrawer';
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
@@ -81,14 +82,6 @@ const SEVERITE_LABEL: Record<Severite, string> = {
   ok: 'Opérationnel',
 };
 
-const SEVERITE_OPTIONS = [
-  { label: 'Toutes situations', value: '' },
-  { label: 'Bloquant', value: 'bloquant' },
-  { label: 'À surveiller', value: 'attention' },
-  { label: 'Informatif', value: 'info' },
-  { label: 'Opérationnel', value: 'ok' },
-];
-
 /** Ordre de gravité pour le tri : le support veut les bloquants en tête, ce
  *  qu'un tri alphabétique des libellés ne donnerait jamais. */
 const SEVERITE_ORDRE: Record<Severite, number> = { bloquant: 1, attention: 2, info: 3, ok: 4 };
@@ -125,9 +118,6 @@ export default function SupportAcces() {
   const { data: comptes, isLoading, error } = tiersExterneB2c.useList({ top: 500 });
   const majCompte = tiersExterneB2c.useUpdate();
   const { data: tousLesTiers } = tiersHooks.useList({ top: 500 });
-
-  const [search, setSearch] = useState('');
-  const [severiteFilter, setSeveriteFilter] = useState('');
   const [ouvert, setOuvert] = useState<LigneSupport | null>(null);
   const [confirmOuvert, setConfirmOuvert] = useState(false);
 
@@ -174,14 +164,6 @@ export default function SupportAcces() {
     [lignes],
   );
 
-  const visibles = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return lignes.filter((l) => {
-      if (severiteFilter && l.diagnostic.severite !== severiteFilter) return false;
-      if (!q) return true;
-      return `${l.email} ${l.tiers} ${l.diagnostic.libelle}`.toLowerCase().includes(q);
-    });
-  }, [lignes, search, severiteFilter]);
 
   const reactiver = async (motif: string) => {
     if (!ouvert) return;
@@ -223,6 +205,10 @@ export default function SupportAcces() {
       header: 'Diagnostic',
       // Tri par gravite : le support veut voir les bloquants en tete.
       sortValue: (l) => SEVERITE_ORDRE[l.diagnostic.severite],
+      searchValue: (l) => l.diagnostic.libelle,
+      // On filtre sur le LIBELLE de gravite, celui que porte la carte cliquable.
+      filterValue: (l) => SEVERITE_LABEL[l.diagnostic.severite],
+      filterable: true,
       render: (l) => (
         <Badge appearance="filled" color={SEVERITE_BADGE[l.diagnostic.severite]}>
           {t(l.diagnostic.libelle)}
@@ -239,6 +225,11 @@ export default function SupportAcces() {
       render: (l) => (l.tentatives > 0 ? String(l.tentatives) : '—'),
     },
   ];
+  // Filtres et recherche derives des colonnes (cf. useTableFilters).
+  const table = useTableFilters(lignes, colonnes);
+  const { search, setSearch } = table;
+  const visibles = table.rows;
+
 
   if (error) {
     return (
@@ -265,8 +256,8 @@ export default function SupportAcces() {
           <button
             key={s}
             type="button"
-            className={`${styles.kpi} ${severiteFilter === s ? styles.kpiActive : ''}`}
-            onClick={() => setSeveriteFilter(severiteFilter === s ? '' : s)}
+            className={`${styles.kpi} ${table.hasFilter('diagnostic', SEVERITE_LABEL[s]) ? styles.kpiActive : ''}`}
+            onClick={() => table.toggleFilter('diagnostic', SEVERITE_LABEL[s])}
           >
             <div className={styles.kpiLabel}>{t(SEVERITE_LABEL[s])}</div>
             <div className={styles.kpiValue}>{compteurs[s]}</div>
@@ -278,15 +269,7 @@ export default function SupportAcces() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Rechercher un e-mail, un tiers, un diagnostic…"
-        filters={[
-          {
-            key: 'severite',
-            label: 'Situation',
-            value: severiteFilter,
-            options: SEVERITE_OPTIONS,
-            onChange: setSeveriteFilter,
-          },
-        ]}
+        filters={table.filterConfigs}
       />
 
       <Card flush>

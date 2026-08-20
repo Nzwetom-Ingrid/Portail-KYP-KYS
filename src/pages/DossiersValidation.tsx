@@ -719,7 +719,7 @@ export default function DossiersValidation() {
       color: 'var(--warning)',
       meta: t('priorité hiérarchique'),
       icon: <ClipboardTaskListLtr20Regular />,
-      active: table.getFilter('statut') === 'En revue',
+      active: table.hasFilter('statut', 'En revue'),
       onClick: () => toggleStatut('En revue'),
     },
     {
@@ -728,7 +728,7 @@ export default function DossiersValidation() {
       color: '#8C040D',
       meta: t('double validation'),
       icon: <ShieldCheckmark20Regular />,
-      active: table.getFilter('risque') === 'High',
+      active: table.hasFilter('risque', 'High'),
       onClick: () => toggleRisque('High'),
     },
     {
@@ -737,7 +737,7 @@ export default function DossiersValidation() {
       color: '#15803D',
       meta: t('archivés'),
       icon: <CheckmarkCircle20Filled />,
-      active: table.getFilter('statut') === 'Validé',
+      active: table.hasFilter('statut', 'Validé'),
       onClick: () => toggleStatut('Validé'),
     },
     {
@@ -746,7 +746,7 @@ export default function DossiersValidation() {
       color: '#B91C1C',
       meta: t("renvoyés à l'émetteur"),
       icon: <DismissCircle20Regular />,
-      active: table.getFilter('statut') === 'Rejeté',
+      active: table.hasFilter('statut', 'Rejeté'),
       onClick: () => toggleStatut('Rejeté'),
     },
   ];
