@@ -6,6 +6,7 @@ import {
   loadAssignedQuestionnaires,
   loadDocuments,
   loadDossier,
+  requestReview,
 } from '../services/portal'
 
 const DEFAULT_STEPS = [
@@ -36,12 +37,43 @@ export default function MonEspace({ onNavigate, notify }) {
     decision: null,
   })
 
+  // Demande de revue : identifiant du tiers + formulaire court.
+  const [tiersId, setTiersId] = useState(null)
+  const [revueOuverte, setRevueOuverte] = useState(false)
+  const [revueMsg, setRevueMsg] = useState('')
+  const [revueEnCours, setRevueEnCours] = useState(false)
+
+  const envoyerRevue = async () => {
+    if (!revueMsg.trim()) {
+      notify(t('Précisez ce que vous souhaitez faire réexaminer.'))
+      return
+    }
+    if (!tiersId) {
+      notify(t('Aucune fiche tiers rattachée à votre compte.'))
+      return
+    }
+    setRevueEnCours(true)
+    try {
+      await requestReview(tiersId, { message: revueMsg.trim() })
+      // Message volontairement précis : la demande est ENREGISTRÉE, pas notifiée.
+      // Promettre un traitement immédiat serait reproduire le défaut corrigé ici.
+      notify(t('Demande de revue enregistrée. La conformité la traitera lors de son prochain passage.'))
+      setRevueOuverte(false)
+      setRevueMsg('')
+    } catch (e) {
+      notify(`${t('Enregistrement impossible :')} ${e.message}`)
+    } finally {
+      setRevueEnCours(false)
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
         const t = await getCurrentTiers()
         if (!t?.afb_tiersid) return
+        if (!cancelled) setTiersId(t.afb_tiersid)
         const [dossier, docs, qs] = await Promise.all([
           loadDossier(t.afb_tiersid),
           loadDocuments(t.afb_tiersid),
@@ -257,14 +289,42 @@ export default function MonEspace({ onNavigate, notify }) {
                   </span>
                 </span>
               </button>
-              <button className="quick-action" onClick={() => notify(t('Demande envoyée au service conformité.'))}>
+              <button className="quick-action" onClick={() => setRevueOuverte((v) => !v)}>
                 <span className="quick-action__icon"><Icon name="handshake" size={20} /></span>
                 <span>
                   <strong>{t('Demander une revue')}</strong>
-                  <span>{t('Contacter la conformité')}</span>
+                  <span>{t('Faire réexaminer votre dossier')}</span>
                 </span>
               </button>
             </div>
+
+            {/* Formulaire de demande de revue — n'apparaît qu'au clic. */}
+            {revueOuverte && (
+              <div className="field field--full" style={{ marginTop: 14 }}>
+                <label>{t('Que souhaitez-vous faire réexaminer ?')}</label>
+                <textarea
+                  rows={3}
+                  value={revueMsg}
+                  onChange={(e) => setRevueMsg(e.target.value)}
+                  placeholder={t('Ex. j’ai remplacé mes statuts, merci de reprendre l’examen du dossier.')}
+                />
+                <span className="field__hint">
+                  {t('Votre demande est enregistrée dans votre dossier et horodatée. Elle est traitée par la conformité lors de son prochain passage — ce n’est pas un canal d’urgence.')}
+                </span>
+                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                  <button className="btn btn--primary btn--sm" onClick={envoyerRevue} disabled={revueEnCours}>
+                    <Icon name="check" size={16} /> {revueEnCours ? t('Envoi…') : t('Envoyer la demande')}
+                  </button>
+                  <button
+                    className="btn btn--ghost btn--sm"
+                    onClick={() => { setRevueOuverte(false); setRevueMsg('') }}
+                    disabled={revueEnCours}
+                  >
+                    {t('Annuler')}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

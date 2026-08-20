@@ -374,13 +374,14 @@ export async function loadDocuments(tiersId) {
       `&$orderby=afb_datedeteleversement desc`
   )
   // Exclut aussi les « réponses » (factures/compléments) attachées à un document
-  // reçu (afb_typededocument = 'reponse:<id>') et les « demandes de document »
-  // envoyées à la banque (marqueur 'demande-document') — ni l'un ni l'autre ne
-  // sont des pièces déposées.
+  // reçu (afb_typededocument = 'reponse:<id>'), les « demandes de document »
+  // envoyées à la banque et les « demandes de revue » — aucune n'est une pièce
+  // déposée, et les afficher ici polluerait la bibliothèque du tiers.
+  const MARQUEURS = ['demande-document', 'demande-revue']
   return rows
     .filter((d) => {
       const type = String(d.afb_typededocument || '')
-      return !type.startsWith('reponse:') && type !== 'demande-document'
+      return !type.startsWith('reponse:') && !MARQUEURS.includes(type)
     })
     .map(mapDocument)
 }
@@ -537,6 +538,37 @@ export async function requestDocumentFromBank(tiersId, { docName, message }) {
     afb_datedeteleversement: new Date().toISOString(),
     afb_anneededepot: new Date().getFullYear(),
     afb_urlsharepoint: 'request://demande',
+    afb_motifderejet: message || '',
+    [`afb_categorie@odata.bind`]: `/${SETS.documentCategory}(${categoryId})`,
+  }
+  await dv.createIn(SETS.tiers, tiersId, 'afb_document_tiers_afb_tiers', payload)
+}
+
+/**
+ * Demande de revue adressée par le tiers à la conformité : « merci de réexaminer
+ * mon dossier ». Enregistrée comme afb_document marqueur ('demande-revue'), sur
+ * le même principe que requestDocumentFromBank — table existante, écriture par
+ * deep-insert, aucun fichier.
+ *
+ * Ce que cela fait, et ce que cela ne fait pas : la demande est PERSISTÉE et
+ * horodatée, donc opposable et requêtable. Elle ne déclenche AUCUNE notification
+ * et n'apparaît pas encore dans l'application interne — cet affichage reste à
+ * construire (chantier « demande de revue de bout en bout »).
+ */
+export async function requestReview(tiersId, { message } = {}) {
+  if (!dv.enabled) return null
+  const cats = await loadDocumentCategories()
+  const categoryId = cats[0]?.id
+  if (!categoryId) throw new Error('Aucune catégorie de document disponible.')
+  const payload = {
+    afb_nomdufichier: 'Demande de revue du dossier',
+    afb_typededocument: 'demande-revue',
+    afb_statutdevalidite: CHOICES.documentStatut.EnAttente,
+    afb_sourcedudepot: CHOICES.documentSource.Tiers,
+    afb_authentifie: CHOICES.documentAuthentifie.Non,
+    afb_datedeteleversement: new Date().toISOString(),
+    afb_anneededepot: new Date().getFullYear(),
+    afb_urlsharepoint: 'request://revue',
     afb_motifderejet: message || '',
     [`afb_categorie@odata.bind`]: `/${SETS.documentCategory}(${categoryId})`,
   }
