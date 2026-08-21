@@ -94,6 +94,19 @@ lecteur non technique.
 
 ### Corrigé
 
+- **Le choix de fichiers par la boîte de dialogue ne remontait rien.** Seul le
+  glisser-déposer alimentait la file d'attente. `e.target.files` est une
+  FileList vivante, liée à l'input : réarmer `value` — nécessaire pour pouvoir
+  resélectionner le même fichier après une erreur — la vidait avant même
+  qu'elle soit lue. Le glisser-déposer, qui passe par `dataTransfer.files`,
+  échappait à l'effet de bord. La sélection est désormais matérialisée avant le
+  réarmement.
+- **Bouton « Soumettre » grisé sans un mot d'explication.** Lorsque le compte
+  n'est rattaché à aucune entreprise, le dépôt est impossible : la pièce
+  n'aurait pas de dossier où être rangée. L'écran grisait le bouton en silence,
+  ce qui se lisait comme une panne. La cause est maintenant nommée en tête de
+  page, avec la marche à suivre.
+
 - **Console support branchée sur la table qui authentifie réellement.** L'écran
   ne lisait que `afb_tiersexterneb2c`, un miroir alimenté par le flux
   d'invitation : cinq lignes s'affichaient pour une quarantaine de tiers, et

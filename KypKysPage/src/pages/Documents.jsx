@@ -258,8 +258,25 @@ export default function Documents({ notify, search = '' }) {
     }
   }
 
+  // Sans tiers rattaché, le dépôt est impossible : il n'y a pas de dossier où
+  // ranger la pièce. Le bouton « Soumettre » était simplement grisé, sans un mot
+  // d'explication — l'utilisateur croyait à une panne du bouton. On nomme la
+  // cause, et on dit à qui s'adresser.
+  const sansTiers = !loading && !tiers?.afb_tiersid
+
   return (
     <div className="page">
+      {sansTiers && (
+        <div className="card card--pad" style={{ marginBottom: 16, borderLeft: '3px solid var(--warning)' }}>
+          <h3 style={{ margin: 0, fontSize: 15, color: 'var(--ink)' }}>
+            <Icon name="alert" size={16} /> {t('Votre espace n’est rattaché à aucune entreprise')}
+          </h3>
+          <p style={{ margin: '6px 0 0', color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.55 }}>
+            {t('Vous pouvez consulter cette page, mais aucun dépôt n’est possible : la pièce n’aurait pas de dossier où être rangée. Signalez-le à votre chargé de relation Afriland First Bank — le rattachement se fait de son côté, en quelques minutes.')}
+          </p>
+        </div>
+      )}
+
       {/* Catégorie + date d'expiration appliquées au(x) document(s) téléversé(s) */}
       <div className="card card--pad" style={{ marginBottom: 16 }}>
         <div className="form-grid">
@@ -339,7 +356,12 @@ export default function Documents({ notify, search = '' }) {
           accept={acceptAttr(ACCEPT_DOCUMENT)}
           disabled={uploading}
           onChange={(e) => {
-            const files = e.target.files
+            // `e.target.files` est une FileList VIVANTE, liée à l'input : vider
+            // `value` la vide aussi. On copiait donc une liste déjà vide, et
+            // rien n'arrivait dans la file d'attente — alors que le
+            // glisser-déposer, qui passe par `dataTransfer.files`, fonctionnait.
+            // L'ordre compte : on matérialise la sélection AVANT de réarmer l'input.
+            const files = Array.from(e.target.files || [])
             e.target.value = '' // permet de re-sélectionner le même fichier après une erreur
             ajouterFichiers(files)
           }}
