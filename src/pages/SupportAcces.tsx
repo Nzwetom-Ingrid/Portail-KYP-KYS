@@ -10,7 +10,7 @@
  */
 import { useMemo, useState } from 'react';
 import { Badge, Button, makeStyles } from '@fluentui/react-components';
-import { ArrowClockwise20Regular } from '@fluentui/react-icons';
+import { ArrowClockwise20Regular, PersonAdd20Regular } from '@fluentui/react-icons';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
@@ -18,6 +18,7 @@ import { DataTable, type Column } from '@/components/common/DataTable';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { DetailDrawer, DrawerSection, FieldGrid } from '@/components/common/DetailDrawer';
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
+import { InviterAccesDialog } from '@/components/support/InviterAccesDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { tiers as tiersHooks, tiersExterneB2c } from '@/lib/dataverse/entityHooks';
 import { useT } from '@/i18n/i18n';
@@ -120,6 +121,8 @@ export default function SupportAcces() {
   const { data: tousLesTiers } = tiersHooks.useList({ top: 500 });
   const [ouvert, setOuvert] = useState<LigneSupport | null>(null);
   const [confirmOuvert, setConfirmOuvert] = useState(false);
+  const [inviteOuvert, setInviteOuvert] = useState(false);
+
 
   // Le nom du tiers est résolu par jointure sur la liste des tiers plutôt que
   // lu depuis le lookup : la requête sur afb_tiersexterneb2c ne renvoie pas le
@@ -248,6 +251,11 @@ export default function SupportAcces() {
         eyebrow="Support"
         title="Support · accès partenaires"
         subtitle="Pourquoi un partenaire n’arrive-t-il pas à se connecter ? Le diagnostic est déduit des traces de son identité externe."
+        actions={
+          <Button appearance="primary" icon={<PersonAdd20Regular />} onClick={() => setInviteOuvert(true)}>
+            {t('Ouvrir un accès')}
+          </Button>
+        }
       />
 
       {/* Compteurs cliquables : ils servent aussi de filtre rapide. */}
@@ -342,6 +350,8 @@ export default function SupportAcces() {
           </>
         )}
       </DetailDrawer>
+
+      <InviterAccesDialog open={inviteOuvert} onOpenChange={setInviteOuvert} entreprises={nomParTiersId} />
 
       <ConfirmActionDialog
         open={confirmOuvert}
