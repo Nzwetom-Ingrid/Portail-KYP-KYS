@@ -270,9 +270,11 @@ export default function Documents({ notify, search = '' }) {
   // première se corrige sur la fiche du tiers, la seconde dans les
   // autorisations du rôle web — autant le dire, sinon on cherche des heures du
   // mauvais côté.
-  const voieRefusee = sansTiers
-    ? (getDiagnosticRattachement()?.voies ?? []).find((v) => v.statut === 'refuse')
-    : null
+  // Toutes les voies refusées, pas seulement la première : n'en nommer qu'une
+  // ferait corriger une permission puis buter sur la suivante.
+  const voiesRefusees = sansTiers
+    ? (getDiagnosticRattachement()?.voies ?? []).filter((v) => v.statut === 'refuse')
+    : []
   const TABLE_PAR_VOIE = {
     contact: 'Contact',
     'email-principal': 'Tiers',
@@ -289,11 +291,13 @@ export default function Documents({ notify, search = '' }) {
           <p style={{ margin: '6px 0 0', color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.55 }}>
             {t('Vous pouvez consulter cette page, mais aucun dépôt n’est possible : la pièce n’aurait pas de dossier où être rangée. Signalez-le à votre chargé de relation Afriland First Bank — le rattachement se fait de son côté, en quelques minutes.')}
           </p>
-          {voieRefusee && (
+          {voiesRefusees.length > 0 && (
             <p style={{ margin: '10px 0 0', color: 'var(--muted)', fontSize: 12.5, lineHeight: 1.5 }}>
               <strong>{t('Note technique')} — </strong>
-              {t('la lecture de la table')} « {TABLE_PAR_VOIE[voieRefusee.canal] ?? voieRefusee.canal} »{' '}
-              {t('a été refusée. Le rattachement existe peut-être déjà : c’est l’autorisation de table du rôle web qui manque, côté administration du portail.')}
+              {voiesRefusees.length > 1 ? t('la lecture des tables') : t('la lecture de la table')}{' '}
+              {voiesRefusees.map((v) => `« ${TABLE_PAR_VOIE[v.canal] ?? v.canal} »`).join(', ')}{' '}
+              {voiesRefusees.length > 1 ? t('a été refusée.') : t('a été refusée.')}{' '}
+              {t('Le rattachement existe peut-être déjà : c’est l’autorisation de table du rôle web qui manque, côté administration du portail.')}
             </p>
           )}
         </div>

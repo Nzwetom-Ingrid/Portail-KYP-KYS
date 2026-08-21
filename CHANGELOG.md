@@ -100,6 +100,16 @@ lecteur non technique.
 
 ### Corrigé
 
+- **RÉGRESSION — le dépôt de pièces était devenu impossible.** L'expansion
+  `$expand=afb_typejuridique(...)`, ajoutée aux trois requêtes de rattachement
+  pour afficher correctement « Partenaire / Fournisseur », lit la table
+  `afb_partnertype`. Sans autorisation de table sur celle-ci, Dataverse refuse
+  la requête ENTIÈRE — pas seulement l'expansion. Le portail ne retrouvait donc
+  plus l'entreprise du partenaire, et le bouton « Soumettre » restait grisé.
+  Une commodité d'affichage bloquait une résolution essentielle. Les trois
+  voies réessaient désormais sans cette expansion en cas de refus ; le type
+  retombe sur le préfixe de la référence du dossier, qui le porte déjà.
+
 - **Une permission de table manquante ne se distinguait pas d'une absence de
   données.** Les trois voies de rattachement au tiers étaient explorées avec un
   `catch` muet : un refus d’autorisation et « aucune fiche trouvée » donnaient

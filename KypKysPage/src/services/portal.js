@@ -132,20 +132,44 @@ export async function loadAccessibleTiers() {
 
   const trouves = new Map() // dédoublonné par identifiant de tiers
   const voies = []
-  // Consigne l'issue d'une voie sans jamais interrompre les suivantes : une
-  // permission manquante sur l'une ne doit pas priver l'utilisateur des autres.
-  const tenter = async (canal, promesse) => {
+
+  /**
+   * Explore une voie, sans jamais interrompre les suivantes.
+   *
+   * L'expansion du type de partenaire est un CONFORT : elle donne le type
+   * d'entité (KYP / KYS). Elle exige pourtant une permission de table
+   * supplémentaire sur `afb_partnertype`, et Dataverse refuse la requête
+   * ENTIÈRE lorsqu'elle manque — pas seulement l'expansion. Le portail perdait
+   * alors l'entreprise elle-même, et le dépôt de pièces devenait impossible :
+   * une commodité d'affichage bloquait une résolution essentielle.
+   *
+   * On réessaie donc sans l'expansion. Le type retombe sur le préfixe de la
+   * référence du dossier, qui le porte déjà.
+   *
+   * @param construire (avecType: boolean) => Promise — bâtit la requête.
+   */
+  const tenter = async (canal, construire) => {
     try {
-      const r = await promesse
+      const r = await construire(true)
       voies.push({ canal, statut: 'ok' })
       return r
     } catch (e) {
-      voies.push({
-        canal,
-        statut: estRefus(e) ? 'refuse' : 'erreur',
-        message: String(e?.message || e),
-      })
-      return null
+      if (!estRefus(e)) {
+        voies.push({ canal, statut: 'erreur', message: String(e?.message || e) })
+        return null
+      }
+      try {
+        const r = await construire(false)
+        voies.push({ canal, statut: 'ok-sans-type' })
+        return r
+      } catch (e2) {
+        voies.push({
+          canal,
+          statut: estRefus(e2) ? 'refuse' : 'erreur',
+          message: String(e2?.message || e2),
+        })
+        return null
+      }
     }
   }
 
@@ -154,12 +178,11 @@ export async function loadAccessibleTiers() {
   // fiche (permission Tiers-son-propre, scope Contact) — aucune lecture globale.
   const user = await getCurrentUser()
   if (user?.contactId) {
-    const c = await tenter(
-      'contact',
+    const c = await tenter('contact', (avecType) =>
       dv.get(
         SETS.contact,
         user.contactId,
-        `?$select=contactid&$expand=afb_Tiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
+        `?$select=contactid&$expand=afb_Tiers($select=${TIERS_SELECT}${avecType ? TIERS_EXPAND_IMBRIQUE : ''})`
       )
     )
     if (c?.afb_Tiers) {
@@ -178,11 +201,10 @@ export async function loadAccessibleTiers() {
   // ---- Voie 2 (RECOMMANDÉE) : tiers dont « Email contact principal »
   // (afb_emailcontactprincipal) = e-mail de connexion. Robuste quand le lookup
   // Contact.afb_Tiers n'est pas renseigné.
-  const direct = (await tenter(
-    'email-principal',
+  const direct = (await tenter('email-principal', (avecType) =>
     dv.list(
       SETS.tiers,
-      `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$select=${TIERS_SELECT}${TIERS_EXPAND}`
+      `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$select=${TIERS_SELECT}${avecType ? TIERS_EXPAND : ''}`
     )
   )) ?? []
   for (const t of direct) {
@@ -191,13 +213,12 @@ export async function loadAccessibleTiers() {
   }
 
   // ---- Voie 3 (REPLI) : identités externes B2C portant cet e-mail.
-  const rows = (await tenter(
-    'identite-externe',
+  const rows = (await tenter('identite-externe', (avecType) =>
     dv.list(
       SETS.tiersExterneB2C,
       `?$filter=afb_emaildauthentification eq '${esc(email)}'` +
         `&$select=afb_tiersexterneb2cid,afb_typedorganisation` +
-        `&$expand=afb_nomdutiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
+        `&$expand=afb_nomdutiers($select=${TIERS_SELECT}${avecType ? TIERS_EXPAND_IMBRIQUE : ''})`
     )
   )) ?? []
   for (const row of rows) {
