@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
+import { useRafraichissementAuto } from '../hooks/useRafraichissementAuto'
 import { getCurrentTiers, loadEvaluations } from '../services/portal'
 import { filterBySearch } from '../utils/search'
 
@@ -57,10 +58,19 @@ export default function Evaluations({ search = '' }) {
     ev.note != null && ev.noteMax ? `${ev.note}/${ev.noteMax} ${ev.pourcentage}%` : '',
   ])
 
+  // Rafraîchissement automatique : l'écran se remet à jour au retour sur
+  // l'onglet et tant qu'il reste visible, au lieu d'attendre un rechargement
+  // manuel. Rejouer l'effet de chargement suffit — sa fonction de nettoyage
+  // gère déjà les lectures qui se croisent.
+  const [tickRafraichissement, setTickRafraichissement] = useState(0)
+  useRafraichissementAuto(() => setTickRafraichissement((v) => v + 1))
+
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      setLoading(true)
+      // Seul le premier chargement affiche l'écran d'attente : une relecture
+      // automatique doit passer inaperçue, sinon l'écran clignote chaque minute.
+      if (tickRafraichissement === 0) setLoading(true)
       try {
         const t = await getCurrentTiers()
         if (cancelled) return
@@ -75,7 +85,7 @@ export default function Evaluations({ search = '' }) {
       }
     })()
     return () => { cancelled = true }
-  }, [])
+  }, [tickRafraichissement])
 
   return (
     <div className="page">

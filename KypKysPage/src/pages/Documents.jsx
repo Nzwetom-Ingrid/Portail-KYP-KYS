@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Icon from '../components/Icon'
 import SearchableSelect from '../components/SearchableSelect'
 import { useT } from '../i18n/i18n'
+import { useRafraichissementAuto } from '../hooks/useRafraichissementAuto'
 import {
   deleteDocument,
   getCurrentTiers,
@@ -96,11 +97,22 @@ export default function Documents({ notify, search = '' }) {
   const [docType, setDocType] = useState('') // pièce demandée rattachée au prochain dépôt
   const inputRef = useRef(null)
 
-  // Chargement initial : tiers courant + ses documents + catégories
+  // Rafraîchissement automatique : la conformité valide ou rejette une pièce
+  // sans que rien n'arrive au partenaire, qui rechargeait la page au hasard
+  // pour s'en apercevoir. Rejouer l'effet de chargement suffit à le remettre à
+  // jour. Suspendu pendant un envoi : remplacer la liste sous les doigts de
+  // l'utilisateur ferait plus de dégâts que la fraîcheur n'apporte.
+  const [tickRafraichissement, setTickRafraichissement] = useState(0)
+  useRafraichissementAuto(() => setTickRafraichissement((v) => v + 1), { actif: !uploading })
+
+  // Chargement initial : tiers courant + ses documents + catégories.
+  // Rejoué à chaque incrément du compteur ci-dessus.
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      setLoading(true)
+      // Seul le premier chargement affiche l'écran d'attente : une relecture
+      // automatique doit passer inaperçue, sinon l'écran clignote chaque minute.
+      if (tickRafraichissement === 0) setLoading(true)
       try {
         const [t, cats] = await Promise.all([getCurrentTiers(), loadDocumentCategories()])
         if (cancelled) return
@@ -125,7 +137,7 @@ export default function Documents({ notify, search = '' }) {
     })()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [tickRafraichissement])
 
   const counts = useMemo(() => {
     const c = { all: docs.length }

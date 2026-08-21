@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
+import { useRafraichissementAuto } from '../hooks/useRafraichissementAuto'
 import {
   getCurrentTiers,
   loadAssignedQuestionnaires,
@@ -91,10 +92,21 @@ export default function Questionnaires({ notify, search = '' }) {
   const [answers, setAnswers] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
+  // Rafraîchissement automatique : l'écran se remet à jour au retour sur
+  // l'onglet et tant qu'il reste visible, au lieu d'attendre un rechargement
+  // manuel. Rejouer l'effet de chargement suffit — sa fonction de nettoyage
+  // gère déjà les lectures qui se croisent.
+  // Suspendu tant qu'un questionnaire est ouvert : recharger la liste sous
+  // quelqu'un en train de répondre lui ferait perdre le fil.
+  const [tickRafraichissement, setTickRafraichissement] = useState(0)
+  useRafraichissementAuto(() => setTickRafraichissement((v) => v + 1), { actif: !active })
+
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      setLoading(true)
+      // Seul le premier chargement affiche l'écran d'attente : une relecture
+      // automatique doit passer inaperçue, sinon l'écran clignote chaque minute.
+      if (tickRafraichissement === 0) setLoading(true)
       try {
         const t = await getCurrentTiers()
         if (cancelled) return
@@ -109,7 +121,7 @@ export default function Questionnaires({ notify, search = '' }) {
       }
     })()
     return () => { cancelled = true }
-  }, [])
+  }, [tickRafraichissement])
 
   const counts = useMemo(() => {
     const c = { all: items.length }

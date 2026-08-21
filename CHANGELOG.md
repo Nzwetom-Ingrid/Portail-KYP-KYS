@@ -40,6 +40,20 @@ lecteur non technique.
 
 ### Ajouté
 
+- **Le portail se met à jour tout seul.** Le partenaire devait recharger la
+  page pour découvrir que son dossier avait été validé ou qu'une pièce avait
+  changé de statut — sans que rien ne lui suggère que l'information avait
+  vieilli. Les six écrans se relisent désormais au retour sur l’onglet, puis
+  chaque minute tant qu’il reste visible. Un changement de statut du dossier
+  est annoncé par une notification : une mise à jour silencieuse serait passée
+  inaperçue, et le mécanisme n’aurait servi à rien.
+  Trois garde-fous : la relecture s’arrête quand l’onglet passe en arrière-plan
+  (un onglet oublié interrogerait Dataverse des centaines de fois pour
+  personne), elle se suspend pendant un téléversement ou un formulaire ouvert
+  (remplacer les données sous les doigts de l’utilisateur ferait plus de dégâts
+  que la fraîcheur n’apporte), et elle n’affiche jamais d’écran d’attente —
+  seul le premier chargement en montre un.
+
 - **Rubrique « Demandes », avec réponse de la conformité.** Une demande de
   revue n'est pas une pièce justificative : elle s'affichait pourtant parmi
   elles, avec un statut « En attente » et des boutons Valider / Rejeter

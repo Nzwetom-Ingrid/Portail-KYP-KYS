@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
+import { useRafraichissementAuto } from '../hooks/useRafraichissementAuto'
 import { getCurrentTiers, loadUbos, submitUbo } from '../services/portal'
 import { COUNTRIES } from '../config/countries'
 import { filterBySearch } from '../utils/search'
@@ -55,10 +56,20 @@ export default function UBO({ notify, search = '' }) {
   const [saving, setSaving] = useState(false)
 
   // Chargement initial : tiers courant + ses bénéficiaires
+  // Rafraîchissement automatique : l'écran se remet à jour au retour sur
+  // l'onglet et tant qu'il reste visible, au lieu d'attendre un rechargement
+  // manuel. Rejouer l'effet de chargement suffit — sa fonction de nettoyage
+  // gère déjà les lectures qui se croisent.
+  // Suspendu tant que le formulaire de déclaration est ouvert.
+  const [tickRafraichissement, setTickRafraichissement] = useState(0)
+  useRafraichissementAuto(() => setTickRafraichissement((v) => v + 1), { actif: !showForm })
+
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      setLoading(true)
+      // Seul le premier chargement affiche l'écran d'attente : une relecture
+      // automatique doit passer inaperçue, sinon l'écran clignote chaque minute.
+      if (tickRafraichissement === 0) setLoading(true)
       try {
         const t = await getCurrentTiers()
         if (cancelled) return
@@ -74,7 +85,7 @@ export default function UBO({ notify, search = '' }) {
       }
     })()
     return () => { cancelled = true }
-  }, [])
+  }, [tickRafraichissement])
 
   const morale = form.typeEntite === 'morale'
   const totalPart = useMemo(

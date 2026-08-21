@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
+import { useRafraichissementAuto } from '../hooks/useRafraichissementAuto'
 import {
   getCurrentTiers,
   loadAssignedQuestionnaires,
@@ -77,97 +78,113 @@ export default function MonEspace({ onNavigate, notify }) {
     }
   }
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const t = await getCurrentTiers()
-        if (!t?.afb_tiersid) return
-        if (!cancelled) {
-          setTiersId(t.afb_tiersid)
-          rafraichirDemandes(t.afb_tiersid)
-        }
-        const [dossier, docs, qs] = await Promise.all([
-          loadDossier(t.afb_tiersid),
-          loadDocuments(t.afb_tiersid),
-          loadAssignedQuestionnaires(t.afb_tiersid),
-        ])
-        if (cancelled) return
-        const validDocs = docs.filter((d) => d.afb_statutvalidite === 'Valide')
-        const recentDocs = docs.filter((d) => {
-          if (!d.createdon) return false
-          const age = Date.now() - new Date(d.createdon).getTime()
-          return age < 1000 * 60 * 60 * 24 * 30 // 30 derniers jours
+  // Statut du dossier à la lecture précédente : sert à repérer le passage à
+  // « validé » et à le dire, plutôt que de le glisser en silence dans l'écran.
+  const statutPrecedent = useRef(null)
+
+  const charger = useCallback(async () => {
+    try {
+      const t = await getCurrentTiers()
+      if (!t?.afb_tiersid) return
+      setTiersId(t.afb_tiersid)
+      rafraichirDemandes(t.afb_tiersid)
+      const [dossier, docs, qs] = await Promise.all([
+        loadDossier(t.afb_tiersid),
+        loadDocuments(t.afb_tiersid),
+        loadAssignedQuestionnaires(t.afb_tiersid),
+      ])
+      const validDocs = docs.filter((d) => d.afb_statutvalidite === 'Valide')
+      const recentDocs = docs.filter((d) => {
+        if (!d.createdon) return false
+        const age = Date.now() - new Date(d.createdon).getTime()
+        return age < 1000 * 60 * 60 * 24 * 30 // 30 derniers jours
+      })
+      // Étapes du parcours, déduites des vraies données.
+      const qSubmitted = qs.filter((q) => q.afb_statut === 'Soumis' || q.afb_statut === 'Valide').length
+      const infoDone = !!(t.afb_nomdupartenaire && t.afb_numerorccmimmatriculation && t.afb_pays)
+      const dossierValide = /valid/i.test(dossier?.afb_statut || '')
+      // « Création du compte » n'est « Terminé » que lorsque le TIERS a réellement
+      // finalisé son inscription (RCCM/immatriculation renseignée — champ que la
+      // banque ne pré-remplit pas à la création). Évite d'afficher « Terminé » sur
+      // un compte créé par l'interne mais dont le partenaire n'a pas encore
+      // commencé/soumis son onboarding.
+      const compteFinalise = !!t.afb_numerorccmimmatriculation
+      const steps = [
+        { label: 'Création du compte', meta: compteFinalise ? 'Terminé' : 'À finaliser', state: compteFinalise ? 'done' : 'current' },
+        { label: 'Informations entreprise', meta: infoDone ? 'Terminé' : 'À compléter', state: infoDone ? 'done' : 'current' },
+        { label: 'Questionnaires', meta: qs.length ? `${qSubmitted} / ${qs.length} soumis` : 'Aucun affecté', state: qs.length === 0 ? '' : qSubmitted === qs.length ? 'done' : 'current' },
+        { label: 'Dépôt des documents', meta: docs.length ? `${docs.length} déposé${docs.length > 1 ? 's' : ''}` : 'Aucun', state: docs.length ? (validDocs.length ? 'done' : 'current') : '' },
+        { label: 'Validation conformité', meta: dossierValide ? 'Validé' : 'À venir', state: dossierValide ? 'done' : '' },
+      ]
+
+      // Complétude = part des étapes accomplies (terminée = 1, en cours = 0,5)
+      // → reflète compte + infos + questionnaires + documents, pas seulement les questionnaires.
+      const progress = Math.round(
+        (steps.reduce((s, st) => s + (st.state === 'done' ? 1 : st.state === 'current' ? 0.5 : 0), 0) / steps.length) * 100
+      )
+
+      // Activité récente, dérivée des documents + questionnaires réels.
+      const docActivity = [...docs]
+        .sort((a, b) => new Date(b.createdon || 0) - new Date(a.createdon || 0))
+        .slice(0, 5)
+        .map((d) => {
+          const valide = d.afb_statutvalidite === 'Valide'
+          return {
+            icon: valide ? 'check' : 'upload',
+            tone: valide ? 'success' : 'info',
+            title: valide ? 'Document validé' : 'Document déposé',
+            text: d.afb_nomfichier || 'Pièce ajoutée à votre dossier.',
+            time: frDate(d.createdon),
+          }
         })
-        // Étapes du parcours, déduites des vraies données.
-        const qSubmitted = qs.filter((q) => q.afb_statut === 'Soumis' || q.afb_statut === 'Valide').length
-        const infoDone = !!(t.afb_nomdupartenaire && t.afb_numerorccmimmatriculation && t.afb_pays)
-        const dossierValide = /valid/i.test(dossier?.afb_statut || '')
-        // « Création du compte » n'est « Terminé » que lorsque le TIERS a réellement
-        // finalisé son inscription (RCCM/immatriculation renseignée — champ que la
-        // banque ne pré-remplit pas à la création). Évite d'afficher « Terminé » sur
-        // un compte créé par l'interne mais dont le partenaire n'a pas encore
-        // commencé/soumis son onboarding.
-        const compteFinalise = !!t.afb_numerorccmimmatriculation
-        const steps = [
-          { label: 'Création du compte', meta: compteFinalise ? 'Terminé' : 'À finaliser', state: compteFinalise ? 'done' : 'current' },
-          { label: 'Informations entreprise', meta: infoDone ? 'Terminé' : 'À compléter', state: infoDone ? 'done' : 'current' },
-          { label: 'Questionnaires', meta: qs.length ? `${qSubmitted} / ${qs.length} soumis` : 'Aucun affecté', state: qs.length === 0 ? '' : qSubmitted === qs.length ? 'done' : 'current' },
-          { label: 'Dépôt des documents', meta: docs.length ? `${docs.length} déposé${docs.length > 1 ? 's' : ''}` : 'Aucun', state: docs.length ? (validDocs.length ? 'done' : 'current') : '' },
-          { label: 'Validation conformité', meta: dossierValide ? 'Validé' : 'À venir', state: dossierValide ? 'done' : '' },
-        ]
+      const qActivity = qs
+        .filter((q) => q.afb_statut === 'Soumis' || q.afb_statut === 'Valide')
+        .map((q) => ({
+          icon: 'clipboard',
+          tone: 'brand',
+          title: q.afb_statut === 'Valide' ? 'Questionnaire validé' : 'Questionnaire soumis',
+          text: q.afb_intitule || 'Questionnaire',
+          time: q.afb_echeance ? `échéance ${frDate(q.afb_echeance)}` : '',
+        }))
+      const activity = [...docActivity, ...qActivity].slice(0, 6)
 
-        // Complétude = part des étapes accomplies (terminée = 1, en cours = 0,5)
-        // → reflète compte + infos + questionnaires + documents, pas seulement les questionnaires.
-        const progress = Math.round(
-          (steps.reduce((s, st) => s + (st.state === 'done' ? 1 : st.state === 'current' ? 0.5 : 0), 0) / steps.length) * 100
-        )
+      setData({
+        progress,
+        docsTotal: docs.length,
+        docsValid: validDocs.length,
+        docsRecent: recentDocs.length,
+        qInProgress: qs.filter((q) => q.afb_statut === 'EnCours' || q.afb_statut === 'AFaire').length,
+        firstName: (t.afb_nom || 'Partenaire').split(' ')[0],
+        steps,
+        activity,
+        decision: dossier
+          ? { code: dossier.afb_statutcode, label: dossier.afb_statut, comment: dossier.afb_commentaire_dconf }
+          : null,
+      })
 
-        // Activité récente, dérivée des documents + questionnaires réels.
-        const docActivity = [...docs]
-          .sort((a, b) => new Date(b.createdon || 0) - new Date(a.createdon || 0))
-          .slice(0, 5)
-          .map((d) => {
-            const valide = d.afb_statutvalidite === 'Valide'
-            return {
-              icon: valide ? 'check' : 'upload',
-              tone: valide ? 'success' : 'info',
-              title: valide ? 'Document validé' : 'Document déposé',
-              text: d.afb_nomfichier || 'Pièce ajoutée à votre dossier.',
-              time: frDate(d.createdon),
-            }
-          })
-        const qActivity = qs
-          .filter((q) => q.afb_statut === 'Soumis' || q.afb_statut === 'Valide')
-          .map((q) => ({
-            icon: 'clipboard',
-            tone: 'brand',
-            title: q.afb_statut === 'Valide' ? 'Questionnaire validé' : 'Questionnaire soumis',
-            text: q.afb_intitule || 'Questionnaire',
-            time: q.afb_echeance ? `échéance ${frDate(q.afb_echeance)}` : '',
-          }))
-        const activity = [...docActivity, ...qActivity].slice(0, 6)
-
-        setData({
-          progress,
-          docsTotal: docs.length,
-          docsValid: validDocs.length,
-          docsRecent: recentDocs.length,
-          qInProgress: qs.filter((q) => q.afb_statut === 'EnCours' || q.afb_statut === 'AFaire').length,
-          firstName: (t.afb_nom || 'Partenaire').split(' ')[0],
-          steps,
-          activity,
-          decision: dossier
-            ? { code: dossier.afb_statutcode, label: dossier.afb_statut, comment: dossier.afb_commentaire_dconf }
-            : null,
-        })
-      } catch (e) {
-        // Silencieux : on garde les valeurs par défaut (0) en cas d'erreur
-        console.warn('MonEspace: chargement des compteurs impossible —', e.message)
+      // Un changement de statut mérite d'être annoncé : sans cela, la mise à
+      // jour silencieuse passerait inaperçue, et le rafraîchissement
+      // automatique n'aurait servi à rien.
+      const statut = dossier?.afb_statut || null
+      if (statutPrecedent.current && statut && statut !== statutPrecedent.current) {
+        notify(`${t('Votre dossier a changé de statut :')} ${statut}`)
       }
-    })()
-    return () => { cancelled = true }
+      statutPrecedent.current = statut
+    } catch (e) {
+      // Silencieux : on garde les valeurs par défaut (0) en cas d'erreur
+      console.warn('MonEspace: chargement des compteurs impossible —', e.message)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    charger()
+  }, [charger])
+
+  // Le dossier est validé côté banque sans que rien n'arrive au partenaire :
+  // il rechargeait la page au hasard pour le découvrir. L'écran se remet
+  // désormais à jour seul, au retour sur l'onglet et pendant qu'il est visible.
+  useRafraichissementAuto(charger, { intervalleMs: 60000 })
 
   const STATS = [
     { icon: 'shield',    tone: 'brand',   value: `${data.progress}%`,            label: 'Dossier de conformité',     trend: null },
