@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon'
 import logo from '../assets/afriland-logo.jpg'
 import { useT } from '../i18n/i18n'
@@ -32,6 +33,42 @@ export default function Topbar({
   const name = profile?.name || t('Partenaire')
   const subtitle = profile?.subtitle || t('Partenaire')
   const initials = profile?.initials || 'P'
+
+  // Menu du compte. Le portail n'offrait AUCUN moyen de se déconnecter : sur un
+  // poste partagé — un guichet, un cybercafé — la session restait ouverte pour
+  // le suivant. La déconnexion passe par le point d'entrée standard de Power
+  // Pages, qui invalide la session côté serveur ; vider le stockage local ne
+  // ferait que masquer le problème.
+  const [menuOuvert, setMenuOuvert] = useState(false)
+  const menuRef = useRef(null)
+  useEffect(() => {
+    if (!menuOuvert) return
+    const auClic = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOuvert(false)
+    }
+    const auClavier = (e) => {
+      if (e.key === 'Escape') setMenuOuvert(false)
+    }
+    document.addEventListener('mousedown', auClic)
+    document.addEventListener('keydown', auClavier)
+    return () => {
+      document.removeEventListener('mousedown', auClic)
+      document.removeEventListener('keydown', auClavier)
+    }
+  }, [menuOuvert])
+
+  const seDeconnecter = () => {
+    // L'entreprise active est un choix de confort propre à la personne : le
+    // laisser derrière soi ferait arriver le suivant sur une société qui n'est
+    // pas la sienne.
+    try {
+      localStorage.removeItem('afb_tiers_choisi')
+    } catch {
+      /* stockage indisponible : sans effet, la session serveur tombe quand même */
+    }
+    window.location.assign('/Account/Login/LogOff?returnUrl=%2F')
+  }
+
   return (
     <header className="topbar">
       <button type="button" className="icon-btn menu-toggle" onClick={onMenu} aria-label="Menu">
@@ -123,13 +160,52 @@ export default function Topbar({
         <span className="dot" />
       </button>
 
-      <button type="button" className="avatar">
-        <span className="avatar__img">{initials}</span>
-        <span className="avatar__meta">
-          <strong>{name}</strong>
-          <span>{subtitle}</span>
-        </span>
-      </button>
+      <div ref={menuRef} style={{ position: 'relative' }}>
+        <button
+          type="button"
+          className="avatar"
+          aria-haspopup="menu"
+          aria-expanded={menuOuvert}
+          onClick={() => setMenuOuvert((o) => !o)}
+        >
+          <span className="avatar__img">{initials}</span>
+          <span className="avatar__meta">
+            <strong>{name}</strong>
+            <span>{subtitle}</span>
+          </span>
+          <Icon name="chevronDown" size={14} />
+        </button>
+
+        {menuOuvert && (
+          <div
+            role="menu"
+            className="card"
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              right: 0,
+              minWidth: 220,
+              padding: 8,
+              zIndex: 60,
+              boxShadow: '0 10px 30px rgba(0,0,0,.18)',
+            }}
+          >
+            <div style={{ padding: '8px 10px 10px' }}>
+              <strong style={{ display: 'block', fontSize: 13.5, color: 'var(--ink)' }}>{name}</strong>
+              <span style={{ fontSize: 12, color: 'var(--muted)' }}>{subtitle}</span>
+            </div>
+            <button
+              type="button"
+              role="menuitem"
+              className="btn btn--ghost btn--block"
+              onClick={seDeconnecter}
+              style={{ justifyContent: 'flex-start' }}
+            >
+              <Icon name="logout" size={16} /> {t('Se déconnecter')}
+            </button>
+          </div>
+        )}
+      </div>
 
       </div>
     </header>

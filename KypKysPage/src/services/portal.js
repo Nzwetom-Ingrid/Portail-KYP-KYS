@@ -98,6 +98,28 @@ const TIERS_EXPAND_IMBRIQUE = ';$expand=afb_typejuridique($select=afb_familledin
 const CLE_TIERS_CHOISI = 'afb_tiers_choisi'
 
 /**
+ * Pourquoi le rattachement a échoué.
+ *
+ * Les trois voies d'accès étaient explorées avec un `.catch(() => [])` : une
+ * permission de table absente et une absence de données produisaient exactement
+ * le même résultat — une liste vide — et l'écran affichait « aucune entreprise »
+ * dans les deux cas. Or ce sont deux pannes opposées : l'une se corrige dans les
+ * autorisations du rôle web, l'autre dans la fiche du tiers. On garde donc la
+ * trace de ce qui s'est réellement passé sur chaque voie.
+ */
+let _diagRattachement = null
+
+/** @returns {{voies: Array<{canal: string, statut: string, message?: string}>, trouves: number}|null} */
+export function getDiagnosticRattachement() {
+  return _diagRattachement
+}
+
+/** Un refus d'autorisation se lit sur le code HTTP renvoyé par le portail. */
+function estRefus(e) {
+  return /→ 40[13]\b/.test(String(e?.message || ''))
+}
+
+/**
  * TOUTES les entreprises auxquelles l'utilisateur connecté a accès.
  *
  * Une même personne peut être rattachée à plusieurs partenaires — un dirigeant
@@ -109,17 +131,37 @@ export async function loadAccessibleTiers() {
   if (!dv.enabled) return [MOCK_TIERS]
 
   const trouves = new Map() // dédoublonné par identifiant de tiers
+  const voies = []
+  // Consigne l'issue d'une voie sans jamais interrompre les suivantes : une
+  // permission manquante sur l'une ne doit pas priver l'utilisateur des autres.
+  const tenter = async (canal, promesse) => {
+    try {
+      const r = await promesse
+      voies.push({ canal, statut: 'ok' })
+      return r
+    } catch (e) {
+      voies.push({
+        canal,
+        statut: estRefus(e) ? 'refuse' : 'erreur',
+        message: String(e?.message || e),
+      })
+      return null
+    }
+  }
 
   // ---- Voie 1 (SÉCURISÉE) : tiers lié au Contact connecté via le lookup
   // afb_Tiers (relation afb_contact_Tiers_afb_tiers). Ne lit que SA propre
   // fiche (permission Tiers-son-propre, scope Contact) — aucune lecture globale.
   const user = await getCurrentUser()
   if (user?.contactId) {
-    const c = await dv.get(
-      SETS.contact,
-      user.contactId,
-      `?$select=contactid&$expand=afb_Tiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
-    ).catch(() => null)
+    const c = await tenter(
+      'contact',
+      dv.get(
+        SETS.contact,
+        user.contactId,
+        `?$select=contactid&$expand=afb_Tiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
+      )
+    )
     if (c?.afb_Tiers) {
       const m = mapTiers(c.afb_Tiers, null)
       if (m) trouves.set(m.afb_tiersid, m)
@@ -127,31 +169,43 @@ export async function loadAccessibleTiers() {
   }
 
   const email = await getCurrentUserEmail()
-  if (!email) return [...trouves.values()]
+  if (!email) {
+    voies.push({ canal: 'email', statut: 'inconnu' })
+    _diagRattachement = { voies, trouves: trouves.size }
+    return [...trouves.values()]
+  }
 
   // ---- Voie 2 (RECOMMANDÉE) : tiers dont « Email contact principal »
   // (afb_emailcontactprincipal) = e-mail de connexion. Robuste quand le lookup
   // Contact.afb_Tiers n'est pas renseigné.
-  const direct = await dv.list(
-    SETS.tiers,
-    `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$select=${TIERS_SELECT}${TIERS_EXPAND}`
-  ).catch(() => [])
+  const direct = (await tenter(
+    'email-principal',
+    dv.list(
+      SETS.tiers,
+      `?$filter=afb_emailcontactprincipal eq '${esc(email)}'&$select=${TIERS_SELECT}${TIERS_EXPAND}`
+    )
+  )) ?? []
   for (const t of direct) {
     const m = mapTiers(t, null)
     if (m) trouves.set(m.afb_tiersid, m)
   }
 
   // ---- Voie 3 (REPLI) : identités externes B2C portant cet e-mail.
-  const rows = await dv.list(
-    SETS.tiersExterneB2C,
-    `?$filter=afb_emaildauthentification eq '${esc(email)}'` +
-      `&$select=afb_tiersexterneb2cid,afb_typedorganisation` +
-      `&$expand=afb_nomdutiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
-  ).catch(() => [])
+  const rows = (await tenter(
+    'identite-externe',
+    dv.list(
+      SETS.tiersExterneB2C,
+      `?$filter=afb_emaildauthentification eq '${esc(email)}'` +
+        `&$select=afb_tiersexterneb2cid,afb_typedorganisation` +
+        `&$expand=afb_nomdutiers($select=${TIERS_SELECT}${TIERS_EXPAND_IMBRIQUE})`
+    )
+  )) ?? []
   for (const row of rows) {
     const m = mapTiers(row?.afb_nomdutiers, row)
     if (m) trouves.set(m.afb_tiersid, m)
   }
+
+  _diagRattachement = { voies, trouves: trouves.size }
 
   return [...trouves.values()].sort((a, b) => (a.afb_nom || '').localeCompare(b.afb_nom || '', 'fr'))
 }

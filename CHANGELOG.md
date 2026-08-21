@@ -40,6 +40,12 @@ lecteur non technique.
 
 ### Ajouté
 
+- **Déconnexion du portail.** Le portail n'offrait aucun moyen de fermer sa
+  session : sur un poste partagé, elle restait ouverte pour le suivant. Un menu
+  sur l'avatar propose « Se déconnecter » ; l'entreprise active mémorisée est
+  effacée au passage, pour que le suivant ne débarque pas sur une société qui
+  n'est pas la sienne.
+
 - **Type de dossier choisi au back-office : KYP ou KYS.** Le formulaire de
   création propose un type déduit du référentiel, mais le chargé de relation
   peut désormais le corriger. La règle est rappelée sous le champ : KYP pour une
@@ -93,6 +99,14 @@ lecteur non technique.
   d'être écrite dans le code.
 
 ### Corrigé
+
+- **Une permission de table manquante ne se distinguait pas d'une absence de
+  données.** Les trois voies de rattachement au tiers étaient explorées avec un
+  `catch` muet : un refus d’autorisation et « aucune fiche trouvée » donnaient
+  le même écran vide. Ce sont pourtant deux pannes opposées — l'une se corrige
+  dans les autorisations du rôle web, l'autre sur la fiche du tiers. L'issue de
+  chaque voie est désormais conservée, et le portail nomme la table dont la
+  lecture a été refusée.
 
 - **Le choix de fichiers par la boîte de dialogue ne remontait rien.** Seul le
   glisser-déposer alimentait la file d'attente. `e.target.files` est une

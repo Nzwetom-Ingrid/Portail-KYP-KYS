@@ -9,6 +9,7 @@ import {
   loadDocumentCategories,
   loadDocuments,
   loadDossier,
+  getDiagnosticRattachement,
   uploadDocument,
 } from '../services/portal'
 import {
@@ -264,6 +265,20 @@ export default function Documents({ notify, search = '' }) {
   // cause, et on dit à qui s'adresser.
   const sansTiers = !loading && !tiers?.afb_tiersid
 
+  // Deux pannes très différentes se ressemblaient à l'écran : « la fiche n'est
+  // pas rattachée » et « le site n'a pas le droit de lire la table ». La
+  // première se corrige sur la fiche du tiers, la seconde dans les
+  // autorisations du rôle web — autant le dire, sinon on cherche des heures du
+  // mauvais côté.
+  const voieRefusee = sansTiers
+    ? (getDiagnosticRattachement()?.voies ?? []).find((v) => v.statut === 'refuse')
+    : null
+  const TABLE_PAR_VOIE = {
+    contact: 'Contact',
+    'email-principal': 'Tiers',
+    'identite-externe': 'Tiers externe B2C',
+  }
+
   return (
     <div className="page">
       {sansTiers && (
@@ -274,6 +289,13 @@ export default function Documents({ notify, search = '' }) {
           <p style={{ margin: '6px 0 0', color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.55 }}>
             {t('Vous pouvez consulter cette page, mais aucun dépôt n’est possible : la pièce n’aurait pas de dossier où être rangée. Signalez-le à votre chargé de relation Afriland First Bank — le rattachement se fait de son côté, en quelques minutes.')}
           </p>
+          {voieRefusee && (
+            <p style={{ margin: '10px 0 0', color: 'var(--muted)', fontSize: 12.5, lineHeight: 1.5 }}>
+              <strong>{t('Note technique')} — </strong>
+              {t('la lecture de la table')} « {TABLE_PAR_VOIE[voieRefusee.canal] ?? voieRefusee.canal} »{' '}
+              {t('a été refusée. Le rattachement existe peut-être déjà : c’est l’autorisation de table du rôle web qui manque, côté administration du portail.')}
+            </p>
+          )}
         </div>
       )}
 
