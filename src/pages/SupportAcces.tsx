@@ -1,19 +1,18 @@
 /**
- * Console support — accès des partenaires externes.
+ * Console support — accès des tiers au portail.
  *
  * Écran destiné au support IT lorsqu'un partenaire appelle en disant « je
  * n'arrive pas à me connecter ». Il évite d'ouvrir Dataverse, Azure et Power
  * Pages en parallèle : la cause est déduite des traces déjà enregistrées.
  *
- * L'écran lisait auparavant la seule table `afb_tiersexterneb2c`, un miroir
- * alimenté par le flux d'invitation : cinq lignes pour une quarantaine de
- * tiers, et aucune trace d'authentification réelle. Il s'appuie désormais sur
- * la vue consolidée `accesPortail`, qui part de la table CONTACT — celle que
- * Power Pages utilise pour authentifier — et fusionne les trois voies d'accès.
+ * La population de départ est la table `afb_tiers` — ce sont les entreprises
+ * que la banque suit. Une ligne = UNE ENTREPRISE, y compris celle dont personne
+ * ne peut ouvrir le portail : c'est le cas le plus grave, et il était invisible
+ * tant que l'écran partait des identités de connexion.
  *
- * Une ligne = UNE PERSONNE. Celle qui pilote trois sociétés apparaît une fois,
- * avec ses trois entreprises : c'est aussi ce qui rend visibles les mandataires
- * multi-entreprises, invisibles jusqu'ici.
+ * L'accès, lui, se lit sur la table CONTACT et ses colonnes `adx_identity_*` —
+ * c'est elle que Power Pages utilise pour authentifier. `afb_tiersexterneb2c`
+ * n'est qu'un miroir du flux d'invitation, et ne portait aucune trace réelle.
  */
 import { useMemo, useState } from 'react';
 import { Badge, Button, makeStyles } from '@fluentui/react-components';
@@ -40,7 +39,13 @@ import {
   type ContactPortail,
   type TiersMinimal,
 } from '@/lib/support/accesPortail';
-import { compterParSeverite, STATUT_COMPTE, type Severite } from '@/lib/support/accessDiagnostic';
+import { agregerParTiers, type AccesTiers } from '@/lib/support/accesParTiers';
+import {
+  compterParSeverite,
+  SEVERITE_ORDRE,
+  STATUT_COMPTE,
+  type Severite,
+} from '@/lib/support/accessDiagnostic';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -72,9 +77,8 @@ const useStyles = makeStyles({
     marginBottom: '6px',
   },
   kpiValue: { fontSize: '28px', fontWeight: 700, lineHeight: 1 },
-  mail: { fontWeight: 600, color: 'var(--colorNeutralForeground1)' },
+  nom: { fontWeight: 600, color: 'var(--colorNeutralForeground1)' },
   sub: { fontSize: '12px', color: 'var(--colorNeutralForeground3)' },
-  multi: { fontWeight: 700 },
 });
 
 const SEVERITE_BADGE: Record<Severite, 'danger' | 'warning' | 'informative' | 'success'> = {
@@ -90,10 +94,6 @@ const SEVERITE_LABEL: Record<Severite, string> = {
   info: 'Informatif',
   ok: 'Opérationnel',
 };
-
-/** Ordre de gravité pour le tri : le support veut les bloquants en tête, ce
- *  qu'un tri alphabétique des libellés ne donnerait jamais. */
-const SEVERITE_ORDRE: Record<Severite, number> = { bloquant: 1, attention: 2, info: 3, ok: 4 };
 
 /** Colonnes Contact strictement nécessaires. La table en compte plus de cent :
  *  les demander toutes ralentirait l'écran sans rien apporter. */
@@ -118,9 +118,9 @@ function frDate(value?: string, avecHeure = false): string {
 }
 
 /** Libellé de portée, aussi utilisé comme valeur de filtre. */
-function porteeLabel(n: number): string {
-  if (n === 0) return 'Aucune entreprise';
-  return n > 1 ? 'Plusieurs entreprises' : 'Une entreprise';
+function porteeLabel(l: AccesTiers): string {
+  if (!l.personnes.length) return 'Aucun accès';
+  return l.accesPartage ? 'Accès partagé' : 'Accès dédié';
 }
 
 export default function SupportAcces() {
@@ -138,21 +138,21 @@ export default function SupportAcces() {
   const majContact = contactsHooks.useUpdate();
   const majCompte = tiersExterneB2c.useUpdate();
 
-  const [ouvert, setOuvert] = useState<AccesPortail | null>(null);
-  const [confirmOuvert, setConfirmOuvert] = useState(false);
+  const [ouvert, setOuvert] = useState<AccesTiers | null>(null);
+  const [aDebloquer, setADebloquer] = useState<AccesPortail | null>(null);
   const [inviteOuvert, setInviteOuvert] = useState(false);
 
   const isLoading = chargeContacts || chargeComptes || chargeTiers;
 
-  const lignes = useMemo(
-    () =>
-      agregerAcces(
-        (fiches ?? []) as unknown as ContactPortail[],
-        (comptes ?? []) as unknown as CompteB2c[],
-        (tousLesTiers ?? []) as unknown as TiersMinimal[],
-      ),
-    [fiches, comptes, tousLesTiers],
-  );
+  const lignes = useMemo(() => {
+    const liste = (tousLesTiers ?? []) as unknown as TiersMinimal[];
+    const parPersonne = agregerAcces(
+      (fiches ?? []) as unknown as ContactPortail[],
+      (comptes ?? []) as unknown as CompteB2c[],
+      liste,
+    );
+    return agregerParTiers(parPersonne, liste);
+  }, [fiches, comptes, tousLesTiers]);
 
   const compteurs = useMemo(() => compterParSeverite(lignes.map((l) => l.diagnostic)), [lignes]);
 
@@ -165,19 +165,16 @@ export default function SupportAcces() {
     return map;
   }, [tousLesTiers]);
 
-  /** Le déblocage n'a de sens que si l'application peut écrire quelque part :
-   *  une fiche Contact, ou à défaut l'identité externe. */
-  const peutDebloquer = Boolean(ouvert?.contactId || ouvert?.compteB2cId);
-
   const debloquer = async (motif: string) => {
-    if (!ouvert) return;
+    const cible = aDebloquer;
+    if (!cible) return;
     try {
-      if (ouvert.contactId) {
+      if (cible.contactId) {
         // Remet la fiche Contact dans l'état d'un compte utilisable : connexion
         // autorisée, verrouillage vidé, compteur d'échecs à zéro. `statecode`
         // couvre le cas d'une fiche désactivée.
         await majContact.mutateAsync({
-          id: ouvert.contactId,
+          id: cible.contactId,
           changes: {
             statecode: 0,
             adx_identity_logonenabled: true,
@@ -186,9 +183,9 @@ export default function SupportAcces() {
           } as unknown as Parameters<typeof majContact.mutateAsync>[0]['changes'],
         });
       }
-      if (ouvert.compteB2cId) {
+      if (cible.compteB2cId) {
         await majCompte.mutateAsync({
-          id: ouvert.compteB2cId,
+          id: cible.compteB2cId,
           changes: {
             afb_statutducompte: STATUT_COMPTE.actif,
             afb_nombredetentativesechouees: 0,
@@ -198,9 +195,9 @@ export default function SupportAcces() {
       // L'action est journalisée automatiquement par createEntityHooks (auteur +
       // horodatage) : le motif saisi complète cette trace côté support.
       notifySuccess(t('Accès débloqué'), {
-        description: `${ouvert.email}${motif ? ` · ${motif}` : ''}`,
+        description: `${cible.email}${motif ? ` · ${motif}` : ''}`,
       });
-      setConfirmOuvert(false);
+      setADebloquer(null);
       setOuvert(null);
     } catch (e) {
       notifyError(t('Déblocage impossible'), {
@@ -209,39 +206,43 @@ export default function SupportAcces() {
     }
   };
 
-  const colonnes: Column<AccesPortail>[] = [
+  const colonnes: Column<AccesTiers>[] = [
     {
-      key: 'email',
-      header: 'Identité de connexion',
-      sortValue: (l) => l.email,
-      searchValue: (l) => `${l.email} ${l.nom ?? ''}`,
+      key: 'tiers',
+      header: 'Tiers',
+      sortValue: (l) => l.nom,
+      searchValue: (l) => `${l.nom} ${l.pays ?? ''}`,
       render: (l) => (
         <div>
-          <div className={styles.mail}>{l.email}</div>
-          {l.nom && <div className={styles.sub}>{l.nom}</div>}
+          <div className={styles.nom}>{l.nom}</div>
+          {l.pays && <div className={styles.sub}>{l.pays}</div>}
         </div>
       ),
     },
     {
-      key: 'entreprises',
-      header: 'Entreprises',
-      // Tri par nombre : les mandataires multi-entreprises se regroupent.
-      sortValue: (l) => l.entreprises.length,
-      searchValue: (l) => l.entreprises.map((e) => e.nom).join(' '),
-      filterValue: (l) => porteeLabel(l.entreprises.length),
+      key: 'acces',
+      header: 'Accès',
+      sortValue: (l) => l.personnes.length,
+      searchValue: (l) => l.personnes.map((p) => `${p.email} ${p.nom ?? ''}`).join(' '),
+      filterValue: porteeLabel,
       filterable: true,
       render: (l) =>
-        l.entreprises.length === 0 ? (
-          <span className={styles.sub}>{t('Aucune')}</span>
+        l.personnes.length === 0 ? (
+          <span className={styles.sub}>{t('Personne')}</span>
         ) : (
           <div>
-            <div className={l.entreprises.length > 1 ? styles.multi : undefined}>
-              {l.entreprises.length > 1
-                ? `${l.entreprises.length} ${t('entreprises')}`
-                : l.entreprises[0].nom}
+            <div>
+              {l.personnes.length > 1
+                ? `${l.personnes.length} ${t('interlocuteurs')}`
+                : l.personnes[0].email}
+              {l.accesPartage && (
+                <Badge appearance="outline" color="informative" style={{ marginLeft: 8 }}>
+                  {t('partagé')}
+                </Badge>
+              )}
             </div>
-            {l.entreprises.length > 1 && (
-              <div className={styles.sub}>{l.entreprises.map((e) => e.nom).join(' · ')}</div>
+            {l.personnes.length > 1 && (
+              <div className={styles.sub}>{l.personnes.map((p) => p.email).join(' · ')}</div>
             )}
           </div>
         ),
@@ -249,15 +250,23 @@ export default function SupportAcces() {
     {
       key: 'diagnostic',
       header: 'Diagnostic',
+      // Tri par gravite : le support veut les bloquants en tete.
       sortValue: (l) => SEVERITE_ORDRE[l.diagnostic.severite],
       searchValue: (l) => l.diagnostic.libelle,
       // On filtre sur le LIBELLE de gravite, celui que porte la carte cliquable.
       filterValue: (l) => SEVERITE_LABEL[l.diagnostic.severite],
       filterable: true,
       render: (l) => (
-        <Badge appearance="filled" color={SEVERITE_BADGE[l.diagnostic.severite]}>
-          {t(l.diagnostic.libelle)}
-        </Badge>
+        <div>
+          <Badge appearance="filled" color={SEVERITE_BADGE[l.diagnostic.severite]}>
+            {t(l.diagnostic.libelle)}
+          </Badge>
+          {l.bloquees > 0 && l.diagnostic.severite !== 'bloquant' && (
+            <div className={styles.sub}>
+              {l.bloquees} {l.bloquees > 1 ? t('bloqués') : t('bloqué')}
+            </div>
+          )}
+        </div>
       ),
     },
     {
@@ -297,7 +306,7 @@ export default function SupportAcces() {
       <PageHeader
         eyebrow="Support"
         title="Support · accès partenaires"
-        subtitle="Pourquoi un partenaire n’arrive-t-il pas à se connecter ? Une ligne par personne, toutes voies d’accès confondues."
+        subtitle="Une ligne par tiers. Qui peut ouvrir son portail, et pourquoi certains n’y arrivent pas."
         actions={
           <Button
             appearance="primary"
@@ -327,31 +336,30 @@ export default function SupportAcces() {
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Rechercher un e-mail, une personne, une entreprise, un diagnostic…"
+        searchPlaceholder="Rechercher un tiers, un pays, un e-mail, un diagnostic…"
         filters={table.filterConfigs}
       />
 
       <Card flush>
         {isLoading ? (
-          <p style={{ padding: 24 }}>{t('Chargement des comptes portail…')}</p>
+          <p style={{ padding: 24 }}>{t('Chargement des tiers et de leurs accès…')}</p>
         ) : (
           <DataTable
             columns={colonnes}
             rows={table.rows}
-            rowKey={(l) => l.email}
-            emptyMessage="Aucun accès ne correspond à ce filtre."
+            rowKey={(l) => l.tiersId || 'sans-entreprise'}
+            emptyMessage="Aucun tiers ne correspond à ce filtre."
             onRowClick={(l) => setOuvert(l)}
           />
         )}
       </Card>
 
       <AccesDetailDrawer
-        acces={ouvert}
+        tiers={ouvert}
         onClose={() => setOuvert(null)}
         frDate={frDate}
-        peutDebloquer={peutDebloquer}
+        onDebloquer={setADebloquer}
         debloquerEnCours={majContact.isPending || majCompte.isPending}
-        onDebloquer={() => setConfirmOuvert(true)}
       />
 
       <InviterAccesDialog
@@ -361,14 +369,14 @@ export default function SupportAcces() {
       />
 
       <ConfirmActionDialog
-        open={confirmOuvert}
-        onOpenChange={(o) => !o && setConfirmOuvert(false)}
+        open={Boolean(aDebloquer)}
+        onOpenChange={(o) => !o && setADebloquer(null)}
         intent="validate"
         title={t('Débloquer cet accès ?')}
         description={t('Le partenaire pourra de nouveau se connecter. Vérifiez au préalable que son accès reste légitime.')}
         confirmLabel={t('Débloquer')}
         motifLabel={t('Motif du déblocage')}
-        entityRef={ouvert?.email}
+        entityRef={aDebloquer?.email}
         onConfirm={debloquer}
       />
     </>

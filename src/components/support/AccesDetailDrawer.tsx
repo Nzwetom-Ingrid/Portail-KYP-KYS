@@ -1,16 +1,19 @@
 /**
- * Panneau de détail d'un accès partenaire, ouvert depuis la console support.
+ * Panneau de détail d'un TIERS, ouvert depuis la console support.
  *
- * Extrait de SupportAcces pour tenir le seuil de 400 lignes (charte § 7.2), et
- * parce que ce panneau porte sa propre logique d'affichage : il doit rendre
- * lisible d'un coup d'œil le fait qu'une même personne pilote plusieurs
- * entreprises, et par quelle voie elle atteint le portail.
+ * L'écran liste les entreprises ; ce panneau descend d'un cran et montre qui
+ * peut ouvrir le portail pour celle-ci. Chaque interlocuteur porte son propre
+ * diagnostic et sa propre action : une entreprise « servie » peut très bien
+ * avoir un dirigeant bloqué à côté d'un juriste opérationnel.
+ *
+ * Extrait de SupportAcces pour tenir le seuil de 400 lignes (charte § 7.2).
  */
 import { Badge, Button, makeStyles } from '@fluentui/react-components';
 import { ArrowClockwise20Regular } from '@fluentui/react-icons';
-import { DetailDrawer, DrawerSection, FieldGrid } from '@/components/common/DetailDrawer';
+import { DetailDrawer, DrawerSection } from '@/components/common/DetailDrawer';
 import { useT } from '@/i18n/i18n';
 import { CANAL_LABEL, type AccesPortail } from '@/lib/support/accesPortail';
+import type { AccesTiers } from '@/lib/support/accesParTiers';
 import type { Severite } from '@/lib/support/accessDiagnostic';
 
 const useStyles = makeStyles({
@@ -22,8 +25,24 @@ const useStyles = makeStyles({
     lineHeight: 1.55,
   },
   actionLabel: { fontWeight: 700, display: 'block', marginBottom: '4px' },
-  liste: { margin: 0, paddingLeft: '18px', lineHeight: 1.7 },
-  canaux: { display: 'flex', flexWrap: 'wrap', gap: '6px' },
+  personne: {
+    padding: '14px 16px',
+    borderRadius: '10px',
+    border: '1px solid var(--colorNeutralStroke2)',
+    marginBottom: '10px',
+  },
+  personneTete: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '10px',
+    marginBottom: '8px',
+  },
+  mail: { fontWeight: 600, color: 'var(--colorNeutralForeground1)' },
+  sub: { fontSize: '12px', color: 'var(--colorNeutralForeground3)' },
+  ligne: { fontSize: '13px', margin: '4px 0 0' },
+  canaux: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' },
+  vide: { margin: 0, color: 'var(--colorNeutralForeground3)' },
 });
 
 const SEVERITE_BADGE: Record<Severite, 'danger' | 'warning' | 'informative' | 'success'> = {
@@ -34,123 +53,115 @@ const SEVERITE_BADGE: Record<Severite, 'danger' | 'warning' | 'informative' | 's
 };
 
 interface AccesDetailDrawerProps {
-  acces: AccesPortail | null;
+  tiers: AccesTiers | null;
   onClose: () => void;
-  /** Formatage des dates, partagé avec le tableau. */
   frDate: (value?: string, avecHeure?: boolean) => string;
-  /** Affiché seulement si un déblocage est possible depuis l'application. */
-  peutDebloquer: boolean;
+  /** Déblocage d'un interlocuteur précis, pas de l'entreprise entière. */
+  onDebloquer: (personne: AccesPortail) => void;
   debloquerEnCours: boolean;
-  onDebloquer: () => void;
 }
 
 export function AccesDetailDrawer({
-  acces,
+  tiers,
   onClose,
   frDate,
-  peutDebloquer,
-  debloquerEnCours,
   onDebloquer,
+  debloquerEnCours,
 }: AccesDetailDrawerProps) {
   const styles = useStyles();
   const { t } = useT();
 
   return (
     <DetailDrawer
-      open={Boolean(acces)}
+      open={Boolean(tiers)}
       onOpenChange={(o) => !o && onClose()}
-      title={acces?.email ?? ''}
-      subtitle={acces?.nom}
+      title={tiers?.nom ?? ''}
+      subtitle={tiers?.pays}
     >
-      {acces && (
+      {tiers && (
         <>
-          <DrawerSection title={t('Diagnostic')}>
+          <DrawerSection title={t('État de l’entreprise')}>
             <div style={{ marginBottom: 12 }}>
-              <Badge appearance="filled" color={SEVERITE_BADGE[acces.diagnostic.severite]}>
-                {t(acces.diagnostic.libelle)}
+              <Badge appearance="filled" color={SEVERITE_BADGE[tiers.diagnostic.severite]}>
+                {t(tiers.diagnostic.libelle)}
               </Badge>
             </div>
-            <p style={{ marginTop: 0 }}>{t(acces.diagnostic.symptome)}</p>
+            <p style={{ marginTop: 0 }}>{t(tiers.diagnostic.symptome)}</p>
             <div className={styles.actionBox}>
               <span className={styles.actionLabel}>{t('Ce qu’il faut faire')}</span>
-              {t(acces.diagnostic.action)}
+              {t(tiers.diagnostic.action)}
             </div>
-          </DrawerSection>
-
-          <DrawerSection
-            title={
-              acces.entreprises.length > 1
-                ? `${t('Entreprises accessibles')} (${acces.entreprises.length})`
-                : t('Entreprise accessible')
-            }
-            description={
-              acces.entreprises.length > 1
-                ? t('Cette personne bascule d’une entreprise à l’autre depuis le sélecteur du portail. Un blocage de son accès les concerne toutes.')
-                : undefined
-            }
-          >
-            {acces.entreprises.length ? (
-              <ul className={styles.liste}>
-                {acces.entreprises.map((e) => (
-                  <li key={e.id}>{e.nom}</li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ margin: 0 }}>{t('Aucune — le portail s’ouvrira vide.')}</p>
+            {tiers.bloquees > 0 && tiers.diagnostic.severite !== 'bloquant' && (
+              <p className={styles.ligne}>
+                {tiers.bloquees}{' '}
+                {tiers.bloquees > 1
+                  ? t('interlocuteurs sont bloqués malgré tout — voir ci-dessous.')
+                  : t('interlocuteur est bloqué malgré tout — voir ci-dessous.')}
+              </p>
             )}
           </DrawerSection>
 
           <DrawerSection
-            title={t('Voies d’accès')}
-            description={t('Le portail explore les trois voies et fusionne ce qu’il trouve. Une seule suffit à se connecter.')}
+            title={`${t('Interlocuteurs')} (${tiers.personnes.length})`}
+            description={t('Les personnes qui peuvent ouvrir le portail pour cette entreprise, les plus en difficulté d’abord.')}
           >
-            <div className={styles.canaux}>
-              {acces.canaux.map((c) => (
-                <Badge key={c} appearance="outline" color="informative">
-                  {t(CANAL_LABEL[c])}
-                </Badge>
-              ))}
-            </div>
-          </DrawerSection>
+            {tiers.personnes.length === 0 ? (
+              <p className={styles.vide}>
+                {t('Aucun interlocuteur. Ouvrez un accès, ou renseignez l’e-mail du contact principal sur la fiche du tiers.')}
+              </p>
+            ) : (
+              tiers.personnes.map((p) => {
+                const autres = p.entreprises.filter((e) => e.id !== tiers.tiersId);
+                return (
+                  <div key={p.email} className={styles.personne}>
+                    <div className={styles.personneTete}>
+                      <div style={{ minWidth: 0 }}>
+                        <div className={styles.mail}>{p.email}</div>
+                        {p.nom && <div className={styles.sub}>{p.nom}</div>}
+                      </div>
+                      <Badge appearance="filled" color={SEVERITE_BADGE[p.diagnostic.severite]}>
+                        {t(p.diagnostic.libelle)}
+                      </Badge>
+                    </div>
 
-          <DrawerSection title={t('Traces du compte')}>
-            <FieldGrid
-              fields={[
-                { label: t('Identité de connexion'), value: acces.email },
-                {
-                  label: t('Fiche Contact (authentification)'),
-                  value: acces.contactId ? t('Existe') : t('Absente'),
-                },
-                {
-                  label: t('Identité externe'),
-                  value: acces.compteB2cId
-                    ? acces.compteB2cCree
-                      ? t('Compte Azure créé')
-                      : t('Compte Azure jamais créé')
-                    : t('Absente'),
-                },
-                { label: t('Invitation envoyée le'), value: frDate(acces.invitation) },
-                { label: t('Dernière connexion'), value: frDate(acces.derniereConnexion, true) },
-                { label: t('Tentatives échouées'), value: String(acces.tentatives) },
-              ]}
-            />
-          </DrawerSection>
+                    <p className={styles.ligne}>{t(p.diagnostic.symptome)}</p>
+                    <p className={`${styles.ligne} ${styles.sub}`}>
+                      {t('Dernière connexion')} : {frDate(p.derniereConnexion, true)}
+                      {p.tentatives > 0 ? ` · ${p.tentatives} ${t('échecs')}` : ''}
+                    </p>
 
-          {peutDebloquer && (
-            <DrawerSection
-              title={t('Action')}
-              description={t('Réactive la connexion portail, vide le verrouillage et remet le compteur d’échecs à zéro.')}
-            >
-              <Button
-                appearance="primary"
-                icon={<ArrowClockwise20Regular />}
-                disabled={debloquerEnCours}
-                onClick={onDebloquer}
-              >
-                {t('Débloquer l’accès')}
-              </Button>
-            </DrawerSection>
-          )}
+                    {autres.length > 0 && (
+                      <p className={`${styles.ligne} ${styles.sub}`}>
+                        {t('Pilote aussi')} : {autres.map((e) => e.nom).join(' · ')}
+                      </p>
+                    )}
+
+                    <div className={styles.canaux}>
+                      {p.canaux.map((c) => (
+                        <Badge key={c} appearance="outline" color="informative">
+                          {t(CANAL_LABEL[c])}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {(p.contactId || p.compteB2cId) && p.diagnostic.severite !== 'ok' && (
+                      <div style={{ marginTop: 12 }}>
+                        <Button
+                          size="small"
+                          appearance="primary"
+                          icon={<ArrowClockwise20Regular />}
+                          disabled={debloquerEnCours}
+                          onClick={() => onDebloquer(p)}
+                        >
+                          {t('Débloquer l’accès')}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </DrawerSection>
         </>
       )}
     </DetailDrawer>

@@ -51,10 +51,17 @@ lecteur non technique.
   dossier et le niveau de diligence sont désormais deux axes distincts : une
   banque correspondante ouvre un dossier KYP ordinaire, mais sa checklist reste
   celle des exigences renforcées (Wolfsberg CBDDQ, FATCA/CRS, Patriot Act).
-- **Console support : les personnes multi-entreprises sont visibles.** Une
-  colonne « Entreprises » regroupe, pour chaque adresse de connexion, toutes les
-  sociétés qu'elle peut atteindre, avec un filtre « Plusieurs entreprises ». Le
-  détail rappelle par quelle voie l'accès passe.
+- **Console support : une ligne par tiers.** La population de départ est la
+  table des tiers, et non plus les adresses de connexion : une entreprise dont
+  personne ne peut ouvrir le portail apparaît désormais, alors qu'elle était
+  purement et simplement absente. Chaque ligne indique qui peut s'y connecter,
+  avec une mention « partagé » lorsque l'interlocuteur pilote plusieurs
+  entreprises, et un filtre « Accès partagé / Accès dédié / Aucun accès ». Le
+  détail liste les interlocuteurs, les plus en difficulté d'abord, chacun avec
+  son diagnostic et son bouton de déblocage.
+- **Identités sans entreprise rattachée.** Elles s'authentifient sans erreur et
+  tombent sur un portail vide. Regroupées en tête de la console plutôt que
+  perdues entre deux vues.
 - **Déblocage d'un accès depuis l'application.** L'action réactive la fiche
   Contact, vide le verrouillage Power Pages et remet le compteur d'échecs à
   zéro, sans passer par Dataverse.

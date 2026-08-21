@@ -33,6 +33,7 @@ export type DiagnosticCode =
   | 'connexion-desactivee'
   | 'email-non-confirme'
   | 'aucun-compte-portail'
+  | 'aucun-acces'
   | 'ok';
 
 export type Severite = 'bloquant' | 'attention' | 'info' | 'ok';
@@ -166,6 +167,19 @@ export function diagnostiquer(compte: CompteExterne, maintenant: Date = new Date
     action: 'Si le partenaire signale malgré tout un problème, il porte sur un écran précis — le qualifier.',
   };
 }
+
+/**
+ * Gravité relative d une sévérité — 1 = le plus urgent.
+ *
+ * Sert au tri des tableaux, et à choisir le diagnostic représentatif d une
+ * entreprise parmi ceux de ses interlocuteurs.
+ */
+export const SEVERITE_ORDRE: Record<Severite, number> = {
+  bloquant: 1,
+  attention: 2,
+  info: 3,
+  ok: 4,
+};
 
 /** Regroupe les comptes par sévérité, pour les compteurs en tête de page. */
 export function compterParSeverite(diagnostics: Diagnostic[]): Record<Severite, number> {

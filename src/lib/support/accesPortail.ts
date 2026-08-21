@@ -44,6 +44,7 @@ export interface TiersMinimal {
   afb_tiersid: string;
   afb_nomdupartenaire?: string;
   afb_emailcontactprincipal?: string;
+  afb_pays?: string;
 }
 
 /** Identité externe (miroir du flux d'invitation), avec son identifiant. */
