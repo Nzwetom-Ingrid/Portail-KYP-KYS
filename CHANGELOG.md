@@ -40,13 +40,17 @@ lecteur non technique.
 
 ### Ajouté
 
-- **Type de dossier choisi au back-office.** Le formulaire de création propose
-  toujours un type déduit du référentiel (KYP, KYS, KYC-B, KYI), mais le chargé
-  de relation peut désormais le corriger : la famille d'institution range toute
-  société commerciale en « partenaire », alors qu'un prestataire informatique en
-  SARL relève du KYS. Ce choix fixe la checklist des pièces, la durée de
-  validité et le préfixe de la référence — et c'est ce préfixe que le portail
-  relit pour afficher son type au tiers.
+- **Type de dossier choisi au back-office : KYP ou KYS.** Le formulaire de
+  création propose un type déduit du référentiel, mais le chargé de relation
+  peut désormais le corriger. La règle est rappelée sous le champ : KYP pour une
+  contrepartie financière — banque correspondante ou établissement de
+  microfinance ; KYS pour une entreprise qui livre des biens ou des services à
+  la banque. Ce choix fixe le préfixe de la référence, que le portail relit pour
+  afficher son type au tiers.
+- **Diligence renforcée préservée pour les banques correspondantes.** Le type de
+  dossier et le niveau de diligence sont désormais deux axes distincts : une
+  banque correspondante ouvre un dossier KYP ordinaire, mais sa checklist reste
+  celle des exigences renforcées (Wolfsberg CBDDQ, FATCA/CRS, Patriot Act).
 - **Console support : les personnes multi-entreprises sont visibles.** Une
   colonne « Entreprises » regroupe, pour chaque adresse de connexion, toutes les
   sociétés qu'elle peut atteindre, avec un filtre « Plusieurs entreprises ». Le

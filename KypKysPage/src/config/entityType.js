@@ -25,18 +25,20 @@ export const FAMILLE = {
   ProfessionLiberale: 747010007,
 }
 
-/** Famille d'institution → type d'entité. Même table que le back-office. */
+/**
+ * Famille d'institution → type de dossier. Même règle que le back-office.
+ *
+ * Un PARTENAIRE est une contrepartie financière : banque correspondante ou
+ * établissement de microfinance. Tout le reste livre des biens ou des services
+ * à la banque, donc KYS.
+ */
 export function entityTypeFromFamille(famille) {
   switch (famille) {
     case FAMILLE.BanqueCorrespondante:
-      return 'correspondant'
-    case FAMILLE.EntrepriseIndividuelle:
-    case FAMILLE.PersonnePhysique:
-    case FAMILLE.ProfessionLiberale:
-      return 'fournisseur'
-    default:
-      // EMF, société commerciale, établissement public, coopérative…
+    case FAMILLE.EMF:
       return 'partenaire'
+    default:
+      return 'fournisseur'
   }
 }
 

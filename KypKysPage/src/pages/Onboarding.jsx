@@ -43,8 +43,8 @@ function pickCategoryId(docLabel, categories) {
 // Types d'enregistrement possibles. Le choix appartient a AFB : cette liste ne
 // sert qu'a presenter au tiers le type retenu pour son dossier.
 const PROFILS = [
-  { id: 'kyp', icon: 'handshake', t: 'KYP — Partenaire', d: 'Vous nouez une relation d’affaires en tant que partenaire commercial.' },
-  { id: 'kys', icon: 'truck', t: 'KYS — Fournisseur', d: 'Vous fournissez des biens ou services et devez être référencé.' },
+  { id: 'kyp', icon: 'handshake', t: 'KYP — Partenaire', d: 'Vous êtes une contrepartie financière : banque correspondante ou établissement de microfinance.' },
+  { id: 'kys', icon: 'truck', t: 'KYS — Fournisseur', d: 'Vous livrez des biens ou des services à la banque et devez être référencé.' },
 ]
 
 const STEPS = [

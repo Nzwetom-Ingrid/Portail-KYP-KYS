@@ -22,23 +22,59 @@ export const entityTypeValidityMonths: Record<EntityType, number> = {
   intragroupe: 12, // revue annuelle obligatoire (parties liées)
 };
 
+/** Valeurs de choix `afb_familledinstitution` sur afb_partnertype. */
+export const FAMILLE = {
+  BanqueCorrespondante: 747010000,
+  EMF: 747010001,
+  EntrepriseIndividuelle: 747010002,
+  SocieteCommerciale: 747010003,
+  PersonnePhysique: 747010004,
+  EtablissementPublic: 747010005,
+  CooperativeGIC: 747010006,
+  ProfessionLiberale: 747010007,
+} as const;
+
 /**
- * Dérive un EntityType (utilisé pour la checklist, la validité par défaut et le
- * préfixe de référence) à partir de la famille Dataverse `afb_familledinstitution`
- * d'un type de partenaire. Sert lorsque le type est choisi dynamiquement depuis
- * le référentiel « Types de partenaires » plutôt que via les 4 cartes figées.
+ * Les deux seuls types de dossier ouverts à la création.
+ *
+ * Un PARTENAIRE est une contrepartie financière : banque correspondante ou
+ * établissement de microfinance. Un FOURNISSEUR livre des biens ou des services
+ * à la banque. « correspondant » et « intragroupe » restent dans l'union pour
+ * que les dossiers historiques portant un préfixe KYC-B ou KYI continuent de se
+ * résoudre, mais ils ne sont plus proposés.
+ */
+export const TYPES_DOSSIER: EntityType[] = ["partenaire", "fournisseur"];
+
+/**
+ * Type de dossier PROPOSÉ d'après la famille d'institution du type de partenaire.
+ * Seules les contreparties financières relèvent du KYP ; tout le reste fournit
+ * quelque chose à la banque, donc KYS. Le chargé de relation peut trancher
+ * autrement dans le formulaire — cette fonction ne fournit qu'un défaut.
  */
 export function entityTypeFromFamille(famille?: number): EntityType {
   switch (famille) {
-    case 747010000: // Banque correspondante
-      return "correspondant";
-    case 747010002: // Entreprise individuelle
-    case 747010004: // Personne physique
-    case 747010007: // Profession libérale
-      return "fournisseur";
-    default: // EMF, Société commerciale, Établissement public, Coopérative/GIC…
+    case FAMILLE.BanqueCorrespondante:
+    case FAMILLE.EMF:
       return "partenaire";
+    default:
+      return "fournisseur";
   }
+}
+
+/**
+ * Checklist pré-remplie à la création.
+ *
+ * Le type de dossier (KYP / KYS) et le NIVEAU DE DILIGENCE sont deux axes
+ * distincts. Une banque correspondante ouvre un dossier KYP ordinaire, mais
+ * reste soumise aux exigences renforcées — Wolfsberg CBDDQ, FATCA/CRS, Patriot
+ * Act — que la checklist « partenaire » ne porte pas. Sans cette distinction,
+ * requalifier les correspondants en KYP leur ferait perdre trois pièces
+ * obligatoires en silence.
+ */
+export function checklistParDefaut(type: EntityType, famille?: number): RequiredDoc[] {
+  const source =
+    famille === FAMILLE.BanqueCorrespondante ? "correspondant" : type;
+  return requiredDocsByType[source].map((d) => ({ ...d }));
 }
 
 export function computeValidityDate(type: EntityType, from: Date = new Date()): Date {
@@ -55,9 +91,9 @@ export const entityTypeDescriptions: Record<EntityType, string> = {
   correspondant:
     "Banque correspondante — exigences renforcées Wolfsberg, FATCA/CRS, LCB-FT.",
   partenaire:
-    "Partenaire commercial / institutionnel — diligence standard COBAC R-2023/01.",
+    "Contrepartie financière — banque correspondante ou établissement de microfinance.",
   fournisseur:
-    "Fournisseur de biens ou services — diligence simplifiée + KYS.",
+    "Entreprise qui livre des biens ou des services à la banque.",
   intragroupe:
     "Entité liée à la banque (actionnaires ou dirigeants communs) — vigilance renforcée éthique & fiscale.",
 };

@@ -93,7 +93,8 @@ import {
   entityTypeValidityMonths,
   entityTypeFromFamille,
   entityTypePrefix,
-  requiredDocsByType,
+  checklistParDefaut,
+  TYPES_DOSSIER,
   parseRequiredDocs,
   type RequiredDoc,
   type EntityType,
@@ -1523,9 +1524,10 @@ function NewDossierDialog({
   // Checklist des pièces requises, éditable (pré-remplie par le type choisi).
   const [checklist, setChecklist] = useState<RequiredDoc[]>([]);
   const [newDocName, setNewDocName] = useState('');
+  const famille = selectedPt?.afb_familledinstitution as number | undefined;
   useEffect(() => {
-    setChecklist(type ? requiredDocsByType[type].map((d) => ({ ...d })) : []);
-  }, [type]);
+    setChecklist(type ? checklistParDefaut(type, famille) : []);
+  }, [type, famille]);
   const toggleMandatory = (i: number) =>
     setChecklist((l) => l.map((d, idx) => (idx === i ? { ...d, mandatory: !d.mandatory } : d)));
   const removeDoc = (i: number) => setChecklist((l) => l.filter((_, idx) => idx !== i));
@@ -1661,7 +1663,7 @@ function NewDossierDialog({
               ? t('Choisissez d’abord un type de partenaire.')
               : typeChoisi && typeChoisi !== typeSuggere
                 ? `${t('Choix manuel — il prime sur la proposition du référentiel (')}${t(entityTypeLabels[typeSuggere as EntityType])}${t(').')}`
-                : t('Proposé d’après la famille d’institution du type de partenaire. Modifiable si la réalité de la relation en décide autrement.')
+                : t('KYP pour une contrepartie financière — banque correspondante ou microfinance. KYS pour une entreprise qui livre des biens ou des services à la banque.')
           }
         >
           <Dropdown
@@ -1671,7 +1673,7 @@ function NewDossierDialog({
             selectedOptions={type ? [type] : []}
             onOptionSelect={(_, d) => d.optionValue && setTypeChoisi(d.optionValue as EntityType)}
           >
-            {(Object.keys(entityTypeLabels) as EntityType[]).map((k) => (
+            {TYPES_DOSSIER.map((k) => (
               <Option key={k} value={k} text={`${entityTypePrefix[k]} — ${t(entityTypeLabels[k])}`}>
                 {`${entityTypePrefix[k]} — ${t(entityTypeLabels[k])}`}
               </Option>
