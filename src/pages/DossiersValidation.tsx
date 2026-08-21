@@ -1501,6 +1501,7 @@ function NewDossierDialog({
   const [chargeId, setChargeId] = useState('');
   const [email, setEmail] = useState('');
   const [direction, setDirection] = useState('DCONF');
+  const [note, setNote] = useState('');
 
   // Type de partenaire sélectionné + EntityType dérivé (checklist / validité / préfixe).
   const selectedPt = (ptData ?? []).find((p) => p.afb_partnertypeid === typeId);
@@ -1532,6 +1533,8 @@ function NewDossierDialog({
     setPays('Cameroun');
     setChargeId('');
     setEmail('');
+    setDirection('DCONF');
+    setNote('');
     setChecklist([]);
     setNewDocName('');
   };
@@ -1576,6 +1579,10 @@ function NewDossierDialog({
         afb_tauxdecompletude: 0,
         afb_versiondudossier: 1,
         afb_datedesoumission: new Date().toISOString(),
+        // Note interne du chargé de relation, reprise de l'ancien formulaire du
+        // tableau de bord. Elle atterrit dans le commentaire DCONF du dossier,
+        // que le tiers voit dans son espace : à rédiger en conséquence.
+        ...(note.trim() ? { afb_commentairedconf: note.trim() } : {}),
         'afb_nomdutiers@odata.bind': `/afb_tierses(${newTiers.afb_tiersid})`,
       } as unknown as Parameters<typeof createDossier.mutateAsync>[0]);
 
@@ -1689,6 +1696,17 @@ function NewDossierDialog({
               </Option>
             ))}
           </Dropdown>
+        </Field>
+        <Field
+          label={t('Note interne (optionnelle)')}
+          hint={t('Visible par le tiers dans son espace : elle alimente le commentaire de conformité du dossier.')}
+        >
+          <Textarea
+            value={note}
+            onChange={(_, d) => setNote(d.value)}
+            rows={2}
+            placeholder={t('Contexte de l’entrée en relation, contact pré-existant, etc.')}
+          />
         </Field>
         <Field label={t('Email du destinataire')} required hint={t("Le tiers recevra le lien d'onboarding sur cette adresse (validité 72 h).")}>
           <Input
