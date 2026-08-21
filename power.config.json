@@ -130,6 +130,10 @@
         "criteresevaluation": {
           "entitySetName": "afb_critereevaluations",
           "logicalName": "afb_critereevaluation"
+        },
+        "contacts": {
+          "entitySetName": "contacts",
+          "logicalName": "contact"
         }
       },
       "environmentVariableName": ""

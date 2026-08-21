@@ -3550,6 +3550,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Dataverse",
     "apis": {}
   },
+  "contacts": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "contactid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "afb_critereevaluations": {
     "tableId": "",
     "version": "",

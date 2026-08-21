@@ -92,6 +92,7 @@ import {
   entityTypeLabels,
   entityTypeValidityMonths,
   entityTypeFromFamille,
+  entityTypePrefix,
   requiredDocsByType,
   parseRequiredDocs,
   type RequiredDoc,
@@ -1503,11 +1504,21 @@ function NewDossierDialog({
   const [direction, setDirection] = useState('DCONF');
   const [note, setNote] = useState('');
 
-  // Type de partenaire sélectionné + EntityType dérivé (checklist / validité / préfixe).
   const selectedPt = (ptData ?? []).find((p) => p.afb_partnertypeid === typeId);
-  const type: EntityType | null = selectedPt
+
+  // Type de dossier PROPOSÉ par le référentiel, via la famille d'institution du
+  // type de partenaire. Ce n'est qu'une proposition : la famille « société
+  // commerciale » range en « partenaire » aussi bien un distributeur agréé
+  // qu'un prestataire informatique — le premier relève du KYP, le second du
+  // KYS. Le chargé de relation tranche, et son choix prime.
+  const typeSuggere: EntityType | null = selectedPt
     ? entityTypeFromFamille(selectedPt.afb_familledinstitution)
     : null;
+  const [typeChoisi, setTypeChoisi] = useState<EntityType | null>(null);
+  // Changer de type de partenaire réarme la proposition : sans cela, un choix
+  // manuel fait pour un type resterait collé au suivant.
+  useEffect(() => setTypeChoisi(null), [typeId]);
+  const type: EntityType | null = typeChoisi ?? typeSuggere;
 
   // Checklist des pièces requises, éditable (pré-remplie par le type choisi).
   const [checklist, setChecklist] = useState<RequiredDoc[]>([]);
@@ -1528,6 +1539,7 @@ function NewDossierDialog({
 
   const reset = () => {
     setTypeId('');
+    setTypeChoisi(null);
     setNom('');
     setContact('');
     setPays('Cameroun');
@@ -1548,11 +1560,9 @@ function NewDossierDialog({
 
   const submit = async () => {
     if (!type || !typeId) return;
-    const prefix =
-      type === 'correspondant' ? 'KYC-B'
-      : type === 'partenaire' ? 'KYP'
-      : type === 'fournisseur' ? 'KYS'
-      : 'KYI';
+    // Le préfixe porte le type de dossier retenu. C'est aussi ce que le portail
+    // relit pour afficher au tiers son type — d'où l'importance du choix ci-dessus.
+    const prefix = entityTypePrefix[type];
     const ref = `${prefix}-2026-${String(Math.floor(Math.random() * 9000) + 1000)}`;
     try {
       // 1) Création du tiers porteur de l'identité.
@@ -1618,7 +1628,7 @@ function NewDossierDialog({
       submitDisabled={!valid}
       onSubmit={submit}
     >
-      <FormSection title={t('Type de cible')} description={t('Choisissez le type de partenaire issu du référentiel — chaque type embarque sa propre checklist KYC et sa durée de validité.')}>
+      <FormSection title={t('Type de cible')} description={t('Le type de partenaire vient du référentiel ; le type de dossier en découle par défaut et reste modifiable. C’est lui qui fixe la checklist des pièces, la durée de validité et le préfixe de la référence.')}>
         <Field
           label={t('Type de partenaire')}
           required
@@ -1638,6 +1648,32 @@ function NewDossierDialog({
               <Option key={p.afb_partnertypeid} value={p.afb_partnertypeid} text={p.afb_libellefrancais}>
                 {p.afb_libellefrancais}
                 {p.afb_codeinstitution ? ` · ${p.afb_codeinstitution}` : ''}
+              </Option>
+            ))}
+          </Dropdown>
+        </Field>
+
+        <Field
+          label={t('Type de dossier')}
+          required
+          hint={
+            !selectedPt
+              ? t('Choisissez d’abord un type de partenaire.')
+              : typeChoisi && typeChoisi !== typeSuggere
+                ? `${t('Choix manuel — il prime sur la proposition du référentiel (')}${t(entityTypeLabels[typeSuggere as EntityType])}${t(').')}`
+                : t('Proposé d’après la famille d’institution du type de partenaire. Modifiable si la réalité de la relation en décide autrement.')
+          }
+        >
+          <Dropdown
+            disabled={!selectedPt}
+            placeholder={t('Sélectionner un type de dossier')}
+            value={type ? `${entityTypePrefix[type]} — ${t(entityTypeLabels[type])}` : ''}
+            selectedOptions={type ? [type] : []}
+            onOptionSelect={(_, d) => d.optionValue && setTypeChoisi(d.optionValue as EntityType)}
+          >
+            {(Object.keys(entityTypeLabels) as EntityType[]).map((k) => (
+              <Option key={k} value={k} text={`${entityTypePrefix[k]} — ${t(entityTypeLabels[k])}`}>
+                {`${entityTypePrefix[k]} — ${t(entityTypeLabels[k])}`}
               </Option>
             ))}
           </Dropdown>

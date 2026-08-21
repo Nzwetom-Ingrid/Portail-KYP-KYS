@@ -17,7 +17,7 @@
 
 import { dv, getCurrentUser, getCurrentUserEmail } from './dataverse'
 import { SETS, LOGICAL, CHOICES } from '../config/dataverse'
-import { entityTypeFromFamille, CODE_PAR_TYPE } from '../config/entityType'
+import { entityTypeFromFamille, entityTypeFromRef, CODE_PAR_TYPE } from '../config/entityType'
 import {
   MOCK_TIERS,
   MOCK_DOSSIER,
@@ -182,6 +182,18 @@ export async function getCurrentTiers() {
   }
 
   _tiers = choisi ?? accessibles[0]
+
+  // Le type de dossier est désormais CHOISI par le chargé de relation au
+  // back-office, pas seulement déduit de la famille d'institution : une SARL
+  // peut être un partenaire ou un fournisseur. Ce choix est porté par le
+  // préfixe de la référence du dossier (KYP / KYS / KYC-B / KYI). Il prime donc
+  // sur la déduction faite dans mapTiers, qui n'est qu'un défaut.
+  const dossier = await loadDossier(_tiers.afb_tiersid).catch(() => null)
+  const typeChoisi = entityTypeFromRef(dossier?.afb_reference)
+  if (typeChoisi && typeChoisi !== _tiers.afb_entity_type) {
+    _tiers = { ..._tiers, afb_entity_type: typeChoisi, afb_type: CODE_PAR_TYPE[typeChoisi] }
+  }
+
   return _tiers
 }
 

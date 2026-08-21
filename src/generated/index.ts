@@ -32,6 +32,7 @@ export * as Afb_tiersexterneb2csModel from './models/Afb_tiersexterneb2csModel';
 export * as Afb_ubosModel from './models/Afb_ubosModel';
 export * as Afb_utilisateurinternesModel from './models/Afb_utilisateurinternesModel';
 export * as CommonModels from './models/CommonModels';
+export * as ContactsModel from './models/ContactsModel';
 export * as MicrosoftDataverseModel from './models/MicrosoftDataverseModel';
 
 // Services
@@ -62,4 +63,5 @@ export * from './services/Afb_tiersesService';
 export * from './services/Afb_tiersexterneb2csService';
 export * from './services/Afb_ubosService';
 export * from './services/Afb_utilisateurinternesService';
+export * from './services/ContactsService';
 export * from './services/MicrosoftDataverseService';

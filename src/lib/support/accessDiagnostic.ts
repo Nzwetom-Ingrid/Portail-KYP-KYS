@@ -27,6 +27,12 @@ export type DiagnosticCode =
   | 'invitation-expiree'
   | 'inscription-inachevee'
   | 'jamais-connecte'
+  // Codes produits par la vue consolidée (cf. accesPortail.ts), qui lit les
+  // traces d'authentification Power Pages portées par la fiche Contact.
+  | 'contact-desactive'
+  | 'connexion-desactivee'
+  | 'email-non-confirme'
+  | 'aucun-compte-portail'
   | 'ok';
 
 export type Severite = 'bloquant' | 'attention' | 'info' | 'ok';

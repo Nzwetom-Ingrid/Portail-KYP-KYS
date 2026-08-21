@@ -40,6 +40,21 @@ lecteur non technique.
 
 ### Ajouté
 
+- **Type de dossier choisi au back-office.** Le formulaire de création propose
+  toujours un type déduit du référentiel (KYP, KYS, KYC-B, KYI), mais le chargé
+  de relation peut désormais le corriger : la famille d'institution range toute
+  société commerciale en « partenaire », alors qu'un prestataire informatique en
+  SARL relève du KYS. Ce choix fixe la checklist des pièces, la durée de
+  validité et le préfixe de la référence — et c'est ce préfixe que le portail
+  relit pour afficher son type au tiers.
+- **Console support : les personnes multi-entreprises sont visibles.** Une
+  colonne « Entreprises » regroupe, pour chaque adresse de connexion, toutes les
+  sociétés qu'elle peut atteindre, avec un filtre « Plusieurs entreprises ». Le
+  détail rappelle par quelle voie l'accès passe.
+- **Déblocage d'un accès depuis l'application.** L'action réactive la fiche
+  Contact, vide le verrouillage Power Pages et remet le compteur d'échecs à
+  zéro, sans passer par Dataverse.
+
 - Référentiel des secteurs d'activité : 110 secteurs groupés par section
   CITI/NACE, en remplacement de la saisie libre.
 - Écran de chargement au dépôt des pièces, avec le nom du fichier en cours et
@@ -67,6 +82,17 @@ lecteur non technique.
   d'être écrite dans le code.
 
 ### Corrigé
+
+- **Console support branchée sur la table qui authentifie réellement.** L'écran
+  ne lisait que `afb_tiersexterneb2c`, un miroir alimenté par le flux
+  d'invitation : cinq lignes s'affichaient pour une quarantaine de tiers, et
+  aucune trace de connexion n'était disponible. L'authentification Power Pages
+  repose sur la table **Contact** et ses colonnes `adx_identity_*` (connexion
+  autorisée, verrouillage, dernière connexion réussie, échecs). L'écran fusionne
+  désormais les trois voies d'accès que le portail explore lui-même, et affiche
+  une ligne par personne au lieu d'une ligne par enregistrement. Quatre
+  diagnostics nouveaux en découlent : contact désactivé, connexion portail
+  désactivée, invitation non utilisée, aucun compte portail.
 
 - **Les décisions de conformité étaient journalisées au nom de la mauvaise
   personne.** L'auteur enregistré au registre des décisions était résolu depuis

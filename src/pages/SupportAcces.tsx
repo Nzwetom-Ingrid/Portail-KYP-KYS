@@ -1,35 +1,46 @@
 /**
  * Console support — accès des partenaires externes.
  *
- * Écran destiné au support IT lorsqu'un partenaire appelle en disant « je n'arrive
- * pas à me connecter ». Il évite d'avoir à ouvrir Dataverse, Azure et Power Pages
- * en parallèle : tout est déduit des traces déjà présentes sur afb_tiersexterneb2c.
+ * Écran destiné au support IT lorsqu'un partenaire appelle en disant « je
+ * n'arrive pas à me connecter ». Il évite d'ouvrir Dataverse, Azure et Power
+ * Pages en parallèle : la cause est déduite des traces déjà enregistrées.
  *
- * Aucune table ni colonne nouvelle, aucun flux : l'écran lit l'existant et
- * n'écrit que le statut du compte, sur une table déjà exposée.
+ * L'écran lisait auparavant la seule table `afb_tiersexterneb2c`, un miroir
+ * alimenté par le flux d'invitation : cinq lignes pour une quarantaine de
+ * tiers, et aucune trace d'authentification réelle. Il s'appuie désormais sur
+ * la vue consolidée `accesPortail`, qui part de la table CONTACT — celle que
+ * Power Pages utilise pour authentifier — et fusionne les trois voies d'accès.
+ *
+ * Une ligne = UNE PERSONNE. Celle qui pilote trois sociétés apparaît une fois,
+ * avec ses trois entreprises : c'est aussi ce qui rend visibles les mandataires
+ * multi-entreprises, invisibles jusqu'ici.
  */
 import { useMemo, useState } from 'react';
 import { Badge, Button, makeStyles } from '@fluentui/react-components';
-import { ArrowClockwise20Regular, PersonAdd20Regular } from '@fluentui/react-icons';
+import { PersonAdd20Regular } from '@fluentui/react-icons';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
-import { DetailDrawer, DrawerSection, FieldGrid } from '@/components/common/DetailDrawer';
+import { AccesDetailDrawer } from '@/components/support/AccesDetailDrawer';
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { InviterAccesDialog } from '@/components/support/InviterAccesDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
-import { tiers as tiersHooks, tiersExterneB2c } from '@/lib/dataverse/entityHooks';
+import {
+  contacts as contactsHooks,
+  tiers as tiersHooks,
+  tiersExterneB2c,
+} from '@/lib/dataverse/entityHooks';
 import { useT } from '@/i18n/i18n';
 import {
-  compterParSeverite,
-  diagnostiquer,
-  STATUT_COMPTE,
-  type CompteExterne,
-  type Diagnostic,
-  type Severite,
-} from '@/lib/support/accessDiagnostic';
+  agregerAcces,
+  type AccesPortail,
+  type CompteB2c,
+  type ContactPortail,
+  type TiersMinimal,
+} from '@/lib/support/accesPortail';
+import { compterParSeverite, STATUT_COMPTE, type Severite } from '@/lib/support/accessDiagnostic';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -46,7 +57,12 @@ const useStyles = makeStyles({
     cursor: 'pointer',
     textAlign: 'left',
   },
-  kpiActive: { borderTopColor: 'var(--colorBrandStroke1)', borderRightColor: 'var(--colorBrandStroke1)', borderBottomColor: 'var(--colorBrandStroke1)', borderLeftColor: 'var(--colorBrandStroke1)' },
+  kpiActive: {
+    borderTopColor: 'var(--colorBrandStroke1)',
+    borderRightColor: 'var(--colorBrandStroke1)',
+    borderBottomColor: 'var(--colorBrandStroke1)',
+    borderLeftColor: 'var(--colorBrandStroke1)',
+  },
   kpiLabel: {
     fontSize: '11px',
     fontWeight: 700,
@@ -58,17 +74,9 @@ const useStyles = makeStyles({
   kpiValue: { fontSize: '28px', fontWeight: 700, lineHeight: 1 },
   mail: { fontWeight: 600, color: 'var(--colorNeutralForeground1)' },
   sub: { fontSize: '12px', color: 'var(--colorNeutralForeground3)' },
-  actionBox: {
-    padding: '12px 14px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--colorNeutralBackground3)',
-    fontSize: '13.5px',
-    lineHeight: 1.55,
-  },
-  actionLabel: { fontWeight: 700, display: 'block', marginBottom: '4px' },
+  multi: { fontWeight: 700 },
 });
 
-/** Sévérité → apparence du badge Fluent. */
 const SEVERITE_BADGE: Record<Severite, 'danger' | 'warning' | 'informative' | 'success'> = {
   bloquant: 'danger',
   attention: 'warning',
@@ -87,22 +95,20 @@ const SEVERITE_LABEL: Record<Severite, string> = {
  *  qu'un tri alphabétique des libellés ne donnerait jamais. */
 const SEVERITE_ORDRE: Record<Severite, number> = { bloquant: 1, attention: 2, info: 3, ok: 4 };
 
-/** Ligne du tableau : l'enregistrement Dataverse enrichi de son diagnostic.
- *  Les champs `*Tri` portent la valeur BRUTE des dates : trier sur « 19/08/2026 »
- *  reviendrait à trier par jour du mois. */
-interface LigneSupport {
-  id: string;
-  email: string;
-  tiers: string;
-  diagnostic: Diagnostic;
-  invitation: string;
-  invitationTri?: string;
-  derniereConnexion: string;
-  connexionTri?: string;
-  tentatives: number;
-  statutCompte?: number;
-  compteB2cCree: boolean;
-}
+/** Colonnes Contact strictement nécessaires. La table en compte plus de cent :
+ *  les demander toutes ralentirait l'écran sans rien apporter. */
+const CHAMPS_CONTACT = [
+  'contactid',
+  'emailaddress1',
+  'fullname',
+  'statecode',
+  '_afb_tiers_value',
+  'adx_identity_logonenabled',
+  'adx_identity_emailaddress1confirmed',
+  'adx_identity_lastsuccessfullogin',
+  'adx_identity_accessfailedcount',
+  'adx_identity_lockoutenddate',
+];
 
 function frDate(value?: string, avecHeure = false): string {
   if (!value) return '—';
@@ -111,102 +117,138 @@ function frDate(value?: string, avecHeure = false): string {
   return avecHeure ? d.toLocaleString('fr-FR') : d.toLocaleDateString('fr-FR');
 }
 
+/** Libellé de portée, aussi utilisé comme valeur de filtre. */
+function porteeLabel(n: number): string {
+  if (n === 0) return 'Aucune entreprise';
+  return n > 1 ? 'Plusieurs entreprises' : 'Une entreprise';
+}
+
 export default function SupportAcces() {
   const styles = useStyles();
   const { t } = useT();
   const { notifySuccess, notifyError } = useNotifications();
 
-  const { data: comptes, isLoading, error } = tiersExterneB2c.useList({ top: 500 });
+  const {
+    data: fiches,
+    isLoading: chargeContacts,
+    error,
+  } = contactsHooks.useList({ top: 1000, select: CHAMPS_CONTACT });
+  const { data: comptes, isLoading: chargeComptes } = tiersExterneB2c.useList({ top: 500 });
+  const { data: tousLesTiers, isLoading: chargeTiers } = tiersHooks.useList({ top: 1000 });
+  const majContact = contactsHooks.useUpdate();
   const majCompte = tiersExterneB2c.useUpdate();
-  const { data: tousLesTiers } = tiersHooks.useList({ top: 500 });
-  const [ouvert, setOuvert] = useState<LigneSupport | null>(null);
+
+  const [ouvert, setOuvert] = useState<AccesPortail | null>(null);
   const [confirmOuvert, setConfirmOuvert] = useState(false);
   const [inviteOuvert, setInviteOuvert] = useState(false);
 
+  const isLoading = chargeContacts || chargeComptes || chargeTiers;
 
-  // Le nom du tiers est résolu par jointure sur la liste des tiers plutôt que
-  // lu depuis le lookup : la requête sur afb_tiersexterneb2c ne renvoie pas le
-  // libellé formaté, et la colonne affichait « — » pour tout le monde.
+  const lignes = useMemo(
+    () =>
+      agregerAcces(
+        (fiches ?? []) as unknown as ContactPortail[],
+        (comptes ?? []) as unknown as CompteB2c[],
+        (tousLesTiers ?? []) as unknown as TiersMinimal[],
+      ),
+    [fiches, comptes, tousLesTiers],
+  );
+
+  const compteurs = useMemo(() => compterParSeverite(lignes.map((l) => l.diagnostic)), [lignes]);
+
+  /** Entreprises connues, pour le dialogue d'ouverture d'accès. */
   const nomParTiersId = useMemo(() => {
     const map = new Map<string, string>();
-    for (const t of tousLesTiers ?? []) {
-      const raw = t as unknown as { afb_tiersid?: string; afb_nomdupartenaire?: string };
-      if (raw.afb_tiersid && raw.afb_nomdupartenaire) map.set(raw.afb_tiersid, raw.afb_nomdupartenaire);
+    for (const e of (tousLesTiers ?? []) as unknown as TiersMinimal[]) {
+      if (e.afb_tiersid && e.afb_nomdupartenaire) map.set(e.afb_tiersid, e.afb_nomdupartenaire);
     }
     return map;
   }, [tousLesTiers]);
 
-  const lignes = useMemo<LigneSupport[]>(() => {
-    return (comptes ?? []).map((c) => {
-      const compte = c as unknown as CompteExterne & {
-        afb_tiersexterneb2cid: string;
-        afb_nomdutiersname?: string;
-      };
-      const tiersId = compte._afb_nomdutiers_value;
-      return {
-        id: compte.afb_tiersexterneb2cid,
-        email: compte.afb_emaildauthentification ?? '—',
-        tiers:
-          compte.afb_nomdutiersname ??
-          (tiersId ? nomParTiersId.get(tiersId) : undefined) ??
-          '—',
-        diagnostic: diagnostiquer(compte),
-        invitation: frDate(compte.afb_datedinvitation),
-        invitationTri: compte.afb_datedinvitation,
-        derniereConnexion: frDate(compte.afb_derniereconnexion, true),
-        connexionTri: compte.afb_derniereconnexion,
-        tentatives: compte.afb_nombredetentativesechouees ?? 0,
-        statutCompte: compte.afb_statutducompte,
-        compteB2cCree: Boolean(compte.afb_identifiantb2c),
-      };
-    });
-  }, [comptes, nomParTiersId]);
+  /** Le déblocage n'a de sens que si l'application peut écrire quelque part :
+   *  une fiche Contact, ou à défaut l'identité externe. */
+  const peutDebloquer = Boolean(ouvert?.contactId || ouvert?.compteB2cId);
 
-  const compteurs = useMemo(
-    () => compterParSeverite(lignes.map((l) => l.diagnostic)),
-    [lignes],
-  );
-
-
-  const reactiver = async (motif: string) => {
+  const debloquer = async (motif: string) => {
     if (!ouvert) return;
     try {
-      await majCompte.mutateAsync({
-        id: ouvert.id,
-        changes: { afb_statutducompte: STATUT_COMPTE.actif } as unknown as Parameters<
-          typeof majCompte.mutateAsync
-        >[0]['changes'],
-      });
-      // La réactivation est journalisée automatiquement par createEntityHooks
-      // (auteur + horodatage) : le motif saisi complète cette trace côté support.
-      notifySuccess(t('Compte réactivé'), {
+      if (ouvert.contactId) {
+        // Remet la fiche Contact dans l'état d'un compte utilisable : connexion
+        // autorisée, verrouillage vidé, compteur d'échecs à zéro. `statecode`
+        // couvre le cas d'une fiche désactivée.
+        await majContact.mutateAsync({
+          id: ouvert.contactId,
+          changes: {
+            statecode: 0,
+            adx_identity_logonenabled: true,
+            adx_identity_lockoutenddate: null,
+            adx_identity_accessfailedcount: 0,
+          } as unknown as Parameters<typeof majContact.mutateAsync>[0]['changes'],
+        });
+      }
+      if (ouvert.compteB2cId) {
+        await majCompte.mutateAsync({
+          id: ouvert.compteB2cId,
+          changes: {
+            afb_statutducompte: STATUT_COMPTE.actif,
+            afb_nombredetentativesechouees: 0,
+          } as unknown as Parameters<typeof majCompte.mutateAsync>[0]['changes'],
+        });
+      }
+      // L'action est journalisée automatiquement par createEntityHooks (auteur +
+      // horodatage) : le motif saisi complète cette trace côté support.
+      notifySuccess(t('Accès débloqué'), {
         description: `${ouvert.email}${motif ? ` · ${motif}` : ''}`,
       });
       setConfirmOuvert(false);
       setOuvert(null);
     } catch (e) {
-      notifyError(t('Réactivation impossible'), {
+      notifyError(t('Déblocage impossible'), {
         description: e instanceof Error ? e.message : t('Erreur Dataverse.'),
       });
     }
   };
 
-  const colonnes: Column<LigneSupport>[] = [
+  const colonnes: Column<AccesPortail>[] = [
     {
       key: 'email',
       header: 'Identité de connexion',
       sortValue: (l) => l.email,
+      searchValue: (l) => `${l.email} ${l.nom ?? ''}`,
       render: (l) => (
         <div>
           <div className={styles.mail}>{l.email}</div>
-          <div className={styles.sub}>{l.tiers}</div>
+          {l.nom && <div className={styles.sub}>{l.nom}</div>}
         </div>
       ),
     },
     {
+      key: 'entreprises',
+      header: 'Entreprises',
+      // Tri par nombre : les mandataires multi-entreprises se regroupent.
+      sortValue: (l) => l.entreprises.length,
+      searchValue: (l) => l.entreprises.map((e) => e.nom).join(' '),
+      filterValue: (l) => porteeLabel(l.entreprises.length),
+      filterable: true,
+      render: (l) =>
+        l.entreprises.length === 0 ? (
+          <span className={styles.sub}>{t('Aucune')}</span>
+        ) : (
+          <div>
+            <div className={l.entreprises.length > 1 ? styles.multi : undefined}>
+              {l.entreprises.length > 1
+                ? `${l.entreprises.length} ${t('entreprises')}`
+                : l.entreprises[0].nom}
+            </div>
+            {l.entreprises.length > 1 && (
+              <div className={styles.sub}>{l.entreprises.map((e) => e.nom).join(' · ')}</div>
+            )}
+          </div>
+        ),
+    },
+    {
       key: 'diagnostic',
       header: 'Diagnostic',
-      // Tri par gravite : le support veut voir les bloquants en tete.
       sortValue: (l) => SEVERITE_ORDRE[l.diagnostic.severite],
       searchValue: (l) => l.diagnostic.libelle,
       // On filtre sur le LIBELLE de gravite, celui que porte la carte cliquable.
@@ -218,8 +260,12 @@ export default function SupportAcces() {
         </Badge>
       ),
     },
-    { key: 'invitation', header: 'Invitation', sortValue: (l) => l.invitationTri, render: (l) => l.invitation },
-    { key: 'connexion', header: 'Dernière connexion', sortValue: (l) => l.connexionTri, render: (l) => l.derniereConnexion },
+    {
+      key: 'connexion',
+      header: 'Dernière connexion',
+      sortValue: (l) => l.derniereConnexion,
+      render: (l) => frDate(l.derniereConnexion, true),
+    },
     {
       key: 'tentatives',
       header: 'Échecs',
@@ -228,18 +274,19 @@ export default function SupportAcces() {
       render: (l) => (l.tentatives > 0 ? String(l.tentatives) : '—'),
     },
   ];
+
   // Filtres et recherche derives des colonnes (cf. useTableFilters).
   const table = useTableFilters(lignes, colonnes);
   const { search, setSearch } = table;
-  const visibles = table.rows;
-
 
   if (error) {
     return (
       <>
         <PageHeader title="Support · accès partenaires" />
         <Card>
-          <p>{t('Lecture des identités externes impossible.')} {error.message}</p>
+          <p>
+            {t('Lecture des comptes portail impossible.')} {error.message}
+          </p>
         </Card>
       </>
     );
@@ -250,9 +297,13 @@ export default function SupportAcces() {
       <PageHeader
         eyebrow="Support"
         title="Support · accès partenaires"
-        subtitle="Pourquoi un partenaire n’arrive-t-il pas à se connecter ? Le diagnostic est déduit des traces de son identité externe."
+        subtitle="Pourquoi un partenaire n’arrive-t-il pas à se connecter ? Une ligne par personne, toutes voies d’accès confondues."
         actions={
-          <Button appearance="primary" icon={<PersonAdd20Regular />} onClick={() => setInviteOuvert(true)}>
+          <Button
+            appearance="primary"
+            icon={<PersonAdd20Regular />}
+            onClick={() => setInviteOuvert(true)}
+          >
             {t('Ouvrir un accès')}
           </Button>
         }
@@ -276,93 +327,49 @@ export default function SupportAcces() {
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Rechercher un e-mail, un tiers, un diagnostic…"
+        searchPlaceholder="Rechercher un e-mail, une personne, une entreprise, un diagnostic…"
         filters={table.filterConfigs}
       />
 
       <Card flush>
         {isLoading ? (
-          <p style={{ padding: 24 }}>{t('Chargement des identités externes…')}</p>
+          <p style={{ padding: 24 }}>{t('Chargement des comptes portail…')}</p>
         ) : (
           <DataTable
             columns={colonnes}
-            rows={visibles}
-            rowKey={(l) => l.id}
-            emptyMessage="Aucune identité externe ne correspond à ce filtre."
+            rows={table.rows}
+            rowKey={(l) => l.email}
+            emptyMessage="Aucun accès ne correspond à ce filtre."
             onRowClick={(l) => setOuvert(l)}
           />
         )}
       </Card>
 
-      <DetailDrawer
-        open={Boolean(ouvert)}
-        onOpenChange={(o) => !o && setOuvert(null)}
-        title={ouvert?.email ?? ''}
-        subtitle={ouvert?.tiers}
-      >
-        {ouvert && (
-          <>
-            <DrawerSection title={t('Diagnostic')}>
-              <div style={{ marginBottom: 12 }}>
-                <Badge appearance="filled" color={SEVERITE_BADGE[ouvert.diagnostic.severite]}>
-                  {t(ouvert.diagnostic.libelle)}
-                </Badge>
-              </div>
-              <p style={{ marginTop: 0 }}>{t(ouvert.diagnostic.symptome)}</p>
-              <div className={styles.actionBox}>
-                <span className={styles.actionLabel}>{t('Ce qu’il faut faire')}</span>
-                {t(ouvert.diagnostic.action)}
-              </div>
-            </DrawerSection>
+      <AccesDetailDrawer
+        acces={ouvert}
+        onClose={() => setOuvert(null)}
+        frDate={frDate}
+        peutDebloquer={peutDebloquer}
+        debloquerEnCours={majContact.isPending || majCompte.isPending}
+        onDebloquer={() => setConfirmOuvert(true)}
+      />
 
-            <DrawerSection title={t('Traces du compte')}>
-              <FieldGrid
-                fields={[
-                  { label: t('Identité de connexion'), value: ouvert.email },
-                  { label: t('Tiers rattaché'), value: ouvert.tiers },
-                  {
-                    label: t('Compte Azure AD B2C'),
-                    value: ouvert.compteB2cCree ? t('Créé') : t('Jamais créé'),
-                  },
-                  { label: t('Invitation envoyée le'), value: ouvert.invitation },
-                  { label: t('Dernière connexion'), value: ouvert.derniereConnexion },
-                  { label: t('Tentatives échouées'), value: String(ouvert.tentatives) },
-                ]}
-              />
-            </DrawerSection>
-
-            {(ouvert.statutCompte === STATUT_COMPTE.desactive ||
-              ouvert.statutCompte === STATUT_COMPTE.bloque) && (
-              <DrawerSection
-                title={t('Action')}
-                description={t('Le déblocage côté Azure AD B2C reste à effectuer séparément lorsque le compte y est verrouillé.')}
-              >
-                <Button
-                  appearance="primary"
-                  icon={<ArrowClockwise20Regular />}
-                  disabled={majCompte.isPending}
-                  onClick={() => setConfirmOuvert(true)}
-                >
-                  {t('Réactiver le compte')}
-                </Button>
-              </DrawerSection>
-            )}
-          </>
-        )}
-      </DetailDrawer>
-
-      <InviterAccesDialog open={inviteOuvert} onOpenChange={setInviteOuvert} entreprises={nomParTiersId} />
+      <InviterAccesDialog
+        open={inviteOuvert}
+        onOpenChange={setInviteOuvert}
+        entreprises={nomParTiersId}
+      />
 
       <ConfirmActionDialog
         open={confirmOuvert}
         onOpenChange={(o) => !o && setConfirmOuvert(false)}
         intent="validate"
-        title={t('Réactiver ce compte ?')}
+        title={t('Débloquer cet accès ?')}
         description={t('Le partenaire pourra de nouveau se connecter. Vérifiez au préalable que son accès reste légitime.')}
-        confirmLabel={t('Réactiver')}
-        motifLabel={t('Motif de la réactivation')}
+        confirmLabel={t('Débloquer')}
+        motifLabel={t('Motif du déblocage')}
         entityRef={ouvert?.email}
-        onConfirm={reactiver}
+        onConfirm={debloquer}
       />
     </>
   );
