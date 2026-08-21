@@ -18,6 +18,7 @@
 import { dv, getCurrentUser, getCurrentUserEmail } from './dataverse'
 import { SETS, LOGICAL, CHOICES } from '../config/dataverse'
 import { entityTypeFromFamille, entityTypeFromRef, CODE_PAR_TYPE } from '../config/entityType'
+import { construireDemandes, estPieceJustificative } from '../config/demandes'
 import {
   MOCK_TIERS,
   MOCK_DOSSIER,
@@ -532,17 +533,11 @@ export async function loadDocuments(tiersId) {
       `&$expand=afb_categorie($select=afb_libelle)` +
       `&$orderby=afb_datedeteleversement desc`
   )
-  // Exclut aussi les « réponses » (factures/compléments) attachées à un document
-  // reçu (afb_typededocument = 'reponse:<id>'), les « demandes de document »
-  // envoyées à la banque et les « demandes de revue » — aucune n'est une pièce
-  // déposée, et les afficher ici polluerait la bibliothèque du tiers.
-  const MARQUEURS = ['demande-document', 'demande-revue']
-  return rows
-    .filter((d) => {
-      const type = String(d.afb_typededocument || '')
-      return !type.startsWith('reponse:') && !MARQUEURS.includes(type)
-    })
-    .map(mapDocument)
+  // Exclut tout ce qui n'est pas une pièce déposée : demandes du tiers,
+  // réponses de la banque à ces demandes, compléments rattachés à un document
+  // reçu. Le prédicat est partagé avec le back-office (config/demandes.js) —
+  // il avait déjà fallu le corriger deux fois à deux endroits.
+  return rows.filter(estPieceJustificative).map(mapDocument)
 }
 
 // « Documents reçus » = documents partagés par la banque (DCONF/DMG) vers ce tiers.
@@ -560,6 +555,26 @@ export async function loadReceivedDocuments(tiersId) {
 }
 
 // Catégories documentaires (pour le menu de téléversement)
+/**
+ * Demandes du tiers et réponses de la conformité.
+ *
+ * Le partenaire écrivait jusqu'ici sans retour possible : sa demande partait
+ * dans le dossier et rien ne lui revenait. Il voit désormais le fil complet.
+ */
+export async function loadDemandes(tiersId) {
+  if (!dv.enabled) return []
+  const rows = await dv
+    .list(
+      SETS.document,
+      `?$filter=_afb_tiers_value eq ${tiersId}` +
+        `&$select=afb_documentid,afb_typededocument,afb_motifderejet,afb_statutdevalidite,` +
+        `afb_datedeteleversement,createdon` +
+        `&$orderby=afb_datedeteleversement desc`
+    )
+    .catch(() => [])
+  return construireDemandes(rows)
+}
+
 export async function loadDocumentCategories() {
   if (!dv.enabled) return [...MOCK_DOCUMENT_CATEGORIES]
   const rows = await dv.list(

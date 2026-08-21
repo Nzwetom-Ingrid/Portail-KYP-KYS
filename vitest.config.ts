@@ -22,7 +22,7 @@ export default defineConfig({
       // Ne mesurer que ce qui est réellement couvrable : le code généré et les
       // écrans ne sont pas encore testés, les inclure produirait un pourcentage
       // trompeur qui masquerait la couverture réelle des règles métier.
-      include: ['src/lib/support/**/*.ts', 'src/types/roles.ts'],
+      include: ['src/lib/support/**/*.ts', 'src/lib/demandes/**/*.ts', 'src/types/roles.ts'],
       thresholds: {
         // § 22.1 : 100 % exigé sur les modules portant une règle d'habilitation
         // ou une validation réglementaire. C'est précisément le périmètre inclus

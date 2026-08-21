@@ -29,6 +29,16 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
+import { DemandesPartenaire } from '@/components/dossier/DemandesPartenaire';
+import {
+  compterOuvertes,
+  construireDemandes,
+  estPieceJustificative,
+  marqueurReponse,
+  STATUT_DEMANDE,
+  type Demande,
+  type DocumentBrut,
+} from '@/lib/demandes/demandes';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { SelectionBar } from '@/components/common/SelectionBar';
 import { RisqueBadge, StatutBadge } from '@/components/common/StatusBadge';
@@ -43,7 +53,7 @@ import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialo
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { type Dossier } from '@/lib/mockData';
-import { decisions, dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes, journalAudit, documents } from '@/lib/dataverse/entityHooks';
+import { decisions, dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes, journalAudit, documents, documentCategories } from '@/lib/dataverse/entityHooks';
 import { useRoleStore } from '@/store/roleStore';
 import { assignQuestionnairesForTiers } from '@/lib/dataverse/assignQuestionnaires';
 import { useT } from '@/i18n/i18n';
@@ -1063,6 +1073,8 @@ function DossierDrawer({
   const { t } = useT();
   const { notifySuccess, notifyError, notifyInfo } = useNotifications();
   const updateDoc = documents.useUpdate();
+  const createDoc = documents.useCreate();
+  const { data: docCategories } = documentCategories.useList({ top: 50 });
   // Documents réellement déposés par le partenaire (via le portail), filtrés sur son tiers.
   const tiersId = dossier?.tiersId;
   const { data: rawDocs } = documents.useList(
@@ -1088,13 +1100,14 @@ function DossierDrawer({
     747010001: { label: t('Expiré'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
     747010002: { label: t('Rejeté'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
   };
+  // Les demandes du partenaire ne sont pas des pièces justificatives : elles
+  // ont leur propre rubrique, où la conformité peut répondre. Les afficher ici
+  // revenait à proposer « Valider » ou « Rejeter » sur un message.
+  const demandes = construireDemandes((rawDocs ?? []) as unknown as DocumentBrut[]);
+  const demandesOuvertes = compterOuvertes(demandes);
+
   const partnerDocs = ((rawDocs ?? []) as unknown as Array<Record<string, unknown>>)
-    // Exclut les marqueurs hors-KYC : réponses du tiers (facture/complément) et
-    // demandes de document envoyées à AFB (traitées ailleurs / par e-mail).
-    .filter((d) => {
-      const type = String(d.afb_typededocument || '');
-      return !type.startsWith('reponse:') && type !== 'demande-document';
-    })
+    .filter((d) => estPieceJustificative(d as DocumentBrut))
     .map((d) => ({
     id: d.afb_documentid as string,
     nom: (d.afb_nomdufichier as string) || (d.afb_typededocument as string) || t('Document'),
@@ -1119,6 +1132,68 @@ function DossierDrawer({
   // repli sur l'URL SharePoint seulement si aucune annotation. Corrige le cas où
   // le téléchargement échouait (404 SharePoint) alors que le fichier existait,
   // et où le Code App « ne pouvait rien faire » sur les pièces déposées.
+  /**
+   * Répond à une demande. La réponse est un enregistrement à part, rattaché par
+   * son type — même convention que les réponses du tiers côté portail. La
+   * demande passe du même coup à « traitée » : répondre, c'est traiter.
+   */
+  const repondreDemande = async (d: Demande, texte: string) => {
+    const categorieId = (docCategories ?? [])[0]?.afb_documentcategoryid as string | undefined;
+    if (!categorieId || !tiersId) {
+      notifyError(t('Réponse impossible'), {
+        description: t('Aucune catégorie de document n’est disponible.'),
+      });
+      return;
+    }
+    try {
+      await createDoc.mutateAsync({
+        afb_nomdufichier: `Réponse — ${d.libelle}`,
+        afb_typededocument: marqueurReponse(d.id),
+        afb_statutdevalidite: STATUT_DEMANDE.traitee,
+        afb_datedeteleversement: new Date().toISOString(),
+        afb_anneededepot: new Date().getFullYear(),
+        // Pas de fichier : l'URL conventionnelle signale un message, pas une pièce.
+        afb_urlsharepoint: 'request://reponse',
+        afb_motifderejet: texte,
+        'afb_categorie@odata.bind': `/afb_documentcategories(${categorieId})`,
+        'afb_tiers@odata.bind': `/afb_tierses(${tiersId})`,
+      } as unknown as Parameters<typeof createDoc.mutateAsync>[0]);
+
+      if (!d.traitee) {
+        await updateDoc.mutateAsync({
+          id: d.id,
+          changes: { afb_statutdevalidite: STATUT_DEMANDE.traitee } as unknown as Parameters<
+            typeof updateDoc.mutateAsync
+          >[0]['changes'],
+        });
+      }
+      notifySuccess(t('Réponse envoyée'), {
+        description: t('Le partenaire la verra dans son espace, sous sa demande.'),
+      });
+    } catch (e) {
+      notifyError(t('Réponse impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse.'),
+      });
+    }
+  };
+
+  /** Clôt une demande sans y répondre — elle n'appelait pas de mot. */
+  const cloreDemande = async (d: Demande) => {
+    try {
+      await updateDoc.mutateAsync({
+        id: d.id,
+        changes: { afb_statutdevalidite: STATUT_DEMANDE.traitee } as unknown as Parameters<
+          typeof updateDoc.mutateAsync
+        >[0]['changes'],
+      });
+      notifySuccess(t('Demande classée'), { description: t(d.libelle) });
+    } catch (e) {
+      notifyError(t('Classement impossible'), {
+        description: e instanceof Error ? e.message : t('Erreur Dataverse.'),
+      });
+    }
+  };
+
   const openDoc = async (doc: (typeof partnerDocs)[number], download: boolean) => {
     try {
       const f = await getDocumentBinary(doc.id, doc.url, doc.nom);
@@ -1451,6 +1526,27 @@ function DossierDrawer({
       statusBadges={badges}
       tabs={[
         { key: 'docs', label: t('Documents'), count: partnerDocs.length, content: docsContent },
+        {
+          key: 'demandes',
+          label: t('Demandes'),
+          // Le compteur porte sur les demandes SANS réponse : c'est le reste à
+          // traiter, pas l'historique.
+          count: demandesOuvertes,
+          content: (
+            <DrawerSection
+              title={t('Demandes du partenaire')}
+              description={t('Messages émis depuis l’espace partenaire. Ce ne sont pas des pièces justificatives : elles se répondent.')}
+            >
+              <DemandesPartenaire
+                demandes={demandes}
+                onRepondre={repondreDemande}
+                onClore={cloreDemande}
+                enCours={createDoc.isPending || updateDoc.isPending}
+                frDate={fd}
+              />
+            </DrawerSection>
+          ),
+        },
         { key: 'audit', label: t('Journal de traçabilité'), content: auditContent },
       ]}
       footer={

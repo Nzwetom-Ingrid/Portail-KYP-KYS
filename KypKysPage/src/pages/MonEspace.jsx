@@ -7,6 +7,7 @@ import {
   loadDocuments,
   loadDossier,
   requestReview,
+  loadDemandes,
 } from '../services/portal'
 
 const DEFAULT_STEPS = [
@@ -42,6 +43,14 @@ export default function MonEspace({ onNavigate, notify }) {
   const [revueOuverte, setRevueOuverte] = useState(false)
   const [revueMsg, setRevueMsg] = useState('')
   const [revueEnCours, setRevueEnCours] = useState(false)
+  // Fil des demandes déjà émises, avec la réponse de la conformité. Sans lui,
+  // le partenaire n'avait aucun moyen de savoir si sa demande avait été lue.
+  const [demandes, setDemandes] = useState([])
+
+  const rafraichirDemandes = async (id) => {
+    if (!id) return
+    setDemandes(await loadDemandes(id).catch(() => []))
+  }
 
   const envoyerRevue = async () => {
     if (!revueMsg.trim()) {
@@ -55,6 +64,7 @@ export default function MonEspace({ onNavigate, notify }) {
     setRevueEnCours(true)
     try {
       await requestReview(tiersId, { message: revueMsg.trim() })
+      await rafraichirDemandes(tiersId)
       // Message volontairement précis : la demande est ENREGISTRÉE, pas notifiée.
       // Promettre un traitement immédiat serait reproduire le défaut corrigé ici.
       notify(t('Demande de revue enregistrée. La conformité la traitera lors de son prochain passage.'))
@@ -73,7 +83,10 @@ export default function MonEspace({ onNavigate, notify }) {
       try {
         const t = await getCurrentTiers()
         if (!t?.afb_tiersid) return
-        if (!cancelled) setTiersId(t.afb_tiersid)
+        if (!cancelled) {
+          setTiersId(t.afb_tiersid)
+          rafraichirDemandes(t.afb_tiersid)
+        }
         const [dossier, docs, qs] = await Promise.all([
           loadDossier(t.afb_tiersid),
           loadDocuments(t.afb_tiersid),
@@ -327,6 +340,66 @@ export default function MonEspace({ onNavigate, notify }) {
             )}
           </div>
         </div>
+
+        {/* Mes demandes — le fil, et la réponse de la conformité. */}
+        {demandes.length > 0 && (
+          <div className="card card--pad">
+            <div className="section-head">
+              <div>
+                <h2>{t('Mes demandes')}</h2>
+                <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: 13 }}>
+                  {t('Ce que vous avez demandé à la conformité, et ce qu’elle vous a répondu.')}
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+              {demandes.map((d) => (
+                <div
+                  key={d.id}
+                  className="card"
+                  style={{ padding: '14px 16px' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
+                    <strong style={{ fontSize: 13.5, color: 'var(--ink)' }}>{t(d.libelle)}</strong>
+                    <span className={`badge ${d.traitee ? 'badge--success' : 'badge--warning'}`}>
+                      {d.traitee ? t('Traitée') : t('En attente')}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
+                    {t('envoyée le')} {frDate(d.date)}
+                  </div>
+                  {d.message && (
+                    <p style={{ margin: '8px 0 0', fontSize: 13.5, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                      {d.message}
+                    </p>
+                  )}
+                  {d.reponses.map((r) => (
+                    <div
+                      key={r.id}
+                      style={{
+                        borderLeft: '3px solid var(--brand)',
+                        padding: '8px 0 8px 12px',
+                        marginTop: 10,
+                      }}
+                    >
+                      <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                        {t('Réponse de la conformité')} · {frDate(r.date)}
+                      </div>
+                      <p style={{ margin: '2px 0 0', fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                        {r.texte}
+                      </p>
+                    </div>
+                  ))}
+                  {!d.reponses.length && !d.traitee && (
+                    <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--muted)' }}>
+                      {t('Pas encore de réponse. La conformité la traitera lors de son prochain passage.')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Activité récente */}
         <div className="card card--pad">

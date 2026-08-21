@@ -40,6 +40,18 @@ lecteur non technique.
 
 ### Ajouté
 
+- **Rubrique « Demandes », avec réponse de la conformité.** Une demande de
+  revue n'est pas une pièce justificative : elle s'affichait pourtant parmi
+  elles, avec un statut « En attente » et des boutons Valider / Rejeter
+  dépourvus de sens pour un message. Surtout, personne ne pouvait y répondre —
+  le partenaire écrivait dans le vide. Le dossier porte désormais un onglet
+  « Demandes » où la conformité lit le message, répond, et classe la demande.
+  Le compteur de l’onglet porte sur les demandes sans réponse : le reste à
+  traiter, pas l'historique.
+- **Le partenaire voit la réponse.** « Mon espace » affiche le fil de ses
+  demandes sous le formulaire qui les émet, avec la réponse de la conformité et
+  sa date, ou la mention qu'elle n'est pas encore venue.
+
 - **Déconnexion du portail.** Le portail n'offrait aucun moyen de fermer sa
   session : sur un poste partagé, elle restait ouverte pour le suivant. Un menu
   sur l'avatar propose « Se déconnecter » ; l'entreprise active mémorisée est
@@ -99,6 +111,11 @@ lecteur non technique.
   d'être écrite dans le code.
 
 ### Corrigé
+
+- **Les demandes n’encombrent plus la liste des pièces.** Le tri entre pièce,
+  demande et réponse était réécrit à la main dans chaque écran, avec des règles
+  qui divergeaient : le portail écartait « demande-revue », le back-office non.
+  Un prédicat unique, testé, fait foi des deux côtés de l'application.
 
 - **RÉGRESSION — le dépôt de pièces était devenu impossible.** L'expansion
   `$expand=afb_typejuridique(...)`, ajoutée aux trois requêtes de rattachement
