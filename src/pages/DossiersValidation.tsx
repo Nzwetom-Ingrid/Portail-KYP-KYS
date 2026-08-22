@@ -30,6 +30,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { DemandesPartenaire } from '@/components/dossier/DemandesPartenaire';
+import { evaluerCompletude, motifDeBlocage } from '@/lib/dossiers/completude';
 import {
   compterOuvertes,
   construireDemandes,
@@ -324,6 +325,25 @@ const useStyles = makeStyles({
   },
 
   /* Document checklist */
+  blocage: {
+    padding: '14px 16px',
+    borderRadius: '10px',
+    backgroundColor: 'var(--warning-bg)',
+    fontSize: '13.5px',
+    lineHeight: 1.55,
+  },
+  blocageTitre: { margin: '0 0 10px', fontWeight: 600 },
+  blocageEtiquette: {
+    display: 'block',
+    fontSize: '11px',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    color: 'var(--text-muted)',
+    margin: '10px 0 4px',
+  },
+  blocageListe: { margin: 0, paddingLeft: '18px' },
+  blocageNote: { margin: '12px 0 0', fontSize: '12.5px', color: 'var(--text-muted)' },
   docList: {
     display: 'flex',
     flexDirection: 'column',
@@ -1125,6 +1145,12 @@ function DossierDrawer({
   const providedKeys = new Set(partnerDocs.map((d) => d.type).filter(Boolean));
   const checklist = requiredList.map((item) => ({ ...item, fourni: providedKeys.has(item.key) }));
   const nbFournis = checklist.filter((c) => c.fourni).length;
+
+  // Une décision de conformité prise sur un dossier incomplet n'a aucune valeur
+  // devant le régulateur. Le compteur X/Y était affiché mais n'empêchait rien :
+  // il informait, il ne protégeait pas.
+  const completude = evaluerCompletude(dossier, checklist);
+  const blocage = motifDeBlocage(completude);
   const docTypeLabel = (t: string) => requiredList.find((r) => r.key === t)?.name ?? t;
 
   // Ouvre / télécharge le document. Priorité à la pièce jointe (annotation),
@@ -1321,6 +1347,41 @@ function DossierDrawer({
           ]}
         />
       </DrawerSection>
+
+      {blocage && (
+        <DrawerSection title={t('Dossier incomplet')}>
+          <div className={styles.blocage}>
+            <p className={styles.blocageTitre}>
+              {t('La validation est bloquée tant que les éléments suivants manquent.')}
+            </p>
+            {completude.piecesManquantes.length > 0 && (
+              <>
+                <span className={styles.blocageEtiquette}>
+                  {t('Pièces obligatoires')} — {completude.piecesFournies}/{completude.piecesAttendues}
+                </span>
+                <ul className={styles.blocageListe}>
+                  {completude.piecesManquantes.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {completude.champsManquants.length > 0 && (
+              <>
+                <span className={styles.blocageEtiquette}>{t('Champs de la fiche')}</span>
+                <ul className={styles.blocageListe}>
+                  {completude.champsManquants.map((c) => (
+                    <li key={c}>{t(c)}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <p className={styles.blocageNote}>
+              {t('« Demander complément » reste disponible : c’est la voie normale pour réclamer ce qui manque au partenaire.')}
+            </p>
+          </div>
+        </DrawerSection>
+      )}
 
       <DrawerSection title={t('Profil de risque composite')}>
         <div className={styles.riskGrid}>
@@ -1562,7 +1623,16 @@ function DossierDrawer({
           >
             {t('Rejeter')}
           </Button>
-          <Button appearance="primary" icon={<CheckmarkCircle20Regular />} onClick={onValidate}>
+          <Button
+            appearance="primary"
+            icon={<CheckmarkCircle20Regular />}
+            onClick={onValidate}
+            disabled={!completude.validable}
+            // Un bouton grisé sans explication se lit comme une panne : le motif
+            // exact suit le curseur, et la bannière ci-dessus le rend visible
+            // sans avoir à le chercher.
+            title={blocage ?? t('Valider ce dossier')}
+          >
             {t('Valider')}
           </Button>
         </>

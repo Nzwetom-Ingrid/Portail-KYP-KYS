@@ -603,6 +603,95 @@ function fileToBase64(file) {
  * @param {string} options.categoryId  Catégorie (afb_documentcategory) — REQUISE côté Dataverse.
  * @param {string|null} [options.expiration]  Date d'expiration (AAAA-MM-JJ).
  */
+/**
+ * Statut donné à la pièce qui vient d'être remplacée.
+ *
+ * Aucune valeur « Remplacé » n'existe sur `afb_statutdevalidite` ; « Expiré »
+ * est la seule qui dise « cette pièce n'est plus celle en vigueur », et le
+ * portail comme le back-office savent déjà l'afficher. Le jour où une valeur
+ * « Remplacé » sera ajoutée au choix, c'est cette constante — et elle seule —
+ * qu'il faudra changer.
+ */
+const STATUT_REMPLACE = CHOICES.documentStatut.Expire
+
+/** Statut « En revue » du dossier (afb_statutdudossier). */
+const DOSSIER_EN_REVUE = 1
+
+/**
+ * Une clé de checklist (« rccm », « statuts »…), par opposition à un type MIME
+ * ou à un marqueur de demande. Seules ces pièces se remplacent : deux fichiers
+ * portant le même type MIME n'ont aucun rapport entre eux.
+ */
+function estClePiece(docType) {
+  const t = String(docType || '')
+  return t !== '' && !t.includes('/') && !t.startsWith('reponse') && !t.startsWith('demande')
+}
+
+/**
+ * Enregistre le remplacement d'une pièce et, si elle était validée, remet le
+ * dossier en revue.
+ *
+ * Deux défauts relevés en recette se corrigent ici. D'abord, remplacer une
+ * pièce ne laissait aucune trace : la version examinée par la conformité
+ * disparaissait purement et simplement, alors qu'une décision de conformité
+ * doit rester rattachable au document sur lequel elle a été prise. Ensuite, un
+ * dossier validé le restait après le remplacement d'une de ses pièces — il
+ * était donc validé sur la foi d'un document qui n'était plus celui examiné.
+ *
+ * Rien ici n'est bloquant : si la table des versions ou le dossier ne sont pas
+ * accessibles en écriture, le dépôt reste acquis. Perdre la pièce que le
+ * partenaire vient de téléverser au motif qu'on n'a pas pu écrire son historique
+ * serait le pire des deux maux.
+ */
+async function enregistrerRemplacement(tiersId, docType, nouveauDocId) {
+  if (!estClePiece(docType)) return
+
+  // Pièces précédentes de même nature, la plus récente d'abord.
+  const anterieurs = await dv
+    .list(
+      SETS.document,
+      `?$filter=_afb_tiers_value eq ${tiersId} and afb_typededocument eq '${esc(docType)}'` +
+        `&$select=afb_documentid,afb_statutdevalidite&$orderby=createdon desc&$top=50`
+    )
+    .catch(() => [])
+
+  const precedente = anterieurs.find((d) => d.afb_documentid !== nouveauDocId)
+  if (!precedente) return // premier dépôt de cette pièce : rien à remplacer
+
+  // Le numéro de version se déduit du nombre de pièces déjà déposées pour cette
+  // clé — la nouvelle est la n-ième.
+  const numero = anterieurs.length
+
+  await dv
+    .create(SETS.documentVersion, {
+      afb_referencedeversion: `${docType}-v${numero}`,
+      afb_numerodeversion: numero,
+      afb_datederemplacement: new Date().toISOString(),
+      afb_motifderemplacement: 'Remplacement par le partenaire depuis le portail.',
+      [`afb_documentanterieur@odata.bind`]: `/${SETS.document}(${precedente.afb_documentid})`,
+      [`afb_documentcourant@odata.bind`]: `/${SETS.document}(${nouveauDocId})`,
+    })
+    .catch(() => null)
+
+  // La pièce remplacée sort du jeu courant : sans cela, le partenaire verrait
+  // deux fois la même pièce, l'une « Validée » et l'autre « En attente ».
+  await dv
+    .update(SETS.document, precedente.afb_documentid, { afb_statutdevalidite: STATUT_REMPLACE })
+    .catch(() => null)
+
+  // Le dossier ne repart en revue QUE si la pièce remplacée avait été validée.
+  // Remplacer une pièce encore en attente ne change rien à l'état du dossier.
+  if (precedente.afb_statutdevalidite !== CHOICES.documentStatut.Valide) return
+
+  const dossier = await loadDossier(tiersId).catch(() => null)
+  if (!dossier?.afb_dossierid) return
+  if (dossier.afb_statutcode === DOSSIER_EN_REVUE) return
+
+  await dv
+    .update(SETS.dossier, dossier.afb_dossierid, { afb_statutdudossier: DOSSIER_EN_REVUE })
+    .catch(() => null)
+}
+
 export async function uploadDocument(tiersId, file, { categoryId = null, expiration = null, docType = null } = {}) {
   const sizeKo = Math.round((file.size || 0) / 1024)
   const ext = (file.name.split('.').pop() || 'PDF').toUpperCase()
@@ -669,6 +758,10 @@ export async function uploadDocument(tiersId, file, { categoryId = null, expirat
     mimetype: file.type || 'application/octet-stream',
     documentbody: b64,
   })
+
+  // Après le dépôt seulement : si cette pièce en remplace une autre, on écrit
+  // l'historique et, le cas échéant, on remet le dossier en revue.
+  await enregistrerRemplacement(tiersId, docType, docId)
 
   return mapDocument({ ...payload, afb_documentid: docId })
 }

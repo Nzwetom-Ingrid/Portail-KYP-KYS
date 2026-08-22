@@ -12,6 +12,12 @@ lecteur non technique.
 
 ### À traiter — relevé, non corrigé
 
+- **Valeur de choix « Remplacé » à créer.** Une pièce remplacée reçoit le statut
+  « Expiré », faute de valeur adéquate sur `afb_statutdevalidite` : c’est la
+  seule qui dise « cette pièce n’est plus en vigueur », mais elle en dit autre
+  chose. Ajouter une valeur « Remplacé » au choix, puis changer la constante
+  `STATUT_REMPLACE` — une ligne, un seul endroit.
+
 - **Demande de revue : invisible côté conformité.** Depuis le portail, la
   demande est désormais enregistrée et horodatée, mais elle n'apparaît dans
   aucun écran de l'application interne et ne déclenche aucune notification.
@@ -125,6 +131,27 @@ lecteur non technique.
   d'être écrite dans le code.
 
 ### Corrigé
+
+- **Un dossier incomplet ne peut plus être validé.** Le bouton « Valider »
+  était cliquable quoi qu’il manque. Le tiroir affichait bien « 3/7 pièces
+  fournies », mais ce compteur informait sans protéger : une décision de
+  conformité prise sur un dossier auquel manque le registre du commerce n’a
+  aucune valeur devant le régulateur. La validation exige désormais les pièces
+  obligatoires de la checklist et quatre champs d’identité — raison sociale,
+  pays, numéro RCCM, e-mail de contact. Une bannière en tête du tiroir énumère
+  ce qui manque, et « Demander complément » reste la voie normale pour le
+  réclamer. Ville, téléphone et secteur ne bloquent pas : une règle qui refuse
+  un dossier complet pour un numéro de téléphone se fait contourner.
+- **Remplacer une pièce validée remet le dossier en revue.** Le dossier restait
+  validé sur la foi d’un document qui n’était plus celui examiné. Le
+  remplacement d’une pièce déjà validée le ramène en revue ; remplacer une
+  pièce encore en attente ne change rien, l’examen n’ayant pas eu lieu.
+- **Les pièces sont versionnées.** La table `afb_documentversion` existait avec
+  son service généré, et aucun écran ne l’utilisait : la version examinée par
+  la conformité disparaissait au profit de la nouvelle. Chaque remplacement
+  écrit désormais son lien antérieur → courant, son numéro de version et sa
+  date. La pièce remplacée sort du jeu courant, sans quoi le partenaire verrait
+  deux fois la même, l’une validée et l’autre en attente.
 
 - **Les demandes n’encombrent plus la liste des pièces.** Le tri entre pièce,
   demande et réponse était réécrit à la main dans chaque écran, avec des règles
