@@ -134,6 +134,10 @@
         "contacts": {
           "entitySetName": "contacts",
           "logicalName": "contact"
+        },
+        "demandederevue": {
+          "entitySetName": "afb_demandederevues",
+          "logicalName": "afb_demandederevue"
         }
       },
       "environmentVariableName": ""

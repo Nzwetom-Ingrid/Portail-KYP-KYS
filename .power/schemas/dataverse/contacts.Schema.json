@@ -1,0 +1,3484 @@
+{
+  "name": "contact",
+  "title": "Contacts",
+  "schema": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "x-ms-dataverse-entity": true,
+      "x-ms-dataverse-entityset": "contacts",
+      "x-ms-dataverse-primary-id": "contactid",
+      "x-ms-dataverse-primary-name": "fullname",
+      "properties": {
+        "accountid": {
+          "type": "string",
+          "title": "Compte",
+          "x-ms-dataverse-attribute": "accountid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "AccountId",
+          "x-ms-read-only": true
+        },
+        "accountidname": {
+          "type": "string",
+          "title": "accountidname",
+          "x-ms-dataverse-attribute": "accountidname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "AccountIdName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "accountidyominame": {
+          "type": "string",
+          "title": "accountidyominame",
+          "x-ms-dataverse-attribute": "accountidyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "AccountIdYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "accountrolecode": {
+          "type": "string",
+          "title": "Rôle",
+          "x-ms-dataverse-attribute": "accountrolecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "AccountRoleCode",
+          "enum": [
+            "Décisionnaire",
+            "Employé",
+            "Influenceur"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2,
+            3
+          ],
+          "Color": [
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "a3b48905-7d78-47d1-bb56-da3cbd0975ca",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Rôle",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "accountrolecodename": {
+          "type": "string",
+          "title": "accountrolecodename",
+          "x-ms-dataverse-attribute": "accountrolecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "AccountRoleCodeName",
+          "x-ms-read-only": true
+        },
+        "address1_addressid": {
+          "type": "string",
+          "title": "Adresse 1 : ID",
+          "x-ms-dataverse-attribute": "address1_addressid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "Address1_AddressId",
+          "x-ms-dataverse-primary-id": true
+        },
+        "address1_addresstypecode": {
+          "type": "string",
+          "title": "Adresse 1 : Type d'adresse",
+          "x-ms-dataverse-attribute": "address1_addresstypecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address1_AddressTypeCode",
+          "enum": [
+            "Facturation",
+            "Expédition",
+            "Principale",
+            "Autre"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "8b6e9a56-6a18-4b17-9f5d-cfdbd46d9e0b",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 1 : Type d'adresse",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address1_addresstypecodename": {
+          "type": "string",
+          "title": "address1_addresstypecodename",
+          "x-ms-dataverse-attribute": "address1_addresstypecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address1_AddressTypeCodeName",
+          "x-ms-read-only": true
+        },
+        "address1_city": {
+          "type": "string",
+          "title": "Adresse 1 : Ville",
+          "x-ms-dataverse-attribute": "address1_city",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_City",
+          "maxLength": 80
+        },
+        "address1_composite": {
+          "type": "string",
+          "title": "Adresse 1",
+          "x-ms-dataverse-attribute": "address1_composite",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "Address1_Composite",
+          "x-ms-read-only": true,
+          "maxLength": 1000
+        },
+        "address1_country": {
+          "type": "string",
+          "title": "Adresse 1 : Pays/région",
+          "x-ms-dataverse-attribute": "address1_country",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Country",
+          "maxLength": 80
+        },
+        "address1_county": {
+          "type": "string",
+          "title": "Adresse 1 : Commune",
+          "x-ms-dataverse-attribute": "address1_county",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_County",
+          "maxLength": 50
+        },
+        "address1_fax": {
+          "type": "string",
+          "title": "Adresse 1 : Télécopie",
+          "x-ms-dataverse-attribute": "address1_fax",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Fax",
+          "maxLength": 50
+        },
+        "address1_freighttermscode": {
+          "type": "string",
+          "title": "Adresse 1 : Conditions de transport",
+          "x-ms-dataverse-attribute": "address1_freighttermscode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address1_FreightTermsCode",
+          "enum": [
+            "FAB",
+            "Sans supplément"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "919726a2-8436-44ef-8c66-6117c442b862",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 1 : Conditions de transport",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address1_freighttermscodename": {
+          "type": "string",
+          "title": "address1_freighttermscodename",
+          "x-ms-dataverse-attribute": "address1_freighttermscodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address1_FreightTermsCodeName",
+          "x-ms-read-only": true
+        },
+        "address1_latitude": {
+          "type": "string",
+          "title": "Adresse 1 : Latitude",
+          "x-ms-dataverse-attribute": "address1_latitude",
+          "x-ms-dataverse-type": "DoubleType",
+          "x-ms-schema-name": "Address1_Latitude"
+        },
+        "address1_line1": {
+          "type": "string",
+          "title": "Adresse 1 : Rue 1",
+          "x-ms-dataverse-attribute": "address1_line1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Line1",
+          "maxLength": 250
+        },
+        "address1_line2": {
+          "type": "string",
+          "title": "Adresse 1 : Rue 2",
+          "x-ms-dataverse-attribute": "address1_line2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Line2",
+          "maxLength": 250
+        },
+        "address1_line3": {
+          "type": "string",
+          "title": "Adresse 1 : Rue 3",
+          "x-ms-dataverse-attribute": "address1_line3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Line3",
+          "maxLength": 250
+        },
+        "address1_longitude": {
+          "type": "string",
+          "title": "Adresse 1 : Longitude",
+          "x-ms-dataverse-attribute": "address1_longitude",
+          "x-ms-dataverse-type": "DoubleType",
+          "x-ms-schema-name": "Address1_Longitude"
+        },
+        "address1_name": {
+          "type": "string",
+          "title": "Adresse 1 : Nom",
+          "x-ms-dataverse-attribute": "address1_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Name",
+          "maxLength": 200
+        },
+        "address1_postalcode": {
+          "type": "string",
+          "title": "Adresse 1 : Code postal",
+          "x-ms-dataverse-attribute": "address1_postalcode",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_PostalCode",
+          "maxLength": 20
+        },
+        "address1_postofficebox": {
+          "type": "string",
+          "title": "Adresse 1 : Boîte postale",
+          "x-ms-dataverse-attribute": "address1_postofficebox",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_PostOfficeBox",
+          "maxLength": 20
+        },
+        "address1_primarycontactname": {
+          "type": "string",
+          "title": "Adresse 1 : Nom du contact principal",
+          "x-ms-dataverse-attribute": "address1_primarycontactname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_PrimaryContactName",
+          "maxLength": 100
+        },
+        "address1_shippingmethodcode": {
+          "type": "string",
+          "title": "Adresse 1 : Mode de livraison",
+          "x-ms-dataverse-attribute": "address1_shippingmethodcode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address1_ShippingMethodCode",
+          "enum": [
+            "Courrier postal",
+            "Collecte",
+            "Autre",
+            "Transporteur"
+          ],
+          "x-ms-enum-values": [
+            5,
+            7,
+            8,
+            17
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "b01576e7-514c-45d5-a264-e4fbfd53f615",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 1 : Mode de livraison",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address1_shippingmethodcodename": {
+          "type": "string",
+          "title": "address1_shippingmethodcodename",
+          "x-ms-dataverse-attribute": "address1_shippingmethodcodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address1_ShippingMethodCodeName",
+          "x-ms-read-only": true
+        },
+        "address1_stateorprovince": {
+          "type": "string",
+          "title": "Adresse 1 : Département/province",
+          "x-ms-dataverse-attribute": "address1_stateorprovince",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_StateOrProvince",
+          "maxLength": 50
+        },
+        "address1_telephone1": {
+          "type": "string",
+          "title": "Adresse 1 : Téléphone",
+          "x-ms-dataverse-attribute": "address1_telephone1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Telephone1",
+          "maxLength": 50
+        },
+        "address1_telephone2": {
+          "type": "string",
+          "title": "Adresse 1 : Téléphone 2",
+          "x-ms-dataverse-attribute": "address1_telephone2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Telephone2",
+          "maxLength": 50
+        },
+        "address1_telephone3": {
+          "type": "string",
+          "title": "Adresse 1 : Téléphone 3",
+          "x-ms-dataverse-attribute": "address1_telephone3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_Telephone3",
+          "maxLength": 50
+        },
+        "address1_upszone": {
+          "type": "string",
+          "title": "Adresse 1 : Zone UPS",
+          "x-ms-dataverse-attribute": "address1_upszone",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address1_UPSZone",
+          "maxLength": 4
+        },
+        "address1_utcoffset": {
+          "type": "string",
+          "title": "Adresse 1 : Décalage UTC",
+          "x-ms-dataverse-attribute": "address1_utcoffset",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "Address1_UTCOffset"
+        },
+        "address2_addressid": {
+          "type": "string",
+          "title": "Adresse 2 : ID",
+          "x-ms-dataverse-attribute": "address2_addressid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "Address2_AddressId",
+          "x-ms-dataverse-primary-id": true
+        },
+        "address2_addresstypecode": {
+          "type": "string",
+          "title": "Adresse 2 : Type d'adresse",
+          "x-ms-dataverse-attribute": "address2_addresstypecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address2_AddressTypeCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "c4714e0b-7573-4f51-8cb7-46fc321a5089",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 2 : Type d'adresse",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address2_addresstypecodename": {
+          "type": "string",
+          "title": "address2_addresstypecodename",
+          "x-ms-dataverse-attribute": "address2_addresstypecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address2_AddressTypeCodeName",
+          "x-ms-read-only": true
+        },
+        "address2_city": {
+          "type": "string",
+          "title": "Adresse 2 : Ville",
+          "x-ms-dataverse-attribute": "address2_city",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_City",
+          "maxLength": 80
+        },
+        "address2_composite": {
+          "type": "string",
+          "title": "Adresse 2",
+          "x-ms-dataverse-attribute": "address2_composite",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "Address2_Composite",
+          "x-ms-read-only": true,
+          "maxLength": 1000
+        },
+        "address2_country": {
+          "type": "string",
+          "title": "Adresse 2 : Pays/région",
+          "x-ms-dataverse-attribute": "address2_country",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Country",
+          "maxLength": 80
+        },
+        "address2_county": {
+          "type": "string",
+          "title": "Adresse 2 : Commune",
+          "x-ms-dataverse-attribute": "address2_county",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_County",
+          "maxLength": 50
+        },
+        "address2_fax": {
+          "type": "string",
+          "title": "Adresse 2 : Télécopie",
+          "x-ms-dataverse-attribute": "address2_fax",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Fax",
+          "maxLength": 50
+        },
+        "address2_freighttermscode": {
+          "type": "string",
+          "title": "Adresse 2 : Conditions de transport",
+          "x-ms-dataverse-attribute": "address2_freighttermscode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address2_FreightTermsCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "dc2aabc1-4efa-4667-b474-1aad1b4cf244",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 2 : Conditions de transport",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address2_freighttermscodename": {
+          "type": "string",
+          "title": "address2_freighttermscodename",
+          "x-ms-dataverse-attribute": "address2_freighttermscodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address2_FreightTermsCodeName",
+          "x-ms-read-only": true
+        },
+        "address2_latitude": {
+          "type": "string",
+          "title": "Adresse 2 : Latitude",
+          "x-ms-dataverse-attribute": "address2_latitude",
+          "x-ms-dataverse-type": "DoubleType",
+          "x-ms-schema-name": "Address2_Latitude"
+        },
+        "address2_line1": {
+          "type": "string",
+          "title": "Adresse 2 : Rue 1",
+          "x-ms-dataverse-attribute": "address2_line1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Line1",
+          "maxLength": 250
+        },
+        "address2_line2": {
+          "type": "string",
+          "title": "Adresse 2 : Rue 2",
+          "x-ms-dataverse-attribute": "address2_line2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Line2",
+          "maxLength": 250
+        },
+        "address2_line3": {
+          "type": "string",
+          "title": "Adresse 2 : Rue 3",
+          "x-ms-dataverse-attribute": "address2_line3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Line3",
+          "maxLength": 250
+        },
+        "address2_longitude": {
+          "type": "string",
+          "title": "Adresse 2 : Longitude",
+          "x-ms-dataverse-attribute": "address2_longitude",
+          "x-ms-dataverse-type": "DoubleType",
+          "x-ms-schema-name": "Address2_Longitude"
+        },
+        "address2_name": {
+          "type": "string",
+          "title": "Adresse 2 : Nom",
+          "x-ms-dataverse-attribute": "address2_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Name",
+          "maxLength": 100
+        },
+        "address2_postalcode": {
+          "type": "string",
+          "title": "Adresse 2 : Code postal",
+          "x-ms-dataverse-attribute": "address2_postalcode",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_PostalCode",
+          "maxLength": 20
+        },
+        "address2_postofficebox": {
+          "type": "string",
+          "title": "Adresse 2 : Boîte postale",
+          "x-ms-dataverse-attribute": "address2_postofficebox",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_PostOfficeBox",
+          "maxLength": 20
+        },
+        "address2_primarycontactname": {
+          "type": "string",
+          "title": "Adresse 2 : Nom du contact principal",
+          "x-ms-dataverse-attribute": "address2_primarycontactname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_PrimaryContactName",
+          "maxLength": 100
+        },
+        "address2_shippingmethodcode": {
+          "type": "string",
+          "title": "Adresse 2 : Mode de livraison",
+          "x-ms-dataverse-attribute": "address2_shippingmethodcode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address2_ShippingMethodCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "60d225d8-b4ab-4e5a-9d18-3dd946e1a413",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 2 : Mode de livraison ",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address2_shippingmethodcodename": {
+          "type": "string",
+          "title": "address2_shippingmethodcodename",
+          "x-ms-dataverse-attribute": "address2_shippingmethodcodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address2_ShippingMethodCodeName",
+          "x-ms-read-only": true
+        },
+        "address2_stateorprovince": {
+          "type": "string",
+          "title": "Adresse 2 : Département/province",
+          "x-ms-dataverse-attribute": "address2_stateorprovince",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_StateOrProvince",
+          "maxLength": 50
+        },
+        "address2_telephone1": {
+          "type": "string",
+          "title": "Adresse 2 : Téléphone 1",
+          "x-ms-dataverse-attribute": "address2_telephone1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Telephone1",
+          "maxLength": 50
+        },
+        "address2_telephone2": {
+          "type": "string",
+          "title": "Adresse 2 : Téléphone 2",
+          "x-ms-dataverse-attribute": "address2_telephone2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Telephone2",
+          "maxLength": 50
+        },
+        "address2_telephone3": {
+          "type": "string",
+          "title": "Adresse 2 : Téléphone 3",
+          "x-ms-dataverse-attribute": "address2_telephone3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_Telephone3",
+          "maxLength": 50
+        },
+        "address2_upszone": {
+          "type": "string",
+          "title": "Adresse 2 : Zone UPS",
+          "x-ms-dataverse-attribute": "address2_upszone",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address2_UPSZone",
+          "maxLength": 4
+        },
+        "address2_utcoffset": {
+          "type": "string",
+          "title": "Adresse 2 : Décalage UTC",
+          "x-ms-dataverse-attribute": "address2_utcoffset",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "Address2_UTCOffset"
+        },
+        "address3_addressid": {
+          "type": "string",
+          "title": "Adresse 3 : ID",
+          "x-ms-dataverse-attribute": "address3_addressid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "Address3_AddressId",
+          "x-ms-dataverse-primary-id": true
+        },
+        "address3_addresstypecode": {
+          "type": "string",
+          "title": "Adresse 3 : type d'adresse",
+          "x-ms-dataverse-attribute": "address3_addresstypecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address3_AddressTypeCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "97534134-54f6-42fa-914b-2f1531cddfdc",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 3 : type d'adresse",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address3_addresstypecodename": {
+          "type": "string",
+          "title": "address3_addresstypecodename",
+          "x-ms-dataverse-attribute": "address3_addresstypecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address3_AddressTypeCodeName",
+          "x-ms-read-only": true
+        },
+        "address3_city": {
+          "type": "string",
+          "title": "Adresse 3 : ville",
+          "x-ms-dataverse-attribute": "address3_city",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_City",
+          "maxLength": 80
+        },
+        "address3_composite": {
+          "type": "string",
+          "title": "Adresse 3",
+          "x-ms-dataverse-attribute": "address3_composite",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "Address3_Composite",
+          "x-ms-read-only": true,
+          "maxLength": 1000
+        },
+        "address3_country": {
+          "type": "string",
+          "title": "Adresse 3 : pays/région",
+          "x-ms-dataverse-attribute": "address3_country",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Country",
+          "maxLength": 80
+        },
+        "address3_county": {
+          "type": "string",
+          "title": "Adresse 3 : commune",
+          "x-ms-dataverse-attribute": "address3_county",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_County",
+          "maxLength": 50
+        },
+        "address3_fax": {
+          "type": "string",
+          "title": "Adresse 3 : télécopie",
+          "x-ms-dataverse-attribute": "address3_fax",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Fax",
+          "maxLength": 50
+        },
+        "address3_freighttermscode": {
+          "type": "string",
+          "title": "Adresse 3 : conditions de transport",
+          "x-ms-dataverse-attribute": "address3_freighttermscode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address3_FreightTermsCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "2a18f883-f938-432f-b27f-e23e507bdf08",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 3 : conditions de transport",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address3_freighttermscodename": {
+          "type": "string",
+          "title": "address3_freighttermscodename",
+          "x-ms-dataverse-attribute": "address3_freighttermscodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address3_FreightTermsCodeName",
+          "x-ms-read-only": true
+        },
+        "address3_latitude": {
+          "type": "string",
+          "title": "Adresse 3 : latitude",
+          "x-ms-dataverse-attribute": "address3_latitude",
+          "x-ms-dataverse-type": "DoubleType",
+          "x-ms-schema-name": "Address3_Latitude"
+        },
+        "address3_line1": {
+          "type": "string",
+          "title": "Adresse 3 : rue 1",
+          "x-ms-dataverse-attribute": "address3_line1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Line1",
+          "maxLength": 250
+        },
+        "address3_line2": {
+          "type": "string",
+          "title": "Adresse 3 : rue 2",
+          "x-ms-dataverse-attribute": "address3_line2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Line2",
+          "maxLength": 250
+        },
+        "address3_line3": {
+          "type": "string",
+          "title": "Adresse 3 : rue 3",
+          "x-ms-dataverse-attribute": "address3_line3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Line3",
+          "maxLength": 250
+        },
+        "address3_longitude": {
+          "type": "string",
+          "title": "Adresse 3 : longitude",
+          "x-ms-dataverse-attribute": "address3_longitude",
+          "x-ms-dataverse-type": "DoubleType",
+          "x-ms-schema-name": "Address3_Longitude"
+        },
+        "address3_name": {
+          "type": "string",
+          "title": "Adresse 3 : nom",
+          "x-ms-dataverse-attribute": "address3_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Name",
+          "maxLength": 200
+        },
+        "address3_postalcode": {
+          "type": "string",
+          "title": "Adresse 3 : code postal",
+          "x-ms-dataverse-attribute": "address3_postalcode",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_PostalCode",
+          "maxLength": 20
+        },
+        "address3_postofficebox": {
+          "type": "string",
+          "title": "Adresse 3 : boîte postale",
+          "x-ms-dataverse-attribute": "address3_postofficebox",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_PostOfficeBox",
+          "maxLength": 20
+        },
+        "address3_primarycontactname": {
+          "type": "string",
+          "title": "Adresse 3 : nom du contact principal",
+          "x-ms-dataverse-attribute": "address3_primarycontactname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_PrimaryContactName",
+          "maxLength": 100
+        },
+        "address3_shippingmethodcode": {
+          "type": "string",
+          "title": "Adresse 3 : mode de livraison",
+          "x-ms-dataverse-attribute": "address3_shippingmethodcode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "Address3_ShippingMethodCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "147717a9-2dff-4bc5-9f9e-de99ae7c1c86",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse 3 : mode de livraison ",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "address3_shippingmethodcodename": {
+          "type": "string",
+          "title": "address3_shippingmethodcodename",
+          "x-ms-dataverse-attribute": "address3_shippingmethodcodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "Address3_ShippingMethodCodeName",
+          "x-ms-read-only": true
+        },
+        "address3_stateorprovince": {
+          "type": "string",
+          "title": "Adresse 3 : département/province",
+          "x-ms-dataverse-attribute": "address3_stateorprovince",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_StateOrProvince",
+          "maxLength": 50
+        },
+        "address3_telephone1": {
+          "type": "string",
+          "title": "Adresse 3 : téléphone 1",
+          "x-ms-dataverse-attribute": "address3_telephone1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Telephone1",
+          "maxLength": 50
+        },
+        "address3_telephone2": {
+          "type": "string",
+          "title": "Adresse 3 : téléphone 2",
+          "x-ms-dataverse-attribute": "address3_telephone2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Telephone2",
+          "maxLength": 50
+        },
+        "address3_telephone3": {
+          "type": "string",
+          "title": "Adresse 3 : téléphone 3",
+          "x-ms-dataverse-attribute": "address3_telephone3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_Telephone3",
+          "maxLength": 50
+        },
+        "address3_upszone": {
+          "type": "string",
+          "title": "Adresse 3 : zone UPS",
+          "x-ms-dataverse-attribute": "address3_upszone",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Address3_UPSZone",
+          "maxLength": 4
+        },
+        "address3_utcoffset": {
+          "type": "string",
+          "title": "Adresse 3 : décalage UTC",
+          "x-ms-dataverse-attribute": "address3_utcoffset",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "Address3_UTCOffset"
+        },
+        "adx_confirmremovepassword": {
+          "type": "string",
+          "title": "Confirmer la suppression du mot de passe",
+          "x-ms-dataverse-attribute": "adx_confirmremovepassword",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_ConfirmRemovePassword",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            "#0000ff",
+            "#0000ff"
+          ],
+          "x-ms-optionsetmetadataid": "02d524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Confirmer la suppression du mot de passe",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_confirmremovepasswordname": {
+          "type": "string",
+          "title": "adx_confirmremovepasswordname",
+          "x-ms-dataverse-attribute": "adx_confirmremovepasswordname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_confirmremovepasswordName",
+          "x-ms-read-only": true
+        },
+        "adx_createdbyipaddress": {
+          "type": "string",
+          "title": "Création par adresse IP",
+          "x-ms-dataverse-attribute": "adx_createdbyipaddress",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Adx_CreatedByIPAddress",
+          "maxLength": 100
+        },
+        "adx_createdbyusername": {
+          "type": "string",
+          "title": "Création par nom d’utilisateur",
+          "x-ms-dataverse-attribute": "adx_createdbyusername",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Adx_CreatedByUsername",
+          "maxLength": 100
+        },
+        "adx_identity_accessfailedcount": {
+          "type": "string",
+          "title": "Nombre d’accès manqués",
+          "x-ms-dataverse-attribute": "adx_identity_accessfailedcount",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "adx_identity_accessfailedcount"
+        },
+        "adx_identity_emailaddress1confirmed": {
+          "type": "string",
+          "title": "Adresse de messagerie confirmée",
+          "x-ms-dataverse-attribute": "adx_identity_emailaddress1confirmed",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_identity_emailaddress1confirmed",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "05d524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Adresse de messagerie confirmée",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_identity_emailaddress1confirmedname": {
+          "type": "string",
+          "title": "adx_identity_emailaddress1confirmedname",
+          "x-ms-dataverse-attribute": "adx_identity_emailaddress1confirmedname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_identity_emailaddress1confirmedName",
+          "x-ms-read-only": true
+        },
+        "adx_identity_lastsuccessfullogin": {
+          "type": "string",
+          "title": "Dernière connexion",
+          "x-ms-dataverse-attribute": "adx_identity_lastsuccessfullogin",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "adx_identity_lastsuccessfullogin"
+        },
+        "adx_identity_locallogindisabled": {
+          "type": "string",
+          "title": "Connexion locale désactivée",
+          "x-ms-dataverse-attribute": "adx_identity_locallogindisabled",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_identity_locallogindisabled",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            "#0000ff",
+            "#0000ff"
+          ],
+          "x-ms-optionsetmetadataid": "08d524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Connexion locale désactivée",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_identity_locallogindisabledname": {
+          "type": "string",
+          "title": "adx_identity_locallogindisabledname",
+          "x-ms-dataverse-attribute": "adx_identity_locallogindisabledname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_identity_locallogindisabledName",
+          "x-ms-read-only": true
+        },
+        "adx_identity_lockoutenabled": {
+          "type": "string",
+          "title": "Verrouillage activé",
+          "x-ms-dataverse-attribute": "adx_identity_lockoutenabled",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_identity_lockoutenabled",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "0bd524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Verrouillage activé",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_identity_lockoutenabledname": {
+          "type": "string",
+          "title": "adx_identity_lockoutenabledname",
+          "x-ms-dataverse-attribute": "adx_identity_lockoutenabledname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_identity_lockoutenabledName",
+          "x-ms-read-only": true
+        },
+        "adx_identity_lockoutenddate": {
+          "type": "string",
+          "title": "Date de fin du verrouillage",
+          "x-ms-dataverse-attribute": "adx_identity_lockoutenddate",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "adx_identity_lockoutenddate"
+        },
+        "adx_identity_logonenabled": {
+          "type": "string",
+          "title": "Connexion activée",
+          "x-ms-dataverse-attribute": "adx_identity_logonenabled",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_identity_logonenabled",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            "#0000ff",
+            "#0000ff"
+          ],
+          "x-ms-optionsetmetadataid": "0ed524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Connexion activée",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_identity_logonenabledname": {
+          "type": "string",
+          "title": "adx_identity_logonenabledname",
+          "x-ms-dataverse-attribute": "adx_identity_logonenabledname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_identity_logonenabledName",
+          "x-ms-read-only": true
+        },
+        "adx_identity_mobilephoneconfirmed": {
+          "type": "string",
+          "title": "Téléphone mobile confirmé",
+          "x-ms-dataverse-attribute": "adx_identity_mobilephoneconfirmed",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_identity_mobilephoneconfirmed",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "11d524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Téléphone mobile confirmé",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_identity_mobilephoneconfirmedname": {
+          "type": "string",
+          "title": "adx_identity_mobilephoneconfirmedname",
+          "x-ms-dataverse-attribute": "adx_identity_mobilephoneconfirmedname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_identity_mobilephoneconfirmedName",
+          "x-ms-read-only": true
+        },
+        "adx_identity_newpassword": {
+          "type": "string",
+          "title": "Saisie du nouveau mot de passe",
+          "x-ms-dataverse-attribute": "adx_identity_newpassword",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "adx_identity_newpassword",
+          "maxLength": 100
+        },
+        "adx_identity_passwordhash": {
+          "type": "string",
+          "title": "Hachage du mot de passe",
+          "x-ms-dataverse-attribute": "adx_identity_passwordhash",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "adx_identity_passwordhash",
+          "maxLength": 128
+        },
+        "adx_identity_securitystamp": {
+          "type": "string",
+          "title": "Tampon de sécurité",
+          "x-ms-dataverse-attribute": "adx_identity_securitystamp",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "adx_identity_securitystamp",
+          "maxLength": 100
+        },
+        "adx_identity_twofactorenabled": {
+          "type": "string",
+          "title": "Auth. à deux facteurs activée",
+          "x-ms-dataverse-attribute": "adx_identity_twofactorenabled",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_identity_twofactorenabled",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "14d524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Auth. à deux facteurs activée",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_identity_twofactorenabledname": {
+          "type": "string",
+          "title": "adx_identity_twofactorenabledname",
+          "x-ms-dataverse-attribute": "adx_identity_twofactorenabledname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_identity_twofactorenabledName",
+          "x-ms-read-only": true
+        },
+        "adx_identity_username": {
+          "type": "string",
+          "title": "Nom d’utilisateur",
+          "x-ms-dataverse-attribute": "adx_identity_username",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "adx_identity_username",
+          "maxLength": 100
+        },
+        "adx_modifiedbyipaddress": {
+          "type": "string",
+          "title": "Modification par adresse IP",
+          "x-ms-dataverse-attribute": "adx_modifiedbyipaddress",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Adx_ModifiedByIPAddress",
+          "maxLength": 100
+        },
+        "adx_modifiedbyusername": {
+          "type": "string",
+          "title": "Modification par nom d’utilisateur",
+          "x-ms-dataverse-attribute": "adx_modifiedbyusername",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Adx_ModifiedByUsername",
+          "maxLength": 100
+        },
+        "adx_organizationname": {
+          "type": "string",
+          "title": "Organization Name",
+          "x-ms-dataverse-attribute": "adx_organizationname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Adx_OrganizationName",
+          "maxLength": 250
+        },
+        "adx_preferredlcid": {
+          "type": "string",
+          "title": "LCID préféré (déconseillé)",
+          "x-ms-dataverse-attribute": "adx_preferredlcid",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "adx_preferredlcid"
+        },
+        "adx_profilealert": {
+          "type": "string",
+          "title": "Alerte du profil",
+          "x-ms-dataverse-attribute": "adx_profilealert",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "adx_profilealert",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "17d524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Alerte du profil",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_profilealertdate": {
+          "type": "string",
+          "title": "Date de l’alerte du profil",
+          "x-ms-dataverse-attribute": "adx_profilealertdate",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "adx_profilealertdate"
+        },
+        "adx_profilealertinstructions": {
+          "type": "string",
+          "title": "Instructions des alertes du profil",
+          "x-ms-dataverse-attribute": "adx_profilealertinstructions",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "adx_profilealertinstructions",
+          "maxLength": 4096
+        },
+        "adx_profilealertname": {
+          "type": "string",
+          "title": "adx_profilealertname",
+          "x-ms-dataverse-attribute": "adx_profilealertname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_profilealertName",
+          "x-ms-read-only": true
+        },
+        "adx_profileisanonymous": {
+          "type": "string",
+          "title": "Le profil est Anonyme",
+          "x-ms-dataverse-attribute": "adx_profileisanonymous",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "Adx_ProfileIsAnonymous",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "19d524f5-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Le profil est Anonyme",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "adx_profileisanonymousname": {
+          "type": "string",
+          "title": "adx_profileisanonymousname",
+          "x-ms-dataverse-attribute": "adx_profileisanonymousname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "adx_profileisanonymousName",
+          "x-ms-read-only": true
+        },
+        "adx_profilelastactivity": {
+          "type": "string",
+          "title": "Dernière activité du profil",
+          "x-ms-dataverse-attribute": "adx_profilelastactivity",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "Adx_ProfileLastActivity"
+        },
+        "adx_profilemodifiedon": {
+          "type": "string",
+          "title": "Profil modifié le",
+          "x-ms-dataverse-attribute": "adx_profilemodifiedon",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "adx_profilemodifiedon"
+        },
+        "adx_publicprofilecopy": {
+          "type": "string",
+          "title": "Copie du profil public",
+          "x-ms-dataverse-attribute": "adx_publicprofilecopy",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "adx_PublicProfileCopy",
+          "maxLength": 64000
+        },
+        "adx_timezone": {
+          "type": "string",
+          "title": "Time Zone",
+          "x-ms-dataverse-attribute": "adx_timezone",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "Adx_TimeZone"
+        },
+        "afb_tiers": {
+          "type": "string",
+          "title": "Tiers",
+          "x-ms-dataverse-attribute": "afb_tiers",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "afb_Tiers"
+        },
+        "afb_tiersname": {
+          "type": "string",
+          "title": "afb_tiersname",
+          "x-ms-dataverse-attribute": "afb_tiersname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_TiersName",
+          "x-ms-read-only": true,
+          "maxLength": 850
+        },
+        "aging30": {
+          "type": "string",
+          "title": "Classement chronologique à 30",
+          "x-ms-dataverse-attribute": "aging30",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "Aging30",
+          "x-ms-read-only": true
+        },
+        "aging30_base": {
+          "type": "string",
+          "title": "Classement chronologique à 30 (devise de base)",
+          "x-ms-dataverse-attribute": "aging30_base",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "Aging30_Base",
+          "x-ms-read-only": true
+        },
+        "aging60": {
+          "type": "string",
+          "title": "Classement chronologique à 60",
+          "x-ms-dataverse-attribute": "aging60",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "Aging60",
+          "x-ms-read-only": true
+        },
+        "aging60_base": {
+          "type": "string",
+          "title": "Classement chronologique à 60 (devise de base)",
+          "x-ms-dataverse-attribute": "aging60_base",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "Aging60_Base",
+          "x-ms-read-only": true
+        },
+        "aging90": {
+          "type": "string",
+          "title": "Classement chronologique à 90",
+          "x-ms-dataverse-attribute": "aging90",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "Aging90",
+          "x-ms-read-only": true
+        },
+        "aging90_base": {
+          "type": "string",
+          "title": "Classement chronologique à 90 (devise de base)",
+          "x-ms-dataverse-attribute": "aging90_base",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "Aging90_Base",
+          "x-ms-read-only": true
+        },
+        "anniversary": {
+          "type": "string",
+          "title": "Date d'anniversaire",
+          "x-ms-dataverse-attribute": "anniversary",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "Anniversary"
+        },
+        "annualincome": {
+          "type": "string",
+          "title": "Chiffre d'affaires annuel",
+          "x-ms-dataverse-attribute": "annualincome",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "AnnualIncome"
+        },
+        "annualincome_base": {
+          "type": "string",
+          "title": "Chiffre d'affaires annuel (devise de base)",
+          "x-ms-dataverse-attribute": "annualincome_base",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "AnnualIncome_Base",
+          "x-ms-read-only": true
+        },
+        "assistantname": {
+          "type": "string",
+          "title": "Assistant(e) ",
+          "x-ms-dataverse-attribute": "assistantname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "AssistantName",
+          "maxLength": 100
+        },
+        "assistantphone": {
+          "type": "string",
+          "title": "Numéro de téléphone de l'assistant",
+          "x-ms-dataverse-attribute": "assistantphone",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "AssistantPhone",
+          "maxLength": 50
+        },
+        "birthdate": {
+          "type": "string",
+          "title": "Date de naissance",
+          "x-ms-dataverse-attribute": "birthdate",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "BirthDate"
+        },
+        "business2": {
+          "type": "string",
+          "title": "Téléphone professionnel 2",
+          "x-ms-dataverse-attribute": "business2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Business2",
+          "maxLength": 50
+        },
+        "callback": {
+          "type": "string",
+          "title": "Numéro de rappel",
+          "x-ms-dataverse-attribute": "callback",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Callback",
+          "maxLength": 50
+        },
+        "childrensnames": {
+          "type": "string",
+          "title": "Nom des enfants",
+          "x-ms-dataverse-attribute": "childrensnames",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ChildrensNames",
+          "maxLength": 255
+        },
+        "company": {
+          "type": "string",
+          "title": "Numéro de téléphone de la société",
+          "x-ms-dataverse-attribute": "company",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Company",
+          "maxLength": 50
+        },
+        "contactid": {
+          "type": "string",
+          "title": "Contact",
+          "x-ms-dataverse-attribute": "contactid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "ContactId",
+          "x-ms-dataverse-primary-id": true,
+          "required": true,
+          "x-ms-keyType": "primary"
+        },
+        "createdby": {
+          "type": "string",
+          "title": "Créé par",
+          "x-ms-dataverse-attribute": "createdby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "CreatedBy",
+          "x-ms-read-only": true
+        },
+        "createdbyexternalparty": {
+          "type": "string",
+          "title": "Créé par (partie externe)",
+          "x-ms-dataverse-attribute": "createdbyexternalparty",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "CreatedByExternalParty",
+          "x-ms-read-only": true
+        },
+        "createdbyexternalpartyname": {
+          "type": "string",
+          "title": "createdbyexternalpartyname",
+          "x-ms-dataverse-attribute": "createdbyexternalpartyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedByExternalPartyName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "createdbyexternalpartyyominame": {
+          "type": "string",
+          "title": "createdbyexternalpartyyominame",
+          "x-ms-dataverse-attribute": "createdbyexternalpartyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedByExternalPartyYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "createdbyname": {
+          "type": "string",
+          "title": "createdbyname",
+          "x-ms-dataverse-attribute": "createdbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "createdbyyominame": {
+          "type": "string",
+          "title": "createdbyyominame",
+          "x-ms-dataverse-attribute": "createdbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedByYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "createdon": {
+          "type": "string",
+          "title": "Créé le",
+          "x-ms-dataverse-attribute": "createdon",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "CreatedOn",
+          "x-ms-read-only": true
+        },
+        "createdonbehalfby": {
+          "type": "string",
+          "title": "Créé par (délégué)",
+          "x-ms-dataverse-attribute": "createdonbehalfby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "CreatedOnBehalfBy",
+          "x-ms-read-only": true
+        },
+        "createdonbehalfbyname": {
+          "type": "string",
+          "title": "createdonbehalfbyname",
+          "x-ms-dataverse-attribute": "createdonbehalfbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedOnBehalfByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "createdonbehalfbyyominame": {
+          "type": "string",
+          "title": "createdonbehalfbyyominame",
+          "x-ms-dataverse-attribute": "createdonbehalfbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "CreatedOnBehalfByYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "creditlimit": {
+          "type": "string",
+          "title": "Limite de crédit",
+          "x-ms-dataverse-attribute": "creditlimit",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "CreditLimit"
+        },
+        "creditlimit_base": {
+          "type": "string",
+          "title": "Limite de crédit (devise de base)",
+          "x-ms-dataverse-attribute": "creditlimit_base",
+          "x-ms-dataverse-type": "MoneyType",
+          "x-ms-schema-name": "CreditLimit_Base",
+          "x-ms-read-only": true
+        },
+        "creditonhold": {
+          "type": "string",
+          "title": "Suspension de crédit",
+          "x-ms-dataverse-attribute": "creditonhold",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "CreditOnHold",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "dab6a6ee-5a7e-426a-acbe-44aa01ff9ff2",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Suspension de crédit",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "creditonholdname": {
+          "type": "string",
+          "title": "creditonholdname",
+          "x-ms-dataverse-attribute": "creditonholdname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "CreditOnHoldName",
+          "x-ms-read-only": true
+        },
+        "customersizecode": {
+          "type": "string",
+          "title": "Taille du client",
+          "x-ms-dataverse-attribute": "customersizecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "CustomerSizeCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "97a8f6fc-e23a-4279-99c0-df748136e38b",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Taille du client",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "customersizecodename": {
+          "type": "string",
+          "title": "customersizecodename",
+          "x-ms-dataverse-attribute": "customersizecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "CustomerSizeCodeName",
+          "x-ms-read-only": true
+        },
+        "customertypecode": {
+          "type": "string",
+          "title": "Type de relation",
+          "x-ms-dataverse-attribute": "customertypecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "CustomerTypeCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "ee3ff3c1-739e-4dc6-a452-c85f3d52814e",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Type de relation",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "customertypecodename": {
+          "type": "string",
+          "title": "customertypecodename",
+          "x-ms-dataverse-attribute": "customertypecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "CustomerTypeCodeName",
+          "x-ms-read-only": true
+        },
+        "department": {
+          "type": "string",
+          "title": "Service",
+          "x-ms-dataverse-attribute": "department",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Department",
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "x-ms-dataverse-attribute": "description",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "Description",
+          "maxLength": 2000
+        },
+        "donotbulkemail": {
+          "type": "string",
+          "title": "Ne pas autoriser l’envoi de messages en nombre",
+          "x-ms-dataverse-attribute": "donotbulkemail",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "DoNotBulkEMail",
+          "enum": [
+            "Autoriser",
+            "Ne pas autoriser"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "116ad3da-0322-4456-a9df-c86e57de6476",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Ne pas autoriser l’envoi de messages en nombre",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "donotbulkemailname": {
+          "type": "string",
+          "title": "donotbulkemailname",
+          "x-ms-dataverse-attribute": "donotbulkemailname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "DoNotBulkEMailName",
+          "x-ms-read-only": true
+        },
+        "donotbulkpostalmail": {
+          "type": "string",
+          "title": "Ne pas autoriser l'envoi de messages en nombre",
+          "x-ms-dataverse-attribute": "donotbulkpostalmail",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "DoNotBulkPostalMail",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "b8d24baa-afeb-481f-8073-9514c3e9ba19",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Ne pas autoriser l'envoi de messages en nombre",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "donotbulkpostalmailname": {
+          "type": "string",
+          "title": "donotbulkpostalmailname",
+          "x-ms-dataverse-attribute": "donotbulkpostalmailname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "DoNotBulkPostalMailName",
+          "x-ms-read-only": true
+        },
+        "donotemail": {
+          "type": "string",
+          "title": "Ne pas autoriser le courrier électronique",
+          "x-ms-dataverse-attribute": "donotemail",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "DoNotEMail",
+          "enum": [
+            "Autoriser",
+            "Ne pas autoriser"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "8dda68ff-5133-4010-85d3-da2e3017fdab",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Ne pas autoriser le courrier électronique",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "donotemailname": {
+          "type": "string",
+          "title": "donotemailname",
+          "x-ms-dataverse-attribute": "donotemailname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "DoNotEMailName",
+          "x-ms-read-only": true
+        },
+        "donotfax": {
+          "type": "string",
+          "title": "Ne pas autoriser la télécopie",
+          "x-ms-dataverse-attribute": "donotfax",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "DoNotFax",
+          "enum": [
+            "Autoriser",
+            "Ne pas autoriser"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "d1bb228f-510a-49b4-9a5b-e53b44367aa6",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Ne pas autoriser la télécopie",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "donotfaxname": {
+          "type": "string",
+          "title": "donotfaxname",
+          "x-ms-dataverse-attribute": "donotfaxname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "DoNotFaxName",
+          "x-ms-read-only": true
+        },
+        "donotphone": {
+          "type": "string",
+          "title": "Ne pas autoriser les appels téléphoniques",
+          "x-ms-dataverse-attribute": "donotphone",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "DoNotPhone",
+          "enum": [
+            "Autoriser",
+            "Ne pas autoriser"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "0fe276ef-76e9-4121-b570-a09edbf92ab3",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Ne pas autoriser les appels téléphoniques",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "donotphonename": {
+          "type": "string",
+          "title": "donotphonename",
+          "x-ms-dataverse-attribute": "donotphonename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "DoNotPhoneName",
+          "x-ms-read-only": true
+        },
+        "donotpostalmail": {
+          "type": "string",
+          "title": "Ne pas autoriser le courrier postal",
+          "x-ms-dataverse-attribute": "donotpostalmail",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "DoNotPostalMail",
+          "enum": [
+            "Autoriser",
+            "Ne pas autoriser"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "74343a40-851b-4ff5-92e5-c0657d3b8ecf",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Ne pas autoriser le courrier postal",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "donotpostalmailname": {
+          "type": "string",
+          "title": "donotpostalmailname",
+          "x-ms-dataverse-attribute": "donotpostalmailname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "DoNotPostalMailName",
+          "x-ms-read-only": true
+        },
+        "donotsendmarketingmaterialname": {
+          "type": "string",
+          "title": "donotsendmarketingmaterialname",
+          "x-ms-dataverse-attribute": "donotsendmarketingmaterialname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "DoNotSendMarketingMaterialName",
+          "x-ms-read-only": true
+        },
+        "donotsendmm": {
+          "type": "string",
+          "title": "Envoyer les documents marketing",
+          "x-ms-dataverse-attribute": "donotsendmm",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "DoNotSendMM",
+          "enum": [
+            "Envoyer",
+            "Ne pas envoyer"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "d49833b4-cd65-4f39-8f3f-fab65c5d494a",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Envoyer les documents marketing",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "educationcode": {
+          "type": "string",
+          "title": "Formation",
+          "x-ms-dataverse-attribute": "educationcode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "EducationCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "96b15669-cfc3-42f9-aa6a-8f0595182c30",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Formation",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "educationcodename": {
+          "type": "string",
+          "title": "educationcodename",
+          "x-ms-dataverse-attribute": "educationcodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "EducationCodeName",
+          "x-ms-read-only": true
+        },
+        "emailaddress1": {
+          "type": "string",
+          "title": "Courrier électronique",
+          "x-ms-dataverse-attribute": "emailaddress1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "EMailAddress1",
+          "maxLength": 100
+        },
+        "emailaddress2": {
+          "type": "string",
+          "title": "Adresse de messagerie 2",
+          "x-ms-dataverse-attribute": "emailaddress2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "EMailAddress2",
+          "maxLength": 100
+        },
+        "emailaddress3": {
+          "type": "string",
+          "title": "Adresse de messagerie 3",
+          "x-ms-dataverse-attribute": "emailaddress3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "EMailAddress3",
+          "maxLength": 100
+        },
+        "employeeid": {
+          "type": "string",
+          "title": "Employé",
+          "x-ms-dataverse-attribute": "employeeid",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "EmployeeId",
+          "maxLength": 50
+        },
+        "entityimage": {
+          "type": "string",
+          "title": "Image de l'entité",
+          "x-ms-dataverse-attribute": "entityimage",
+          "x-ms-dataverse-type": "ImageType",
+          "x-ms-schema-name": "EntityImage"
+        },
+        "entityimage_timestamp": {
+          "type": "string",
+          "title": "entityimage_timestamp",
+          "x-ms-dataverse-attribute": "entityimage_timestamp",
+          "x-ms-dataverse-type": "BigIntType",
+          "x-ms-schema-name": "EntityImage_Timestamp",
+          "x-ms-read-only": true
+        },
+        "entityimage_url": {
+          "type": "string",
+          "title": "entityimage_url",
+          "x-ms-dataverse-attribute": "entityimage_url",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "EntityImage_URL",
+          "x-ms-read-only": true,
+          "maxLength": 200
+        },
+        "entityimageid": {
+          "type": "string",
+          "title": "Code d'image de l'entité",
+          "x-ms-dataverse-attribute": "entityimageid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "EntityImageId",
+          "x-ms-read-only": true
+        },
+        "exchangerate": {
+          "type": "string",
+          "title": "Taux de change",
+          "x-ms-dataverse-attribute": "exchangerate",
+          "x-ms-dataverse-type": "DecimalType",
+          "x-ms-schema-name": "ExchangeRate",
+          "x-ms-read-only": true
+        },
+        "externaluseridentifier": {
+          "type": "string",
+          "title": "Identificateur d'utilisateur externe",
+          "x-ms-dataverse-attribute": "externaluseridentifier",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ExternalUserIdentifier",
+          "maxLength": 50
+        },
+        "familystatuscode": {
+          "type": "string",
+          "title": "État civil",
+          "x-ms-dataverse-attribute": "familystatuscode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "FamilyStatusCode",
+          "enum": [
+            "Célibataire",
+            "Marié(e)",
+            "Divorcé(e)",
+            "Veuf(ve)"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "2da4a488-81c9-419d-ad1c-fb0d33a1e0ef",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "État civil",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "familystatuscodename": {
+          "type": "string",
+          "title": "familystatuscodename",
+          "x-ms-dataverse-attribute": "familystatuscodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "FamilyStatusCodeName",
+          "x-ms-read-only": true
+        },
+        "fax": {
+          "type": "string",
+          "title": "Télécopie",
+          "x-ms-dataverse-attribute": "fax",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Fax",
+          "maxLength": 50
+        },
+        "firstname": {
+          "type": "string",
+          "title": "Prénom",
+          "x-ms-dataverse-attribute": "firstname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "FirstName",
+          "maxLength": 50
+        },
+        "followemail": {
+          "type": "string",
+          "title": "Suivre l'activité de courrier électronique",
+          "x-ms-dataverse-attribute": "followemail",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "FollowEmail",
+          "enum": [
+            "Ne pas autoriser",
+            "Autoriser"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "f1627aa2-232f-484a-af40-dcd505da3537",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Suivre l'activité de courrier électronique",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "followemailname": {
+          "type": "string",
+          "title": "followemailname",
+          "x-ms-dataverse-attribute": "followemailname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "FollowEmailName",
+          "x-ms-read-only": true
+        },
+        "ftpsiteurl": {
+          "type": "string",
+          "title": "Site FTP",
+          "x-ms-dataverse-attribute": "ftpsiteurl",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "FtpSiteUrl",
+          "maxLength": 200
+        },
+        "fullname": {
+          "type": "string",
+          "title": "Nom complet",
+          "x-ms-dataverse-attribute": "fullname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "FullName",
+          "x-ms-read-only": true,
+          "x-ms-dataverse-primary-name": true,
+          "maxLength": 160
+        },
+        "gendercode": {
+          "type": "string",
+          "title": "Sexe",
+          "x-ms-dataverse-attribute": "gendercode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "GenderCode",
+          "enum": [
+            "Homme",
+            "Femme"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "cb7f9ccb-21b2-45b5-acf5-0a62344d0860",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Sexe",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "gendercodename": {
+          "type": "string",
+          "title": "gendercodename",
+          "x-ms-dataverse-attribute": "gendercodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "GenderCodeName",
+          "x-ms-read-only": true
+        },
+        "governmentid": {
+          "type": "string",
+          "title": "Organismes d'état",
+          "x-ms-dataverse-attribute": "governmentid",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "GovernmentId",
+          "maxLength": 50
+        },
+        "haschildrencode": {
+          "type": "string",
+          "title": "A des enfants",
+          "x-ms-dataverse-attribute": "haschildrencode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "HasChildrenCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "ced703d8-357b-4e56-94ec-1a045156036f",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "A des enfants",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "haschildrencodename": {
+          "type": "string",
+          "title": "haschildrencodename",
+          "x-ms-dataverse-attribute": "haschildrencodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "HasChildrenCodeName",
+          "x-ms-read-only": true
+        },
+        "home2": {
+          "type": "string",
+          "title": "Téléphone personnel 2",
+          "x-ms-dataverse-attribute": "home2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Home2",
+          "maxLength": 50
+        },
+        "importsequencenumber": {
+          "type": "string",
+          "title": "Numéro séquentiel d'importation",
+          "x-ms-dataverse-attribute": "importsequencenumber",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "ImportSequenceNumber"
+        },
+        "isautocreate": {
+          "type": "string",
+          "title": "Créé automatiquement",
+          "x-ms-dataverse-attribute": "isautocreate",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "IsAutoCreate",
+          "x-ms-read-only": true,
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "88044559-08c4-49af-832c-86424e057073",
+          "x-ms-isGlobal": false,
+          "x-ms-optionSetType": "Boolean"
+        },
+        "isbackofficecustomer": {
+          "type": "string",
+          "title": "Client d'arrière-guichet",
+          "x-ms-dataverse-attribute": "isbackofficecustomer",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "IsBackofficeCustomer",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "5f59a7e2-95fb-4fcc-9275-aa6bb0c93d25",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Client BackOffice",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "isbackofficecustomername": {
+          "type": "string",
+          "title": "isbackofficecustomername",
+          "x-ms-dataverse-attribute": "isbackofficecustomername",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "IsBackofficeCustomerName",
+          "x-ms-read-only": true
+        },
+        "isprivate": {
+          "type": "string",
+          "title": "isprivate",
+          "x-ms-dataverse-attribute": "isprivate",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "IsPrivate",
+          "x-ms-read-only": true,
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "034f0aa7-ca7f-44cf-ae3d-12137276ae0d",
+          "x-ms-isGlobal": false,
+          "x-ms-optionSetType": "Boolean"
+        },
+        "isprivatename": {
+          "type": "string",
+          "title": "isprivatename",
+          "x-ms-dataverse-attribute": "isprivatename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "IsPrivateName",
+          "x-ms-read-only": true
+        },
+        "jobtitle": {
+          "type": "string",
+          "title": "Fonction",
+          "x-ms-dataverse-attribute": "jobtitle",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "JobTitle",
+          "maxLength": 100
+        },
+        "lastname": {
+          "type": "string",
+          "title": "Nom de famille",
+          "x-ms-dataverse-attribute": "lastname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "LastName",
+          "required": true,
+          "maxLength": 50
+        },
+        "lastonholdtime": {
+          "type": "string",
+          "title": "Dernière durée de suspension",
+          "x-ms-dataverse-attribute": "lastonholdtime",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "LastOnHoldTime"
+        },
+        "lastusedincampaign": {
+          "type": "string",
+          "title": "Dernière date incluse de la campagne",
+          "x-ms-dataverse-attribute": "lastusedincampaign",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "LastUsedInCampaign"
+        },
+        "leadsourcecode": {
+          "type": "string",
+          "title": "Source du prospect",
+          "x-ms-dataverse-attribute": "leadsourcecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "LeadSourceCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "e9e66ceb-7c14-4c03-a182-b2013d38797c",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Source du prospect",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "leadsourcecodename": {
+          "type": "string",
+          "title": "leadsourcecodename",
+          "x-ms-dataverse-attribute": "leadsourcecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "LeadSourceCodeName",
+          "x-ms-read-only": true
+        },
+        "managername": {
+          "type": "string",
+          "title": "Directeur",
+          "x-ms-dataverse-attribute": "managername",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ManagerName",
+          "maxLength": 100
+        },
+        "managerphone": {
+          "type": "string",
+          "title": "Numéro de téléphone du directeur",
+          "x-ms-dataverse-attribute": "managerphone",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ManagerPhone",
+          "maxLength": 50
+        },
+        "marketingonly": {
+          "type": "string",
+          "title": "Marketing uniquement",
+          "x-ms-dataverse-attribute": "marketingonly",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "MarketingOnly",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "ec6c273e-77f7-4003-b03b-c3c22c1e0f71",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Marketing uniquement",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "marketingonlyname": {
+          "type": "string",
+          "title": "marketingonlyname",
+          "x-ms-dataverse-attribute": "marketingonlyname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "MarketingOnlyName",
+          "x-ms-read-only": true
+        },
+        "mastercontactidname": {
+          "type": "string",
+          "title": "mastercontactidname",
+          "x-ms-dataverse-attribute": "mastercontactidname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "MasterContactIdName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "mastercontactidyominame": {
+          "type": "string",
+          "title": "mastercontactidyominame",
+          "x-ms-dataverse-attribute": "mastercontactidyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "MasterContactIdYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "masterid": {
+          "type": "string",
+          "title": "ID principal",
+          "x-ms-dataverse-attribute": "masterid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "MasterId",
+          "x-ms-read-only": true
+        },
+        "merged": {
+          "type": "string",
+          "title": "Fusionné(e)",
+          "x-ms-dataverse-attribute": "merged",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "Merged",
+          "x-ms-read-only": true,
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "e568f63e-ef1e-464b-8458-0a43d6c2896f",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Fusionné(e)",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "mergedname": {
+          "type": "string",
+          "title": "mergedname",
+          "x-ms-dataverse-attribute": "mergedname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "MergedName",
+          "x-ms-read-only": true
+        },
+        "middlename": {
+          "type": "string",
+          "title": "Deuxième prénom",
+          "x-ms-dataverse-attribute": "middlename",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "MiddleName",
+          "maxLength": 50
+        },
+        "mobilephone": {
+          "type": "string",
+          "title": "Téléphone mobile",
+          "x-ms-dataverse-attribute": "mobilephone",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "MobilePhone",
+          "maxLength": 50
+        },
+        "modifiedby": {
+          "type": "string",
+          "title": "Modifié par",
+          "x-ms-dataverse-attribute": "modifiedby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "ModifiedBy",
+          "x-ms-read-only": true
+        },
+        "modifiedbyexternalparty": {
+          "type": "string",
+          "title": "Modifié par (partie externe)",
+          "x-ms-dataverse-attribute": "modifiedbyexternalparty",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "ModifiedByExternalParty",
+          "x-ms-read-only": true
+        },
+        "modifiedbyexternalpartyname": {
+          "type": "string",
+          "title": "modifiedbyexternalpartyname",
+          "x-ms-dataverse-attribute": "modifiedbyexternalpartyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedByExternalPartyName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "modifiedbyexternalpartyyominame": {
+          "type": "string",
+          "title": "modifiedbyexternalpartyyominame",
+          "x-ms-dataverse-attribute": "modifiedbyexternalpartyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedByExternalPartyYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "modifiedbyname": {
+          "type": "string",
+          "title": "modifiedbyname",
+          "x-ms-dataverse-attribute": "modifiedbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "modifiedbyyominame": {
+          "type": "string",
+          "title": "modifiedbyyominame",
+          "x-ms-dataverse-attribute": "modifiedbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedByYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "modifiedon": {
+          "type": "string",
+          "title": "Modifié le",
+          "x-ms-dataverse-attribute": "modifiedon",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "ModifiedOn",
+          "x-ms-read-only": true
+        },
+        "modifiedonbehalfby": {
+          "type": "string",
+          "title": "Modifié par (délégué)",
+          "x-ms-dataverse-attribute": "modifiedonbehalfby",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "ModifiedOnBehalfBy",
+          "x-ms-read-only": true
+        },
+        "modifiedonbehalfbyname": {
+          "type": "string",
+          "title": "modifiedonbehalfbyname",
+          "x-ms-dataverse-attribute": "modifiedonbehalfbyname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedOnBehalfByName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "modifiedonbehalfbyyominame": {
+          "type": "string",
+          "title": "modifiedonbehalfbyyominame",
+          "x-ms-dataverse-attribute": "modifiedonbehalfbyyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ModifiedOnBehalfByYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "msa_managingpartnerid": {
+          "type": "string",
+          "title": "Partenaire responsable",
+          "x-ms-dataverse-attribute": "msa_managingpartnerid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "msa_managingpartnerid"
+        },
+        "msa_managingpartneridname": {
+          "type": "string",
+          "title": "msa_managingpartneridname",
+          "x-ms-dataverse-attribute": "msa_managingpartneridname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "msa_managingpartneridName",
+          "x-ms-read-only": true,
+          "maxLength": 160
+        },
+        "msa_managingpartneridyominame": {
+          "type": "string",
+          "title": "msa_managingpartneridyominame",
+          "x-ms-dataverse-attribute": "msa_managingpartneridyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "msa_managingpartneridYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 160
+        },
+        "msdyn_disablewebtracking": {
+          "type": "string",
+          "title": "Désactiver le suivi Web",
+          "x-ms-dataverse-attribute": "msdyn_disablewebtracking",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "msdyn_disablewebtracking",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            "#0000ff",
+            "#0000ff"
+          ],
+          "x-ms-optionsetmetadataid": "00af6cc7-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Désactiver le suivi Web",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "msdyn_disablewebtrackingname": {
+          "type": "string",
+          "title": "msdyn_disablewebtrackingname",
+          "x-ms-dataverse-attribute": "msdyn_disablewebtrackingname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "msdyn_disablewebtrackingName",
+          "x-ms-read-only": true
+        },
+        "msdyn_isminor": {
+          "type": "string",
+          "title": "Est mineur",
+          "x-ms-dataverse-attribute": "msdyn_isminor",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "msdyn_isminor",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            "#0000ff",
+            "#0000ff"
+          ],
+          "x-ms-optionsetmetadataid": "03af6cc7-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Est mineur",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "msdyn_isminorname": {
+          "type": "string",
+          "title": "msdyn_isminorname",
+          "x-ms-dataverse-attribute": "msdyn_isminorname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "msdyn_isminorName",
+          "x-ms-read-only": true
+        },
+        "msdyn_isminorwithparentalconsent": {
+          "type": "string",
+          "title": "Est mineur avec accord parental",
+          "x-ms-dataverse-attribute": "msdyn_isminorwithparentalconsent",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "msdyn_isminorwithparentalconsent",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            "#0000ff",
+            "#0000ff"
+          ],
+          "x-ms-optionsetmetadataid": "06af6cc7-524d-f111-becb-70a8a55037a4",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Est mineur avec accord parental",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "msdyn_isminorwithparentalconsentname": {
+          "type": "string",
+          "title": "msdyn_isminorwithparentalconsentname",
+          "x-ms-dataverse-attribute": "msdyn_isminorwithparentalconsentname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "msdyn_isminorwithparentalconsentName",
+          "x-ms-read-only": true
+        },
+        "msdyn_portaltermsagreementdate": {
+          "type": "string",
+          "title": "Date d’acceptation des termes du portail",
+          "x-ms-dataverse-attribute": "msdyn_portaltermsagreementdate",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "msdyn_portaltermsagreementdate"
+        },
+        "mspp_userpreferredlcid": {
+          "type": "string",
+          "title": "Langue par défaut",
+          "x-ms-dataverse-attribute": "mspp_userpreferredlcid",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "mspp_userpreferredlcid",
+          "enum": [
+            "Arabe",
+            "Basque – Basque",
+            "Bulgare – Bulgarie",
+            "Catalan – Catalan",
+            "Chinois - Chine",
+            "Chinois – Hong Kong (R.A.S.)",
+            "Chinois – Traditionnel",
+            "Croate – Croatie",
+            "Tchèque – République tchèque",
+            "Danois – Danemark",
+            "Néerlandais – Pays-Bas",
+            "Anglais",
+            "Estonien – Estonie",
+            "Finnois – Finlande",
+            "Français – France",
+            "Galicien – Espagne",
+            "Allemand – Allemagne",
+            "Grec – Grèce",
+            "Hébreu",
+            "Hindi – Inde",
+            "Hongrois – Hongrie",
+            "Indonésien – Indonésie",
+            "Italien – Italie",
+            "Japonais – Japon",
+            "Kazakh – Kazakhstan",
+            "Coréen – Corée du Sud",
+            "Letton – Lettonie",
+            "Lituanien – Lituanie",
+            "Malais – Malaisie",
+            "Norvégien (Bokmål) – Norvège",
+            "Polonais – Pologne",
+            "Portugais – Brésil",
+            "Portugais – Portugal",
+            "Roumain – Roumanie",
+            "Russe – Russie",
+            "Serbe (cyrillique) – Serbie",
+            "Serbe (latin) – Serbie",
+            "Slovaque – Slovaquie",
+            "Slovène – Slovénie",
+            "Espagnol (traditionnel) – Espagne",
+            "Suédois – Suède",
+            "Thaï – Thaïlande",
+            "Turc – Turquie",
+            "Ukrainien – Ukraine",
+            "Vietnamien – Vietnam"
+          ],
+          "x-ms-enum-values": [
+            1025,
+            1069,
+            1026,
+            1027,
+            2052,
+            3076,
+            1028,
+            1050,
+            1029,
+            1030,
+            1043,
+            1033,
+            1061,
+            1035,
+            1036,
+            1110,
+            1031,
+            1032,
+            1037,
+            1081,
+            1038,
+            1057,
+            1040,
+            1041,
+            1087,
+            1042,
+            1062,
+            1063,
+            1086,
+            1044,
+            1045,
+            1046,
+            2070,
+            1048,
+            1049,
+            3098,
+            2074,
+            1051,
+            1060,
+            3082,
+            1053,
+            1054,
+            1055,
+            1058,
+            1066
+          ],
+          "Color": [
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff",
+            "#0000ff"
+          ],
+          "x-ms-optionsetmetadataid": "0242a907-ef30-4953-b2a0-c50a86b71d57",
+          "x-ms-isGlobal": true,
+          "x-ms-optionsetdisplayname": "Langues Power Pages",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "mspp_userpreferredlcidname": {
+          "type": "string",
+          "title": "mspp_userpreferredlcidname",
+          "x-ms-dataverse-attribute": "mspp_userpreferredlcidname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "mspp_userpreferredlcidName",
+          "x-ms-read-only": true
+        },
+        "nickname": {
+          "type": "string",
+          "title": "Surnom",
+          "x-ms-dataverse-attribute": "nickname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "NickName",
+          "maxLength": 100
+        },
+        "numberofchildren": {
+          "type": "string",
+          "title": "Nombre d'enfants",
+          "x-ms-dataverse-attribute": "numberofchildren",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "NumberOfChildren"
+        },
+        "onholdtime": {
+          "type": "string",
+          "title": "Durée de la suspension (minutes)",
+          "x-ms-dataverse-attribute": "onholdtime",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "OnHoldTime",
+          "x-ms-read-only": true
+        },
+        "overriddencreatedon": {
+          "type": "string",
+          "title": "Enregistrement créé le",
+          "x-ms-dataverse-attribute": "overriddencreatedon",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "OverriddenCreatedOn"
+        },
+        "ownerid": {
+          "type": "string",
+          "title": "Propriétaire",
+          "x-ms-dataverse-attribute": "ownerid",
+          "x-ms-dataverse-type": "OwnerType",
+          "x-ms-schema-name": "OwnerId",
+          "required": true
+        },
+        "owneridname": {
+          "type": "string",
+          "title": "owneridname",
+          "x-ms-dataverse-attribute": "owneridname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "OwnerIdName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "owneridtype": {
+          "type": "string",
+          "title": "owneridtype",
+          "x-ms-dataverse-attribute": "owneridtype",
+          "x-ms-dataverse-type": "EntityNameType",
+          "x-ms-schema-name": "OwnerIdType",
+          "required": true
+        },
+        "owneridyominame": {
+          "type": "string",
+          "title": "owneridyominame",
+          "x-ms-dataverse-attribute": "owneridyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "OwnerIdYomiName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 100
+        },
+        "owningbusinessunit": {
+          "type": "string",
+          "title": "Division propriétaire",
+          "x-ms-dataverse-attribute": "owningbusinessunit",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "OwningBusinessUnit",
+          "x-ms-read-only": true
+        },
+        "owningbusinessunitname": {
+          "type": "string",
+          "title": "owningbusinessunitname",
+          "x-ms-dataverse-attribute": "owningbusinessunitname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "OwningBusinessUnitName",
+          "x-ms-read-only": true,
+          "maxLength": 160
+        },
+        "owningteam": {
+          "type": "string",
+          "title": "Équipe propriétaire",
+          "x-ms-dataverse-attribute": "owningteam",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "OwningTeam",
+          "x-ms-read-only": true
+        },
+        "owninguser": {
+          "type": "string",
+          "title": "Utilisateur propriétaire",
+          "x-ms-dataverse-attribute": "owninguser",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "OwningUser",
+          "x-ms-read-only": true
+        },
+        "pager": {
+          "type": "string",
+          "title": "Radiomessagerie",
+          "x-ms-dataverse-attribute": "pager",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Pager",
+          "maxLength": 50
+        },
+        "parentcontactid": {
+          "type": "string",
+          "title": "Contact parent",
+          "x-ms-dataverse-attribute": "parentcontactid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "ParentContactId",
+          "x-ms-read-only": true
+        },
+        "parentcontactidname": {
+          "type": "string",
+          "title": "parentcontactidname",
+          "x-ms-dataverse-attribute": "parentcontactidname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ParentContactIdName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "parentcontactidyominame": {
+          "type": "string",
+          "title": "parentcontactidyominame",
+          "x-ms-dataverse-attribute": "parentcontactidyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ParentContactIdYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "parentcustomerid": {
+          "type": "string",
+          "title": "Nom de la société",
+          "x-ms-dataverse-attribute": "parentcustomerid",
+          "x-ms-dataverse-type": "CustomerType",
+          "x-ms-schema-name": "ParentCustomerId"
+        },
+        "parentcustomeridname": {
+          "type": "string",
+          "title": "parentcustomeridname",
+          "x-ms-dataverse-attribute": "parentcustomeridname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ParentCustomerIdName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 160
+        },
+        "parentcustomeridtype": {
+          "type": "string",
+          "title": "Type de client parent",
+          "x-ms-dataverse-attribute": "parentcustomeridtype",
+          "x-ms-dataverse-type": "EntityNameType",
+          "x-ms-schema-name": "ParentCustomerIdType"
+        },
+        "parentcustomeridyominame": {
+          "type": "string",
+          "title": "parentcustomeridyominame",
+          "x-ms-dataverse-attribute": "parentcustomeridyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "ParentCustomerIdYomiName",
+          "x-ms-read-only": true,
+          "required": true,
+          "maxLength": 450
+        },
+        "participatesinworkflow": {
+          "type": "string",
+          "title": "Participe au workflow",
+          "x-ms-dataverse-attribute": "participatesinworkflow",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "ParticipatesInWorkflow",
+          "enum": [
+            "Non",
+            "Oui"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "56d9f2e1-8cf2-461a-aeeb-e04b45a428ed",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Participe au workflow",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "participatesinworkflowname": {
+          "type": "string",
+          "title": "participatesinworkflowname",
+          "x-ms-dataverse-attribute": "participatesinworkflowname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "ParticipatesInWorkflowName",
+          "x-ms-read-only": true
+        },
+        "paymenttermscode": {
+          "type": "string",
+          "title": "Conditions de paiement",
+          "x-ms-dataverse-attribute": "paymenttermscode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "PaymentTermsCode",
+          "enum": [
+            "Net 30J",
+            "Net 60J",
+            "Au comptant",
+            "À réception de facture",
+            "30J FDM",
+            "60J FDM"
+          ],
+          "x-ms-enum-values": [
+            1,
+            4,
+            10,
+            15,
+            16,
+            17
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "7154ab7b-7c99-4712-9d8c-7eaaae4f6f78",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Conditions de paiement",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "paymenttermscodename": {
+          "type": "string",
+          "title": "paymenttermscodename",
+          "x-ms-dataverse-attribute": "paymenttermscodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "PaymentTermsCodeName",
+          "x-ms-read-only": true
+        },
+        "preferredappointmentdaycode": {
+          "type": "string",
+          "title": "Jour privilégié",
+          "x-ms-dataverse-attribute": "preferredappointmentdaycode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "PreferredAppointmentDayCode",
+          "enum": [
+            "Dimanche",
+            "Lundi",
+            "Mardi",
+            "Mercredi",
+            "Jeudi",
+            "Vendredi",
+            "Samedi"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "51769958-f7a4-41b4-a3ea-0992249c6b17",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Jour privilégié",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "preferredappointmentdaycodename": {
+          "type": "string",
+          "title": "preferredappointmentdaycodename",
+          "x-ms-dataverse-attribute": "preferredappointmentdaycodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "PreferredAppointmentDayCodeName",
+          "x-ms-read-only": true
+        },
+        "preferredappointmenttimecode": {
+          "type": "string",
+          "title": "Heure privilégiée",
+          "x-ms-dataverse-attribute": "preferredappointmenttimecode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "PreferredAppointmentTimeCode",
+          "enum": [
+            "Matin",
+            "Après-midi",
+            "Soir"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2,
+            3
+          ],
+          "Color": [
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "5b1d1539-a020-4a16-8f31-c57fce454b53",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Heure privilégiée",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "preferredappointmenttimecodename": {
+          "type": "string",
+          "title": "preferredappointmenttimecodename",
+          "x-ms-dataverse-attribute": "preferredappointmenttimecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "PreferredAppointmentTimeCodeName",
+          "x-ms-read-only": true
+        },
+        "preferredcontactmethodcode": {
+          "type": "string",
+          "title": "Mode de communication privilégié",
+          "x-ms-dataverse-attribute": "preferredcontactmethodcode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "PreferredContactMethodCode",
+          "enum": [
+            "Sans préférence",
+            "Courrier électronique",
+            "Téléphone",
+            "Télécopie",
+            "Courrier postal"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "4b838079-0334-49b3-9f72-0434392dab2c",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Mode de communication privilégié",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "preferredcontactmethodcodename": {
+          "type": "string",
+          "title": "preferredcontactmethodcodename",
+          "x-ms-dataverse-attribute": "preferredcontactmethodcodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "PreferredContactMethodCodeName",
+          "x-ms-read-only": true
+        },
+        "preferredsystemuserid": {
+          "type": "string",
+          "title": "Utilisateur privilégié",
+          "x-ms-dataverse-attribute": "preferredsystemuserid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "PreferredSystemUserId"
+        },
+        "preferredsystemuseridname": {
+          "type": "string",
+          "title": "preferredsystemuseridname",
+          "x-ms-dataverse-attribute": "preferredsystemuseridname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "PreferredSystemUserIdName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "preferredsystemuseridyominame": {
+          "type": "string",
+          "title": "preferredsystemuseridyominame",
+          "x-ms-dataverse-attribute": "preferredsystemuseridyominame",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "PreferredSystemUserIdYomiName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "processid": {
+          "type": "string",
+          "title": "Processus",
+          "x-ms-dataverse-attribute": "processid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "ProcessId"
+        },
+        "salutation": {
+          "type": "string",
+          "title": "Salutations",
+          "x-ms-dataverse-attribute": "salutation",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Salutation",
+          "maxLength": 100
+        },
+        "shippingmethodcode": {
+          "type": "string",
+          "title": "Mode de livraison",
+          "x-ms-dataverse-attribute": "shippingmethodcode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "ShippingMethodCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "334b102e-4481-41a5-9b27-8e39ecd9e496",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Mode de livraison ",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "shippingmethodcodename": {
+          "type": "string",
+          "title": "shippingmethodcodename",
+          "x-ms-dataverse-attribute": "shippingmethodcodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "ShippingMethodCodeName",
+          "x-ms-read-only": true
+        },
+        "slaid": {
+          "type": "string",
+          "title": "Contrat SLA",
+          "x-ms-dataverse-attribute": "slaid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "SLAId"
+        },
+        "slainvokedid": {
+          "type": "string",
+          "title": "Dernier contrat SLA appliqué",
+          "x-ms-dataverse-attribute": "slainvokedid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "SLAInvokedId",
+          "x-ms-read-only": true
+        },
+        "slainvokedidname": {
+          "type": "string",
+          "title": "slainvokedidname",
+          "x-ms-dataverse-attribute": "slainvokedidname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "SLAInvokedIdName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "slaname": {
+          "type": "string",
+          "title": "slaname",
+          "x-ms-dataverse-attribute": "slaname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "SLAName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "spousesname": {
+          "type": "string",
+          "title": "Nom du (de la) conjoint(e)/partenaire",
+          "x-ms-dataverse-attribute": "spousesname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "SpousesName",
+          "maxLength": 100
+        },
+        "stageid": {
+          "type": "string",
+          "title": "(Déconseillé) Phase du processus",
+          "x-ms-dataverse-attribute": "stageid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "StageId"
+        },
+        "statecode": {
+          "type": "string",
+          "title": "Statut",
+          "x-ms-dataverse-attribute": "statecode",
+          "x-ms-dataverse-type": "StateType",
+          "x-ms-schema-name": "StateCode",
+          "required": true,
+          "enum": [
+            "Actif",
+            "Inactif"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "88fa5ad0-2a4b-4281-ac9c-b4e71fb77920",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Statut",
+          "x-ms-optionSetType": "State"
+        },
+        "statecodename": {
+          "type": "string",
+          "title": "statecodename",
+          "x-ms-dataverse-attribute": "statecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "StateCodeName",
+          "x-ms-read-only": true
+        },
+        "statuscode": {
+          "type": "string",
+          "title": "Raison du statut",
+          "x-ms-dataverse-attribute": "statuscode",
+          "x-ms-dataverse-type": "StatusType",
+          "x-ms-schema-name": "StatusCode",
+          "enum": [
+            "Actif",
+            "Inactif"
+          ],
+          "x-ms-enum-values": [
+            1,
+            2
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "87f21441-f53d-4654-9c26-e08e78facd78",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Raison du statut",
+          "x-ms-optionSetType": "Status"
+        },
+        "statuscodename": {
+          "type": "string",
+          "title": "statuscodename",
+          "x-ms-dataverse-attribute": "statuscodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "StatusCodeName",
+          "x-ms-read-only": true
+        },
+        "subscriptionid": {
+          "type": "string",
+          "title": "Abonnement",
+          "x-ms-dataverse-attribute": "subscriptionid",
+          "x-ms-dataverse-type": "UniqueidentifierType",
+          "x-ms-schema-name": "SubscriptionId"
+        },
+        "suffix": {
+          "type": "string",
+          "title": "Suffixe",
+          "x-ms-dataverse-attribute": "suffix",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Suffix",
+          "maxLength": 10
+        },
+        "telephone1": {
+          "type": "string",
+          "title": "Téléphone professionel",
+          "x-ms-dataverse-attribute": "telephone1",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Telephone1",
+          "maxLength": 50
+        },
+        "telephone2": {
+          "type": "string",
+          "title": "Téléphone personnel",
+          "x-ms-dataverse-attribute": "telephone2",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Telephone2",
+          "maxLength": 50
+        },
+        "telephone3": {
+          "type": "string",
+          "title": "Téléphone 3",
+          "x-ms-dataverse-attribute": "telephone3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "Telephone3",
+          "maxLength": 50
+        },
+        "territorycode": {
+          "type": "string",
+          "title": "Secteur de vente",
+          "x-ms-dataverse-attribute": "territorycode",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "TerritoryCode",
+          "enum": [
+            "Valeur par défaut"
+          ],
+          "x-ms-enum-values": [
+            1
+          ],
+          "Color": [
+            null
+          ],
+          "x-ms-optionsetmetadataid": "e3d3f048-333e-4b83-9d87-609f4ee093f3",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Secteur de vente",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "territorycodename": {
+          "type": "string",
+          "title": "territorycodename",
+          "x-ms-dataverse-attribute": "territorycodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "TerritoryCodeName",
+          "x-ms-read-only": true
+        },
+        "timespentbymeonemailandmeetings": {
+          "type": "string",
+          "title": "Temps que je consacre",
+          "x-ms-dataverse-attribute": "timespentbymeonemailandmeetings",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "TimeSpentByMeOnEmailAndMeetings",
+          "x-ms-read-only": true,
+          "maxLength": 1250
+        },
+        "timezoneruleversionnumber": {
+          "type": "string",
+          "title": "Numéro de version de la règle du fuseau horaire",
+          "x-ms-dataverse-attribute": "timezoneruleversionnumber",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "TimeZoneRuleVersionNumber"
+        },
+        "transactioncurrencyid": {
+          "type": "string",
+          "title": "Devise",
+          "x-ms-dataverse-attribute": "transactioncurrencyid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "TransactionCurrencyId"
+        },
+        "transactioncurrencyidname": {
+          "type": "string",
+          "title": "transactioncurrencyidname",
+          "x-ms-dataverse-attribute": "transactioncurrencyidname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "TransactionCurrencyIdName",
+          "x-ms-read-only": true,
+          "maxLength": 100
+        },
+        "traversedpath": {
+          "type": "string",
+          "title": "(Déconseillé) Chemin d’accès traversé",
+          "x-ms-dataverse-attribute": "traversedpath",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "TraversedPath",
+          "maxLength": 1250
+        },
+        "utcconversiontimezonecode": {
+          "type": "string",
+          "title": "Code de fuseau horaire pour la conversion UTC",
+          "x-ms-dataverse-attribute": "utcconversiontimezonecode",
+          "x-ms-dataverse-type": "IntegerType",
+          "x-ms-schema-name": "UTCConversionTimeZoneCode"
+        },
+        "versionnumber": {
+          "type": "string",
+          "title": "Numéro de version",
+          "x-ms-dataverse-attribute": "versionnumber",
+          "x-ms-dataverse-type": "BigIntType",
+          "x-ms-schema-name": "VersionNumber",
+          "x-ms-read-only": true
+        },
+        "websiteurl": {
+          "type": "string",
+          "title": "Site Web",
+          "x-ms-dataverse-attribute": "websiteurl",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "WebSiteUrl",
+          "maxLength": 200
+        },
+        "yomifirstname": {
+          "type": "string",
+          "title": "Prénom Yomi",
+          "x-ms-dataverse-attribute": "yomifirstname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "YomiFirstName",
+          "maxLength": 150
+        },
+        "yomifullname": {
+          "type": "string",
+          "title": "Nom complet Yomi",
+          "x-ms-dataverse-attribute": "yomifullname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "YomiFullName",
+          "x-ms-read-only": true,
+          "maxLength": 450
+        },
+        "yomilastname": {
+          "type": "string",
+          "title": "Nom Yomi",
+          "x-ms-dataverse-attribute": "yomilastname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "YomiLastName",
+          "maxLength": 150
+        },
+        "yomimiddlename": {
+          "type": "string",
+          "title": "Deuxième prénom Yomi",
+          "x-ms-dataverse-attribute": "yomimiddlename",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "YomiMiddleName",
+          "maxLength": 150
+        }
+      },
+      "required": [
+        "contactid",
+        "lastname",
+        "ownerid",
+        "owneridname",
+        "owneridtype",
+        "owneridyominame",
+        "parentcustomeridname",
+        "parentcustomeridyominame",
+        "statecode"
+      ]
+    }
+  }
+}

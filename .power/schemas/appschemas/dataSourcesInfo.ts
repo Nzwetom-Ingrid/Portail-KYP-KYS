@@ -3571,6 +3571,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Dataverse",
     "apis": {}
   },
+  "afb_demandederevues": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "afb_demandederevueid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "afb_documentcategories": {
     "tableId": "",
     "version": "",

@@ -6,6 +6,7 @@
 // Models
 export * as Afb_critereevaluationsModel from './models/Afb_critereevaluationsModel';
 export * as Afb_decisionsModel from './models/Afb_decisionsModel';
+export * as Afb_demandederevuesModel from './models/Afb_demandederevuesModel';
 export * as Afb_documentcategoriesModel from './models/Afb_documentcategoriesModel';
 export * as Afb_documentdeconformitesModel from './models/Afb_documentdeconformitesModel';
 export * as Afb_documentsModel from './models/Afb_documentsModel';
@@ -38,6 +39,7 @@ export * as MicrosoftDataverseModel from './models/MicrosoftDataverseModel';
 // Services
 export * from './services/Afb_critereevaluationsService';
 export * from './services/Afb_decisionsService';
+export * from './services/Afb_demandederevuesService';
 export * from './services/Afb_documentcategoriesService';
 export * from './services/Afb_documentdeconformitesService';
 export * from './services/Afb_documentsService';
