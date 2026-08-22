@@ -1119,6 +1119,9 @@ function DossierDrawer({
     1: { label: t('En attente'), color: 'var(--warning)', bg: '#FFFBEB' },
     747010001: { label: t('Expiré'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
     747010002: { label: t('Rejeté'), color: 'var(--danger)', bg: 'var(--danger-bg)' },
+    // Une version plus récente a été déposée : la pièce reste consultable, mais
+    // ce n'est plus elle qui fait foi. Ton neutre — ce n'est pas une anomalie.
+    747010003: { label: t('Remplacé'), color: 'var(--text-muted)', bg: 'var(--colorNeutralBackground3)' },
   };
   // Les demandes du partenaire ne sont pas des pièces justificatives : elles
   // ont leur propre rubrique, où la conformité peut répondre. Les afficher ici

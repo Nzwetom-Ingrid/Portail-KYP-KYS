@@ -12,12 +12,6 @@ lecteur non technique.
 
 ### À traiter — relevé, non corrigé
 
-- **Valeur de choix « Remplacé » à créer.** Une pièce remplacée reçoit le statut
-  « Expiré », faute de valeur adéquate sur `afb_statutdevalidite` : c’est la
-  seule qui dise « cette pièce n’est plus en vigueur », mais elle en dit autre
-  chose. Ajouter une valeur « Remplacé » au choix, puis changer la constante
-  `STATUT_REMPLACE` — une ligne, un seul endroit.
-
 - **Demande de revue : invisible côté conformité.** Depuis le portail, la
   demande est désormais enregistrée et horodatée, mais elle n'apparaît dans
   aucun écran de l'application interne et ne déclenche aucune notification.
@@ -131,6 +125,14 @@ lecteur non technique.
   d'être écrite dans le code.
 
 ### Corrigé
+
+- **Une pièce remplacée porte enfin son propre statut.** Elle recevait « Expiré »,
+  faute de valeur adéquate — ce qui laissait croire à un document périmé alors
+  qu'il était simplement supplanté par une version plus récente ; la nuance
+  compte devant un auditeur. La valeur « Remplacé » (`747010003`) a été créée
+  sur `afb_statutdevalidite`, et les deux applications l’affichent d’un ton
+  neutre : ce n’est pas une anomalie, c’est l’historique d’un dépôt qui s’est
+  bien passé.
 
 - **Un dossier incomplet ne peut plus être validé.** Le bouton « Valider »
   était cliquable quoi qu’il manque. Le tiroir affichait bien « 3/7 pièces

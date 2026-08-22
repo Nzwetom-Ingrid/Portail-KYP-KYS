@@ -84,7 +84,10 @@ export const LOGICAL = {
 // =============================================================
 export const CHOICES = {
   // afb_document.afb_statutdevalidite
-  documentStatut: { Valide: 0, EnAttente: 1, Expire: 747010001, Rejete: 747010002 },
+  // « Remplacé » : la pièce n'est plus celle en vigueur, une version plus
+  // récente l'a supplantée. À ne pas confondre avec « Expiré », qui parle de
+  // la date de validité du document lui-même.
+  documentStatut: { Valide: 0, EnAttente: 1, Expire: 747010001, Rejete: 747010002, Remplace: 747010003 },
   // afb_document.afb_sourcedudepot
   documentSource: { Tiers: 747010000, DCONF: 747010001, Systeme: 747010002 },
   // afb_document.afb_authentifie (0 = Oui, 1 = Non)

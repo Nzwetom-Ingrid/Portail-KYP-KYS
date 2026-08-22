@@ -382,6 +382,8 @@
   background: currentColor;
 }
 .badge--info { background: var(--info-bg); color: var(--info); }
+/* Neutre : etat factuel, ni bon ni mauvais (ex. piece remplacee). */
+.badge--muted { background: var(--surface-2, rgba(127,127,127,.12)); color: var(--muted); }
 .badge--success { background: var(--success-bg); color: var(--success); }
 .badge--warning { background: var(--warning-bg); color: var(--warning); }
 .badge--danger { background: var(--danger-bg); color: var(--danger); }

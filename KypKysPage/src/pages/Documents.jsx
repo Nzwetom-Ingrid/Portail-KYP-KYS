@@ -37,6 +37,9 @@ const STATUS = {
   Requis:   { label: 'Requis',  cls: 'badge--warning' },
   Expire:   { label: 'Expiré',  cls: 'badge--danger' },
   Rejete:   { label: 'Refusé',  cls: 'badge--danger' },
+  // Neutre à dessein : une pièce remplacée n'est pas un problème, c'est
+  // l'historique d'un dépôt qui s'est bien passé.
+  Remplace: { label: 'Remplacé', cls: 'badge--muted' },
 }
 
 const FILTERS = [

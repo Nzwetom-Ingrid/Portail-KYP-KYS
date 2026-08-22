@@ -507,6 +507,7 @@ const DOC_STATUT_FROM_INT = {
   1: 'EnRevue', // « En attente de validation »
   747010001: 'Expire',
   747010002: 'Rejete',
+  747010003: 'Remplace', // supplantée par une version plus récente
 }
 
 function mapDocument(d) {
@@ -606,13 +607,11 @@ function fileToBase64(file) {
 /**
  * Statut donné à la pièce qui vient d'être remplacée.
  *
- * Aucune valeur « Remplacé » n'existe sur `afb_statutdevalidite` ; « Expiré »
- * est la seule qui dise « cette pièce n'est plus celle en vigueur », et le
- * portail comme le back-office savent déjà l'afficher. Le jour où une valeur
- * « Remplacé » sera ajoutée au choix, c'est cette constante — et elle seule —
- * qu'il faudra changer.
+ * Distinct d'« Expiré », qui parle de la date de validité du document : une
+ * pièce remplacée peut être parfaitement valide, elle n'est simplement plus
+ * celle en vigueur. La confusion aurait pu tromper un auditeur.
  */
-const STATUT_REMPLACE = CHOICES.documentStatut.Expire
+const STATUT_REMPLACE = CHOICES.documentStatut.Remplace
 
 /** Statut « En revue » du dossier (afb_statutdudossier). */
 const DOSSIER_EN_REVUE = 1
