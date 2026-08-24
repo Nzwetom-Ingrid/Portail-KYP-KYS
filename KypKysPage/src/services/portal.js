@@ -50,6 +50,9 @@ let _tiers = null
 /** Plafond retenu quand le type de partenaire ne le précise pas. */
 export const MAX_GERANTS_DEFAUT = 5
 
+/** Relation TIERS → Employé, telle que Maker l'a nommée. */
+const RELATION_TIERS_GERANT = 'afb_employe1_Tiers_afb_tiers'
+
 // Mappe un enregistrement afb_tiers réel → view-model stable du portail
 function mapTiers(t, b2c) {
   if (!t) return null
@@ -426,12 +429,9 @@ export async function loadGerants(tiersId) {
 /**
  * Enregistre un gérant.
  *
- * Deux voies d'écriture, essayées dans cet ordre : le deep-insert dans la
- * collection de navigation du tiers — celui qui contourne l'erreur
- * d'association du Web API (90040106) sur les documents — puis, s'il échoue,
- * la création directe avec le lookup en `@odata.bind`. Le nom exact de la
- * relation dépend de la façon dont Maker l'a nommée ; plutôt que de le
- * supposer, on tente les deux.
+ * Deep-insert dans la collection de navigation du tiers, comme pour les
+ * documents et les demandes : c'est ce qui contourne le contrôle d'association
+ * du Web API (erreur 90040106).
  */
 export async function saveGerant(tiersId, g, rang = 0) {
   if (!dv.enabled) return null
@@ -455,14 +455,7 @@ export async function saveGerant(tiersId, g, rang = 0) {
   // Mise à jour d'un gérant déjà enregistré.
   if (g.id) return dv.update(SETS.gerant, g.id, payload)
 
-  try {
-    return await dv.createIn(SETS.tiers, tiersId, 'afb_employe1_Tiers_afb_tiers', payload)
-  } catch {
-    return dv.create(SETS.gerant, {
-      ...payload,
-      [`afb_Tiers@odata.bind`]: `/${SETS.tiers}(${tiersId})`,
-    })
-  }
+  return dv.createIn(SETS.tiers, tiersId, RELATION_TIERS_GERANT, payload)
 }
 
 /** Retire un gérant supprimé du formulaire. */
