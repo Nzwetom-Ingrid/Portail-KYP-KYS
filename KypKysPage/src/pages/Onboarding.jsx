@@ -165,9 +165,25 @@ export default function Onboarding({ notify }) {
   const [maxGerants, setMaxGerants] = useState(MAX_GERANTS_DEFAUT)
   // Gérants retirés d'un dossier déjà enregistré : à supprimer à la soumission.
   const [gerantsRetires, setGerantsRetires] = useState([])
+  /**
+   * Bénéficiaires effectifs.
+   *
+   * Ceux déjà déclarés sont relus et affichés en lecture seule ; les nouveaux se
+   * saisissent dans des cartes, comme les gérants, et partent à la soumission.
+   *
+   * La première version demandait un « Enregistrer » à l'intérieur de la carte,
+   * alors que toutes les autres étapes se remplissent et se poursuivent par
+   * « Continuer ». Quiconque enchaînait perdait sa saisie sans un mot — et rien
+   * à l'écran ne l'en avertissait.
+   */
   const [ubos, setUbos] = useState([])
-  const [uboForm, setUboForm] = useState(null)
-  const [uboEnCours, setUboEnCours] = useState(false)
+  const [nouveauxUbos, setNouveauxUbos] = useState([])
+
+  const majUbo = (i, champ, valeur) =>
+    setNouveauxUbos((u) => u.map((x, k) => (k === i ? { ...x, [champ]: valeur } : x)))
+  const ajouterUbo = () =>
+    setNouveauxUbos((u) => [...u, { nom: '', nationalite: '', pourcentage: '', dateNaissance: '' }])
+  const retirerUbo = (i) => setNouveauxUbos((u) => u.filter((_, k) => k !== i))
 
   const majGerant = (i, champ, valeur) =>
     setGerants((g) => g.map((x, k) => (k === i ? { ...x, [champ]: valeur } : x)))
@@ -332,30 +348,6 @@ export default function Onboarding({ notify }) {
 
   const [submitting, setSubmitting] = useState(false)
 
-  const enregistrerUbo = async () => {
-    if (!uboForm?.nom.trim() || !tiersId) {
-      notify(t('Aucune fiche tiers rattachée à votre compte.'))
-      return
-    }
-    setUboEnCours(true)
-    try {
-      await submitUbo(tiersId, {
-        nom: uboForm.nom.trim(),
-        nationalite: uboForm.nationalite.trim(),
-        pourcentage: Number(uboForm.pourcentage) || 0,
-        dateNaissance: uboForm.dateNaissance || null,
-        typeEntite: 'physique',
-      })
-      setUbos(await loadUbos(tiersId).catch(() => ubos))
-      setUboForm(null)
-      notify(t('Bénéficiaire enregistré.'))
-    } catch (e) {
-      notify(`${t('Enregistrement impossible :')} ${e.message}`)
-    } finally {
-      setUboEnCours(false)
-    }
-  }
-
   const next = async () => {
     if (step < STEPS.length - 1) {
       setStep((s) => s + 1)
@@ -378,8 +370,20 @@ export default function Onboarding({ notify }) {
             await saveGerant(tiersId, aEnregistrer[i], i)
           }
           setGerants(await loadGerants(tiersId).catch(() => gerants))
+
+          for (const u of nouveauxUbos.filter((x) => x.nom.trim())) {
+            await submitUbo(tiersId, {
+              nom: u.nom.trim(),
+              nationalite: u.nationalite.trim(),
+              pourcentage: Number(u.pourcentage) || 0,
+              dateNaissance: u.dateNaissance || null,
+              typeEntite: 'physique',
+            })
+          }
+          setNouveauxUbos([])
+          setUbos(await loadUbos(tiersId).catch(() => ubos))
         } catch (e) {
-          notify(`${t('Dossier soumis, mais les gérants n’ont pas pu être enregistrés :')} ${e.message}`)
+          notify(`${t('Dossier soumis, mais la direction ou les bénéficiaires n’ont pas pu être enregistrés :')} ${e.message}`)
         }
       }
 
@@ -760,46 +764,50 @@ export default function Onboarding({ notify }) {
                 </div>
               ))}
 
-              {!uboForm && (
-                <button className="btn btn--soft btn--sm" onClick={() => setUboForm({ nom: '', nationalite: '', pourcentage: '', dateNaissance: '' })} style={{ alignSelf: 'flex-start' }}>
-                  <Icon name="plus" size={15} /> {t('Ajouter un bénéficiaire')}
-                </button>
-              )}
-
-              {uboForm && (
-                <div className="card card--pad">
+              {nouveauxUbos.map((u, i) => (
+                <div key={i} className="card card--pad">
+                  <div className="section-head" style={{ marginBottom: 12 }}>
+                    <h3 style={{ margin: 0, fontSize: 15, color: 'var(--ink)' }}>
+                      {t('Bénéficiaire')} {ubos.length + i + 1}
+                    </h3>
+                    <button className="btn btn--ghost btn--sm" type="button" onClick={() => retirerUbo(i)}>
+                      <Icon name="trash" size={15} /> {t('Retirer')}
+                    </button>
+                  </div>
                   <div className="form-grid">
                     <div className="field">
                       <label>{t('Nom complet')} <span className="req">*</span></label>
-                      <input value={uboForm.nom} onChange={(e) => setUboForm({ ...uboForm, nom: e.target.value })} placeholder={t('Prénom et nom')} />
+                      <input value={u.nom} onChange={(e) => majUbo(i, 'nom', e.target.value)} placeholder={t('Prénom et nom')} />
                     </div>
                     <div className="field">
                       <label>{t('Pourcentage de détention')} <span className="req">*</span></label>
-                      <input type="number" min="0" max="100" value={uboForm.pourcentage} onChange={(e) => setUboForm({ ...uboForm, pourcentage: e.target.value })} placeholder="25" />
+                      <input type="number" min="0" max="100" value={u.pourcentage} onChange={(e) => majUbo(i, 'pourcentage', e.target.value)} placeholder="25" />
                     </div>
                     <div className="field">
                       <label>{t('Nationalité')}</label>
-                      <input value={uboForm.nationalite} onChange={(e) => setUboForm({ ...uboForm, nationalite: e.target.value })} placeholder={t('Ex. Camerounaise')} />
+                      <input value={u.nationalite} onChange={(e) => majUbo(i, 'nationalite', e.target.value)} placeholder={t('Ex. Camerounaise')} />
                     </div>
                     <div className="field">
                       <label>{t('Date de naissance')}</label>
-                      <input type="date" value={uboForm.dateNaissance} onChange={(e) => setUboForm({ ...uboForm, dateNaissance: e.target.value })} />
+                      <input type="date" value={u.dateNaissance} onChange={(e) => majUbo(i, 'dateNaissance', e.target.value)} />
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-                    <button className="btn btn--primary btn--sm" onClick={enregistrerUbo} disabled={uboEnCours || !uboForm.nom.trim() || !uboForm.pourcentage}>
-                      <Icon name="check" size={15} /> {uboEnCours ? t('Enregistrement…') : t('Enregistrer')}
-                    </button>
-                    <button className="btn btn--ghost btn--sm" onClick={() => setUboForm(null)} disabled={uboEnCours}>
-                      {t('Annuler')}
-                    </button>
-                  </div>
                 </div>
-              )}
+              ))}
 
-              {ubos.length === 0 && !uboForm && (
+              <button className="btn btn--soft btn--sm" type="button" onClick={ajouterUbo} style={{ alignSelf: 'flex-start' }}>
+                <Icon name="plus" size={15} /> {t('Ajouter un bénéficiaire')}
+              </button>
+
+              {ubos.length === 0 && nouveauxUbos.length === 0 && (
                 <span className="field__hint">
                   {t('Aucun bénéficiaire déclaré. Si personne n’atteint 25 %, passez cette étape — la conformité vous le demandera si nécessaire.')}
+                </span>
+              )}
+
+              {nouveauxUbos.length > 0 && (
+                <span className="field__hint">
+                  {t('Ces bénéficiaires seront enregistrés à la soumission du dossier, avec le reste du formulaire.')}
                 </span>
               )}
             </div>
@@ -888,7 +896,7 @@ export default function Onboarding({ notify }) {
                 </div>
                 <div className="recap__row">
                   <dt>{t('Bénéficiaires effectifs')}</dt>
-                  <dd>{ubos.length}</dd>
+                  <dd>{ubos.length + nouveauxUbos.filter((u) => u.nom.trim()).length}</dd>
                 </div>
                 <div className="recap__row"><dt>{t('Documents déposés')}</dt><dd>{Object.keys(docs).length} / {piecesRequises.length}</dd></div>
               </dl>
