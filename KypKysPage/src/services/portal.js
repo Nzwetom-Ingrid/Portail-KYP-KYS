@@ -138,6 +138,31 @@ function estRefus(e) {
 }
 
 /**
+ * Liste avec repli sans expansion.
+ *
+ * Une expansion `$expand` porte sur une AUTRE table, et Dataverse refuse la
+ * requête ENTIÈRE quand cette table n'est pas autorisée — pas seulement la
+ * partie expansée. Une permission manquante sur un référentiel accessoire
+ * suffit donc à vider un écran complet, avec un message qui désigne la table
+ * interrogée plutôt que la vraie fautive. C'est exactement ce qui a bloqué le
+ * dépôt de pièces pendant deux jours.
+ *
+ * On rejoue donc la requête sans son expansion. L'enrichissement est perdu —
+ * un libellé de catégorie, un titre de questionnaire — mais l'écran fonctionne,
+ * et chaque appelant sait déjà se passer de ces champs.
+ *
+ * @param construire (avecExpansion: boolean) => string — la chaîne d'options OData.
+ */
+async function listeAvecRepli(set, construire) {
+  try {
+    return await dv.list(set, construire(true))
+  } catch (e) {
+    if (!estRefus(e)) throw e
+    return dv.list(set, construire(false))
+  }
+}
+
+/**
  * TOUTES les entreprises auxquelles l'utilisateur connecté a accès.
  *
  * Une même personne peut être rattachée à plusieurs partenaires — un dirigeant
@@ -617,12 +642,13 @@ export async function loadDocuments(tiersId) {
   if (!dv.enabled) return [...MOCK_DOCUMENTS]
   // « Mes documents » = ce que le tiers a déposé. On EXCLUT les documents partagés
   // par la banque (afb_sourcedudepot = 747010001), qui vivent dans « Documents reçus ».
-  const rows = await dv.list(
+  const rows = await listeAvecRepli(
     SETS.document,
-    `?$filter=_afb_tiers_value eq ${tiersId} and afb_sourcedudepot ne ${CHOICES.documentSource.DCONF}` +
+    (avecCategorie) =>
+      `?$filter=_afb_tiers_value eq ${tiersId} and afb_sourcedudepot ne ${CHOICES.documentSource.DCONF}` +
       `&$select=afb_documentid,afb_nomdufichier,afb_typededocument,afb_statutdevalidite,` +
       `afb_datedexpiration,afb_datedeteleversement,createdon` +
-      `&$expand=afb_categorie($select=afb_libelle)` +
+      (avecCategorie ? `&$expand=afb_categorie($select=afb_libelle)` : '') +
       `&$orderby=afb_datedeteleversement desc`
   )
   // Exclut tout ce qui n'est pas une pièce déposée : demandes du tiers,
@@ -635,12 +661,13 @@ export async function loadDocuments(tiersId) {
 // « Documents reçus » = documents partagés par la banque (DCONF/DMG) vers ce tiers.
 export async function loadReceivedDocuments(tiersId) {
   if (!dv.enabled) return []
-  const rows = await dv.list(
+  const rows = await listeAvecRepli(
     SETS.document,
-    `?$filter=_afb_tiers_value eq ${tiersId} and afb_sourcedudepot eq ${CHOICES.documentSource.DCONF}` +
+    (avecCategorie) =>
+      `?$filter=_afb_tiers_value eq ${tiersId} and afb_sourcedudepot eq ${CHOICES.documentSource.DCONF}` +
       `&$select=afb_documentid,afb_nomdufichier,afb_typededocument,afb_statutdevalidite,` +
       `afb_datedexpiration,afb_datedeteleversement,createdon` +
-      `&$expand=afb_categorie($select=afb_libelle)` +
+      (avecCategorie ? `&$expand=afb_categorie($select=afb_libelle)` : '') +
       `&$orderby=afb_datedeteleversement desc`
   )
   return rows.map(mapDocument)
@@ -1050,11 +1077,14 @@ const RESP_STATUT_TO_CARD = {
 
 export async function loadAssignedQuestionnaires(tiersId) {
   if (!dv.enabled) return [...MOCK_QUESTIONNAIRES]
-  const rows = await dv.list(
+  const rows = await listeAvecRepli(
     SETS.assignment,
-    `?$filter=_afb_tiers_value eq ${tiersId}` +
+    (avecQuestionnaire) =>
+      `?$filter=_afb_tiers_value eq ${tiersId}` +
       `&$select=afb_questionnaireassignmentid,afb_statut,afb_datedecheance,afb_tauxdecompletion` +
-      `&$expand=afb_versionduquestionnaire($select=afb_questionnaireid,afb_codedudocument,afb_titreenfrancais,afb_descriptionducontenu,afb_typededocument)` +
+      (avecQuestionnaire
+        ? `&$expand=afb_versionduquestionnaire($select=afb_questionnaireid,afb_codedudocument,afb_titreenfrancais,afb_descriptionducontenu,afb_typededocument)`
+        : '') +
       `&$orderby=afb_datedecheance asc`
   )
 

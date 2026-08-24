@@ -128,6 +128,15 @@ lecteur non technique.
 
 ### Modifié
 
+- **Une permission manquante ne peut plus vider un écran.** Les trois dernières
+  requêtes qui enrichissaient leurs résultats par une expansion `$expand` —
+  documents, documents reçus, questionnaires — se rejouent sans elle en cas de
+  refus. Dataverse rejette la requête ENTIÈRE quand la table expansée n’est pas
+  autorisée, et désigne la table interrogée plutôt que la vraie fautive : c’est
+  ce mécanisme qui avait bloqué le dépôt de pièces pendant deux jours. Le
+  libellé de catégorie ou le titre du questionnaire se perdent alors, l’écran
+  non.
+
 - **Les demandes ont enfin leur table.** Elles vivaient dans `afb_document` avec
   un marqueur de type et une URL `request://`, faute de mieux. La table
   `afb_demandederevue` les accueille désormais, avec un vrai lookup pour le fil
