@@ -18,6 +18,7 @@ import { createEntityHooks } from './createEntityHooks';
 
 import { ContactsService } from '@/generated/services/ContactsService';
 import { Afb_demandederevuesService } from '@/generated/services/Afb_demandederevuesService';
+import { Afb_employe1sService } from '@/generated/services/Afb_employe1sService';
 
 import { Afb_critereevaluationsService } from '@/generated/services/Afb_critereevaluationsService';
 import { Afb_decisionsService } from '@/generated/services/Afb_decisionsService';
@@ -77,6 +78,8 @@ export const contacts = createEntityHooks('contact', ContactsService);
 // Demandes du partenaire — table dédiée depuis août 2026. Celles émises avant
 // restent dans afb_document et sont relues à part (cf. lib/demandes).
 export const demandesDeRevue = createEntityHooks('afb_demandederevue', Afb_demandederevuesService);
+// « Employé » côté Dataverse : ce sont les gérants et dirigeants du tiers.
+export const gerants = createEntityHooks('afb_employe1', Afb_employe1sService);
 export const tiers = createEntityHooks('afb_tiers', Afb_tiersesService);
 export const tiersExterneB2c = createEntityHooks('afb_tiersexterneb2c', Afb_tiersexterneb2csService);
 export const ubo = createEntityHooks('afb_ubo', Afb_ubosService);
@@ -86,6 +89,7 @@ export const utilisateursInternes = createEntityHooks('afb_utilisateurinterne', 
 export const dataverse = {
   contacts,
   demandesDeRevue,
+  gerants,
   critereEvaluation,
   evaluationsPartenaire,
   grilleEvaluation,

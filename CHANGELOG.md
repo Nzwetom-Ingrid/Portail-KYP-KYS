@@ -40,6 +40,18 @@ lecteur non technique.
 
 ### Ajouté
 
+- **Gérants multiples à l’onboarding, et visibles par la conformité.** L’étape
+  « Représentant légal » ne prévoyait qu’une personne — dont aucun champ n’était
+  enregistré. Elle devient « Direction » : le nombre de gérants se saisit à
+  l’étape précédente et commande le nombre de fiches, corrigeables sur place. Un
+  seul représentant légal peut être désigné. Le tiroir du dossier affiche
+  désormais cette direction, nationalité et date de naissance comprises — sans
+  elles, un contrôle de sanctions sur le seul nom est inexploitable.
+- **Déclaration des bénéficiaires effectifs dans l’onboarding.** Nouvelle étape
+  après la direction, appuyée sur les services existants : le menu « Mes
+  bénéficiaires » reste en place, l’onboarding propose seulement la déclaration
+  au bon moment. Non bloquante.
+
 - **Le portail se met à jour tout seul.** Le partenaire devait recharger la
   page pour découvrir que son dossier avait été validé ou qu'une pièce avait
   changé de statut — sans que rien ne lui suggère que l'information avait

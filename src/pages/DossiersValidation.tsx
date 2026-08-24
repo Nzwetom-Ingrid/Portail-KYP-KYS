@@ -30,6 +30,7 @@ import { Card } from '@/components/common/Card';
 import { FilterBar } from '@/components/common/FilterBar';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { DemandesPartenaire } from '@/components/dossier/DemandesPartenaire';
+import { DirectionTiers, type GerantBrut } from '@/components/dossier/DirectionTiers';
 import { evaluerCompletude, motifDeBlocage } from '@/lib/dossiers/completude';
 import {
   compterOuvertes,
@@ -58,7 +59,7 @@ import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialo
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { type Dossier } from '@/lib/mockData';
-import { decisions, dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes, journalAudit, documents, documentCategories, demandesDeRevue } from '@/lib/dataverse/entityHooks';
+import { decisions, dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes, journalAudit, documents, documentCategories, demandesDeRevue, gerants as gerantsHooks } from '@/lib/dataverse/entityHooks';
 import { useRoleStore } from '@/store/roleStore';
 import { assignQuestionnairesForTiers } from '@/lib/dataverse/assignQuestionnaires';
 import { useT } from '@/i18n/i18n';
@@ -1101,6 +1102,14 @@ function DossierDrawer({
   const createDemande = demandesDeRevue.useCreate();
   const majDemande = demandesDeRevue.useUpdate();
   const { data: docCategories } = documentCategories.useList({ top: 50 });
+  const { data: rawGerants } = gerantsHooks.useList(
+    {
+      filter: dossier?.tiersId ? `_afb_tiers_value eq ${dossier.tiersId}` : undefined,
+      top: 50,
+      orderBy: ['afb_rang asc'],
+    },
+    { enabled: !!dossier?.tiersId },
+  );
   const { data: rawDemandes } = demandesDeRevue.useList(
     {
       filter: dossier?.tiersId ? `_afb_tiers_value eq ${dossier.tiersId}` : undefined,
@@ -1457,6 +1466,13 @@ function DossierDrawer({
           </div>
         </DrawerSection>
       )}
+
+      <DrawerSection
+        title={t('Direction')}
+        description={t('Gérants déclarés par le partenaire. Ce sont eux que vise le contrôle de sanctions.')}
+      >
+        <DirectionTiers gerants={(rawGerants ?? []) as unknown as GerantBrut[]} frDate={fd} />
+      </DrawerSection>
 
       <DrawerSection title={t('Profil de risque composite')}>
         <div className={styles.riskGrid}>
