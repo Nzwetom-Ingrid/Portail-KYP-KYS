@@ -28,16 +28,23 @@ import { DataTable, type Column } from '@/components/common/DataTable';
 import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialog';
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
-import { documents, documentCategories, tiers as tiersHooks } from '@/lib/dataverse/entityHooks';
+import { documents, documentCategories, tiers as tiersHooks, partnerTypes } from '@/lib/dataverse/entityHooks';
 import { getDocumentBinary, base64ToBlob, attachFileToDocument } from '@/lib/dataverse/documentFile';
 import { useRoleStore } from '@/store/roleStore';
 import { useT } from '@/i18n/i18n';
+import {
+  indexerFamilles,
+  typeDuTiers,
+  type TiersPourType,
+  type TypePartenaire,
+  type TypeTiersAffiche,
+} from '@/lib/tiers/typeTiers';
 
 // afb_document.afb_sourcedudepot : 747010001 = « Ajouté par DCONF » (= partagé par
 // la banque). C'est ce qui distingue un document partagé d'un dépôt du partenaire.
 const SOURCE_BANQUE = 747010001;
 
-type TiersType = 'Partenaire' | 'Fournisseur' | 'Cible';
+type TiersType = TypeTiersAffiche;
 
 interface ShareRow {
   id: string;
@@ -75,6 +82,7 @@ export default function DocumentShare() {
     top: 300,
   });
   const { data: rawTiers } = tiersHooks.useList({ top: 500 });
+  const { data: rawPartnerTypes } = partnerTypes.useList({ top: 200 });
   const { data: rawCategories } = documentCategories.useList({ top: 50 });
   // Réponses des tiers (factures / compléments) : afb_typededocument = 'reponse:<parentId>'.
   const { data: rawResponses } = documents.useList({
@@ -105,17 +113,25 @@ export default function DocumentShare() {
     return m;
   }, [rawResponses, t]);
 
+  // Le type se lit sur la famille d'institution du type de partenaire, pas sur
+  // la direction porteuse : celle-ci vaut toujours DCONF à la création.
+  const famillesParType = useMemo(
+    () => indexerFamilles((rawPartnerTypes ?? []) as unknown as TypePartenaire[]),
+    [rawPartnerTypes],
+  );
+
   // Résolution nom du tiers (les *name formatés ne reviennent pas en liste).
   const tiersById = useMemo(() => {
     const m = new Map<string, { label: string; type: TiersType }>();
     for (const raw of (rawTiers ?? []) as unknown as Array<Record<string, unknown>>) {
       const id = raw.afb_tiersid as string;
-      const type: TiersType =
-        raw.afb_statutdutiers === 1 ? 'Cible' : raw.afb_directionporteuse === 2 ? 'Fournisseur' : 'Partenaire';
-      m.set(id, { label: (raw.afb_nomdupartenaire as string) || '—', type });
+      m.set(id, {
+        label: (raw.afb_nomdupartenaire as string) || '—',
+        type: typeDuTiers(raw as TiersPourType, famillesParType),
+      });
     }
     return m;
-  }, [rawTiers]);
+  }, [rawTiers, famillesParType]);
 
   const rows: ShareRow[] = useMemo(
     () =>

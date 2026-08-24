@@ -147,6 +147,13 @@ lecteur non technique.
 
 ### Corrigé
 
+- **Tous les tiers ressortaient « Partenaire » sur deux écrans.** Le partage de
+  documents et l’affectation de questionnaires déduisaient le type de la
+  direction porteuse — DMG valait Fournisseur. Or la création de dossier écrit
+  systématiquement DCONF : aucun fournisseur ne pouvait donc être reconnu, et le
+  filtre par type ne filtrait rien. Ces écrans lisent désormais la famille
+  d’institution du type de partenaire, comme le reste de l’application.
+
 - **L’onboarding et « Mes documents » ne disaient pas la même chose.** L’étape
   des pièces s’appuyait sur un état local, gardé dans le navigateur : une pièce
   déposée depuis « Mes documents » n’y apparaissait pas, et une pièce supprimée

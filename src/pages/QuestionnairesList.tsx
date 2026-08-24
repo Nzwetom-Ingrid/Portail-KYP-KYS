@@ -32,7 +32,7 @@ import { QuestionnaireResponsesReview } from '@/components/QuestionnaireResponse
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { type Questionnaire } from '@/lib/mockData';
-import { questionnaires as questionnairesHooks, utilisateursInternes, questionnaireSections, questions as questionsHooks, questionnaireAssignments, tiers as tiersHooks } from '@/lib/dataverse/entityHooks';
+import { questionnaires as questionnairesHooks, utilisateursInternes, questionnaireSections, questions as questionsHooks, questionnaireAssignments, tiers as tiersHooks, partnerTypes } from '@/lib/dataverse/entityHooks';
 import { seedAllQuestionnaires } from '@/lib/dataverse/seedQuestionnaires';
 import { assignQuestionnaireToTiers } from '@/lib/dataverse/assignQuestionnaires';
 import { getCurrentUser } from '@/lib/auth/currentUserRef';
@@ -53,6 +53,12 @@ import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialo
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { useRoleStore } from '@/store/roleStore';
+import {
+  indexerFamilles,
+  typeDuTiers,
+  type TiersPourType,
+  type TypePartenaire,
+} from '@/lib/tiers/typeTiers';
 
 const useStyles = makeStyles({
   kpiRow: {
@@ -253,17 +259,23 @@ export default function QuestionnairesList() {
 
   // Vrais tiers Dataverse pour l'affectation manuelle.
   const { data: rawTiers } = tiersHooks.useList({ top: 500 });
+  const { data: rawPartnerTypes } = partnerTypes.useList({ top: 200 });
+  // Le type se lit sur la famille d'institution du type de partenaire : la
+  // direction porteuse vaut toujours DCONF, elle ne distinguait rien.
+  const famillesParType = useMemo(
+    () => indexerFamilles((rawPartnerTypes ?? []) as unknown as TypePartenaire[]),
+    [rawPartnerTypes],
+  );
   const partnersList = useMemo(
     () =>
       (rawTiers ?? [])
         .map((t) => ({
           id: t.afb_tiersid,
           label: t.afb_nomdupartenaire || '—',
-          // Type dérivé : Cible (statut 1), Fournisseur (direction DMG=2), sinon Partenaire.
-          type: t.afb_statutdutiers === 1 ? 'Cible' : t.afb_directionporteuse === 2 ? 'Fournisseur' : 'Partenaire',
+          type: typeDuTiers(t as TiersPourType, famillesParType),
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-    [rawTiers],
+    [rawTiers, famillesParType],
   );
   // Liste filtrée pour l'affectation (recherche par nom + filtre par type).
   const filteredPartners = useMemo(
