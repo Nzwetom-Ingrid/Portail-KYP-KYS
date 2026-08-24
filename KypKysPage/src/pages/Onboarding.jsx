@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import SearchableSelect from '../components/SearchableSelect'
 import { useT } from '../i18n/i18n'
-import { submitOnboarding, getCurrentTiers, loadDocumentCategories, uploadDocument } from '../services/portal'
+import {
+  submitOnboarding,
+  getCurrentTiers,
+  loadDocumentCategories,
+  loadDossier,
+  uploadDocument,
+} from '../services/portal'
+import { parseRequiredDocs, entityTypeFromRef } from '../config/requiredDocs'
 import { COUNTRIES } from '../config/countries'
 import { SECTOR_GROUPS, isKnownSector } from '../config/sectors'
 import {
@@ -55,15 +62,20 @@ const STEPS = [
   { title: 'Validation', desc: 'Vérifiez et soumettez votre dossier', icon: 'shield' },
 ]
 
-// Chaque pièce porte son propre jeu de formats : la pièce d’identité est exigée
-// en PDF (une photo de CNI est retouchable et souvent illisible à l’écran de la
-// conformité), les autres acceptent aussi les images.
-const REQUIRED_DOCS = [
-  { label: 'Registre de commerce (RCCM ou équivalent)', accept: ACCEPT_DOCUMENT },
-  { label: 'Statuts de la société', accept: ACCEPT_DOCUMENT },
-  { label: 'Attestation fiscale', accept: ACCEPT_DOCUMENT },
-  { label: 'Pièce d’identité du représentant légal', accept: ACCEPT_IDENTITY },
-]
+/**
+ * Formats acceptés pour une pièce.
+ *
+ * Une pièce d'identité est exigée en PDF : une photo de CNI est retouchable, et
+ * souvent illisible à l'écran de la conformité. Les autres acceptent les images.
+ * La règle porte sur la clé de la pièce, pas sur son libellé, qui peut être
+ * réécrit par le chargé de relation à la création du dossier.
+ */
+const CLES_IDENTITE = ['cni', 'identite', 'passeport', 'piece']
+
+function acceptPourPiece(cle) {
+  const c = String(cle || '').toLowerCase()
+  return CLES_IDENTITE.some((k) => c.includes(k)) ? ACCEPT_IDENTITY : ACCEPT_DOCUMENT
+}
 
 export default function Onboarding({ notify }) {
   const { t } = useT()
@@ -105,6 +117,17 @@ export default function Onboarding({ notify }) {
   // La fiche tiers est créée par AFB à l'initiation : on pré-remplit ce qu'on connaît
   // déjà (raison sociale, pays, type, RCCM, contact) pour éviter une double saisie.
   const [prefilled, setPrefilled] = useState(false)
+
+  /**
+   * Pièces réellement attendues pour CE dossier.
+   *
+   * L'écran affichait quatre pièces en dur — RCCM, statuts, attestation fiscale,
+   * pièce d'identité — quel que soit le partenaire. Une banque correspondante en
+   * attend dix, dont le questionnaire Wolfsberg et le formulaire FATCA : elle ne
+   * voyait donc jamais, à l'onboarding, ce qu'on lui demandait vraiment. La liste
+   * vient désormais du dossier, comme dans « Mes documents ».
+   */
+  const [piecesRequises, setPiecesRequises] = useState([])
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -114,6 +137,16 @@ export default function Onboarding({ notify }) {
         setCategories(cats || [])
         if (!t) return
         setTiersId(t.afb_tiersid || null)
+
+        // Checklist personnalisée du tiers si elle existe, sinon celle du type
+        // d'entité — le type se lit sur le préfixe de la référence du dossier.
+        if (t.afb_tiersid) {
+          const dossier = await loadDossier(t.afb_tiersid).catch(() => null)
+          if (!cancelled) {
+            const type = entityTypeFromRef(dossier?.afb_reference) || t.afb_entity_type
+            setPiecesRequises(parseRequiredDocs(t.afb_documentsrequis, type))
+          }
+        }
         // Pré-remplissage : uniquement les champs encore vides (les valeurs déjà
         // saisies / restaurées du localStorage restent prioritaires).
         setForm((f) => ({
@@ -155,15 +188,18 @@ export default function Onboarding({ notify }) {
       notify(invalid)
       return
     }
-    const categoryId = pickCategoryId(doc.label, categories)
+    const categoryId = pickCategoryId(doc.name, categories)
     if (!categoryId) {
       notify('Catégories de documents indisponibles. Contactez votre chargé de relation AFB.')
       return
     }
-    setUploadingDoc(doc.label)
+    setUploadingDoc(doc.key)
     try {
-      await uploadDocument(tiersId, file, { categoryId })
-      setDocs((p) => ({ ...p, [doc.label]: file.name }))
+      // La CLÉ de la pièce est transmise : sans elle, le document arrivait sans
+      // rattachement et la checklist de « Mes documents » restait à zéro alors
+      // que le partenaire venait de tout déposer.
+      await uploadDocument(tiersId, file, { categoryId, docType: doc.key })
+      setDocs((p) => ({ ...p, [doc.key]: file.name }))
       notify(`${file.name} téléversé.`)
     } catch (e) {
       notify(`Téléversement impossible : ${e.message}`)
@@ -461,27 +497,39 @@ export default function Onboarding({ notify }) {
                   {t('Aucune fiche tiers rattachée à votre compte : le téléversement sera disponible une fois votre compte lié par AFB.')}
                 </div>
               )}
-              {REQUIRED_DOCS.map((d) => (
+              {piecesRequises.length === 0 && (
+                <div className="field__hint">
+                  {t('Chargement de la liste des pièces attendues…')}
+                </div>
+              )}
+              {piecesRequises.map((piece) => {
+                const d = { ...piece, accept: acceptPourPiece(piece.key) }
+                return (
                 <div
-                  key={d.label}
+                  key={d.key}
                   className="card"
                   style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px' }}
                 >
                   <span className="doc-name__icon"><Icon name="fileText" size={20} /></span>
                   <div style={{ flex: 1 }}>
-                    <strong style={{ color: 'var(--ink)', fontSize: 14, display: 'block' }}>{t(d.label)}</strong>
+                    <strong style={{ color: 'var(--ink)', fontSize: 14, display: 'block' }}>
+                      {t(d.name)}
+                      {!d.mandatory && (
+                        <span style={{ fontWeight: 400, color: 'var(--muted)' }}> · {t('facultatif')}</span>
+                      )}
+                    </strong>
                     <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
-                      {docs[d.label] ? docs[d.label] : acceptLabel(d.accept)}
+                      {docs[d.key] ? docs[d.key] : acceptLabel(d.accept)}
                     </span>
                   </div>
-                  {docs[d.label] ? (
+                  {docs[d.key] ? (
                     <span className="badge badge--success"><Icon name="check" size={13} /> {t('Ajouté')}</span>
                   ) : (
                     <label
                       className="btn btn--soft btn--sm"
-                      style={{ cursor: tiersId && uploadingDoc !== d.label ? 'pointer' : 'not-allowed', opacity: tiersId ? 1 : 0.6 }}
+                      style={{ cursor: tiersId && uploadingDoc !== d.key ? 'pointer' : 'not-allowed', opacity: tiersId ? 1 : 0.6 }}
                     >
-                      <Icon name="upload" size={15} /> {uploadingDoc === d.label ? t('Envoi…') : t('Déposer')}
+                      <Icon name="upload" size={15} /> {uploadingDoc === d.key ? t('Envoi…') : t('Déposer')}
                       <input
                         type="file"
                         hidden
@@ -496,7 +544,8 @@ export default function Onboarding({ notify }) {
                     </label>
                   )}
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -514,7 +563,7 @@ export default function Onboarding({ notify }) {
                 <div className="recap__row"><dt>{t('Code SWIFT / BIC')}</dt><dd>{form.swift || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Email')}</dt><dd>{form.email || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Représentant')}</dt><dd>{form.repNom || '—'}</dd></div>
-                <div className="recap__row"><dt>{t('Documents déposés')}</dt><dd>{Object.keys(docs).length} / {REQUIRED_DOCS.length}</dd></div>
+                <div className="recap__row"><dt>{t('Documents déposés')}</dt><dd>{Object.keys(docs).length} / {piecesRequises.length}</dd></div>
               </dl>
               <div className="consent">
                 <input id="consent" type="checkbox" checked={form.consent} onChange={set('consent')} />

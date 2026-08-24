@@ -135,6 +135,17 @@ lecteur non technique.
 
 ### Corrigé
 
+- **L’onboarding montrait quatre pièces, quel que soit le partenaire.** RCCM,
+  statuts, attestation fiscale, pièce d’identité — une liste écrite en dur. Une
+  banque correspondante en attend dix, dont le questionnaire Wolfsberg et le
+  formulaire FATCA : elle ne découvrait donc jamais, au moment de constituer son
+  dossier, ce qu’on lui demandait vraiment. L’étape lit désormais la checklist du
+  dossier, celle que le chargé de relation a établie à la création.
+- **Les pièces déposées à l’onboarding ne cochaient rien.** Le téléversement
+  n’emportait pas la clé de la pièce : le document arrivait sans rattachement, et
+  le suivi « X/Y fournies » restait à zéro alors que le partenaire venait de tout
+  déposer. La clé est désormais transmise.
+
 - **Une pièce remplacée porte enfin son propre statut.** Elle recevait « Expiré »,
   faute de valeur adéquate — ce qui laissait croire à un document périmé alors
   qu'il était simplement supplanté par une version plus récente ; la nuance
