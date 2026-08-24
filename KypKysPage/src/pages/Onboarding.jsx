@@ -390,11 +390,24 @@ export default function Onboarding({ notify }) {
     // « Mes bénéficiaires » : bloquer ici arrêterait un partenaire qui n'a pas
     // encore la chaîne de détention sous la main.
     if (step === 3) return true
-    if (step === 5) return form.consent
+    if (step === 5) return form.consent && piecesManquantes.length === 0
     return true
   }
 
   const [submitting, setSubmitting] = useState(false)
+
+  /**
+   * Pièces obligatoires non déposées.
+   *
+   * Un dossier soumis sans ses pièces obligatoires oblige la conformité à le
+   * rejeter et le partenaire à tout reprendre : personne n'y gagne. Le blocage
+   * porte sur la SOUMISSION, pas sur la navigation — le partenaire doit pouvoir
+   * atteindre le récapitulatif pour voir exactement ce qui lui manque.
+   *
+   * Les pièces facultatives n'entrent pas dans le compte : le chargé de relation
+   * les a explicitement décochées à la création du dossier.
+   */
+  const piecesManquantes = piecesRequises.filter((p) => p.mandatory && !piecesDeposees[p.key])
 
   const voirPiece = async (d) => {
     try {
@@ -1024,6 +1037,37 @@ export default function Onboarding({ notify }) {
                 </div>
                 <div className="recap__row"><dt>{t('Documents déposés')}</dt><dd>{Object.keys(piecesDeposees).length} / {piecesRequises.length}</dd></div>
               </dl>
+
+              {piecesManquantes.length > 0 && (
+                <div
+                  className="card card--pad"
+                  style={{ marginBottom: 16, borderLeft: '3px solid var(--warning)' }}
+                >
+                  <h3 style={{ margin: 0, fontSize: 15, color: 'var(--ink)' }}>
+                    <Icon name="alert" size={16} />{' '}
+                    {piecesManquantes.length > 1
+                      ? `${piecesManquantes.length} ${t('pièces obligatoires manquent')}`
+                      : t('Une pièce obligatoire manque')}
+                  </h3>
+                  <p style={{ margin: '6px 0 10px', color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.55 }}>
+                    {t('La soumission est bloquée tant qu’elles ne sont pas déposées. Un dossier incomplet serait rejeté par la conformité, et vous devriez tout reprendre.')}
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
+                    {piecesManquantes.map((p) => (
+                      <li key={p.key} style={{ fontSize: 13.5 }}>{t(p.name)}</li>
+                    ))}
+                  </ul>
+                  <button
+                    className="btn btn--soft btn--sm"
+                    type="button"
+                    style={{ marginTop: 12 }}
+                    onClick={() => setStep(4)}
+                  >
+                    <Icon name="upload" size={15} /> {t('Revenir aux pièces justificatives')}
+                  </button>
+                </div>
+              )}
+
               <div className="consent">
                 <input id="consent" type="checkbox" checked={form.consent} onChange={set('consent')} />
                 <label htmlFor="consent">

@@ -40,6 +40,13 @@ lecteur non technique.
 
 ### Ajouté
 
+- **Un dossier incomplet ne peut plus être soumis par le partenaire.** Le
+  récapitulatif énumère les pièces obligatoires manquantes et propose de
+  revenir les déposer ; la soumission reste bloquée tant qu’il en manque une.
+  Le blocage porte sur la soumission, pas sur la navigation : le partenaire doit
+  pouvoir atteindre le récapitulatif pour voir ce qui lui manque. Pendant du
+  contrôle posé côté conformité sur le bouton « Valider ».
+
 - **Gérants multiples à l’onboarding, et visibles par la conformité.** L’étape
   « Représentant légal » ne prévoyait qu’une personne — dont aucun champ n’était
   enregistré. Elle devient « Direction » : le nombre de gérants se saisit à
