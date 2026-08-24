@@ -3613,6 +3613,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Dataverse",
     "apis": {}
   },
+  "afb_employe1s": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "afb_employe1id",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "afb_evaluationpartenaires": {
     "tableId": "",
     "version": "",

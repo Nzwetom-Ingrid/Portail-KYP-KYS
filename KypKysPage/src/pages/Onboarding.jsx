@@ -8,6 +8,12 @@ import {
   loadDocumentCategories,
   loadDossier,
   uploadDocument,
+  loadGerants,
+  saveGerant,
+  deleteGerant,
+  loadUbos,
+  submitUbo,
+  MAX_GERANTS_DEFAUT,
 } from '../services/portal'
 import { parseRequiredDocs, entityTypeFromRef } from '../config/requiredDocs'
 import { COUNTRIES } from '../config/countries'
@@ -57,7 +63,8 @@ const PROFILS = [
 const STEPS = [
   { title: 'Type de dossier', desc: 'Défini par Afriland First Bank', icon: 'handshake' },
   { title: 'Informations entreprise', desc: 'Identité et coordonnées légales', icon: 'building' },
-  { title: 'Représentant légal', desc: 'Personne habilitée à signer', icon: 'user' },
+  { title: 'Direction', desc: 'Gérants et représentant légal', icon: 'user' },
+  { title: 'Bénéficiaires effectifs', desc: 'Détenteurs de 25 % ou plus', icon: 'users' },
   { title: 'Pièces justificatives', desc: 'Documents requis pour la conformité', icon: 'folder' },
   { title: 'Validation', desc: 'Vérifiez et soumettez votre dossier', icon: 'shield' },
 ]
@@ -75,6 +82,22 @@ const CLES_IDENTITE = ['cni', 'identite', 'passeport', 'piece']
 function acceptPourPiece(cle) {
   const c = String(cle || '').toLowerCase()
   return CLES_IDENTITE.some((k) => c.includes(k)) ? ACCEPT_IDENTITY : ACCEPT_DOCUMENT
+}
+
+/** Un gérant vierge. Le premier ajouté est le représentant légal par défaut. */
+function gerantVide(premier = false) {
+  return {
+    id: null,
+    nom: '',
+    fonction: '',
+    email: '',
+    telephone: '',
+    typePiece: 0,
+    numeroPiece: '',
+    nationalite: '',
+    dateNaissance: '',
+    representant: premier,
+  }
 }
 
 export default function Onboarding({ notify }) {
@@ -128,6 +151,57 @@ export default function Onboarding({ notify }) {
    * vient désormais du dossier, comme dans « Mes documents ».
    */
   const [piecesRequises, setPiecesRequises] = useState([])
+
+  /**
+   * Gérants du tiers.
+   *
+   * L'écran ne prévoyait qu'un « représentant légal », dont aucun champ n'était
+   * d'ailleurs enregistré. Une société en a rarement un seul, et la conformité
+   * doit tous les connaître : c'est sur eux que porte le screening de sanctions.
+   * Le nombre est saisi à l'étape précédente, et se corrige ici — découvrir un
+   * troisième gérant en cours de saisie ne doit pas obliger à revenir en arrière.
+   */
+  const [gerants, setGerants] = useState([gerantVide(true)])
+  const [maxGerants, setMaxGerants] = useState(MAX_GERANTS_DEFAUT)
+  // Gérants retirés d'un dossier déjà enregistré : à supprimer à la soumission.
+  const [gerantsRetires, setGerantsRetires] = useState([])
+  const [ubos, setUbos] = useState([])
+  const [uboForm, setUboForm] = useState(null)
+  const [uboEnCours, setUboEnCours] = useState(false)
+
+  const majGerant = (i, champ, valeur) =>
+    setGerants((g) => g.map((x, k) => (k === i ? { ...x, [champ]: valeur } : x)))
+
+  // Un seul représentant légal : cocher l'un décoche les autres.
+  const designerRepresentant = (i) =>
+    setGerants((g) => g.map((x, k) => ({ ...x, representant: k === i })))
+
+  const ajouterGerant = () =>
+    setGerants((g) => (g.length >= maxGerants ? g : [...g, gerantVide(g.length === 0)]))
+
+  const retirerGerant = (i) =>
+    setGerants((g) => {
+      const cible = g[i]
+      if (cible?.id) setGerantsRetires((r) => [...r, cible.id])
+      const reste = g.filter((_, k) => k !== i)
+      // Le dernier retrait ne doit pas laisser le dossier sans représentant.
+      if (reste.length && !reste.some((x) => x.representant)) reste[0] = { ...reste[0], representant: true }
+      return reste.length ? reste : [gerantVide(true)]
+    })
+
+  /** Ajuste le nombre de cartes à la valeur saisie à l'étape précédente. */
+  const reglerNombreGerants = (n) => {
+    const cible = Math.max(1, Math.min(Number(n) || 1, maxGerants))
+    setGerants((g) => {
+      if (g.length === cible) return g
+      if (g.length < cible) {
+        return [...g, ...Array.from({ length: cible - g.length }, () => gerantVide(false))]
+      }
+      const reduit = g.slice(0, cible)
+      if (!reduit.some((x) => x.representant)) reduit[0] = { ...reduit[0], representant: true }
+      return reduit
+    })
+  }
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -140,7 +214,18 @@ export default function Onboarding({ notify }) {
 
         // Checklist personnalisée du tiers si elle existe, sinon celle du type
         // d'entité — le type se lit sur le préfixe de la référence du dossier.
+        if (t.afb_max_gerants) setMaxGerants(t.afb_max_gerants)
+
         if (t.afb_tiersid) {
+          const [dejaLa, uboRows] = await Promise.all([
+            loadGerants(t.afb_tiersid).catch(() => []),
+            loadUbos(t.afb_tiersid).catch(() => []),
+          ])
+          if (!cancelled) {
+            // Une reprise d'onboarding ne doit pas redemander ce qui est déjà saisi.
+            if (dejaLa.length) setGerants(dejaLa)
+            setUbos(uboRows)
+          }
           const dossier = await loadDossier(t.afb_tiersid).catch(() => null)
           if (!cancelled) {
             const type = entityTypeFromRef(dossier?.afb_reference) || t.afb_entity_type
@@ -225,12 +310,51 @@ export default function Onboarding({ notify }) {
     // Le téléphone reste facultatif, mais s'il est renseigné il doit être valide :
     // un numéro inexploitable bloque la conformité au moment de joindre le tiers.
     if (step === 1) return form.raisonSociale && form.rccm && form.email && !validatePhone(form.telephone)
-    if (step === 2) return form.repNom && form.repFonction && form.repEmail && !validatePhone(form.repTelephone)
-    if (step === 4) return form.consent
+    // Chaque gérant doit être identifiable et joignable, et l'un d'eux doit
+    // engager la société : un dossier sans signataire désigné n'est pas
+    // exploitable par la conformité.
+    if (step === 2) {
+      return (
+        gerants.length > 0 &&
+        gerants.every(
+          (g) => g.nom.trim() && g.fonction.trim() && /^\S+@\S+\.\S+$/.test(g.email.trim()) && !validatePhone(g.telephone),
+        ) &&
+        gerants.some((g) => g.representant)
+      )
+    }
+    // Les bénéficiaires effectifs peuvent être déclarés plus tard, depuis
+    // « Mes bénéficiaires » : bloquer ici arrêterait un partenaire qui n'a pas
+    // encore la chaîne de détention sous la main.
+    if (step === 3) return true
+    if (step === 5) return form.consent
     return true
   }
 
   const [submitting, setSubmitting] = useState(false)
+
+  const enregistrerUbo = async () => {
+    if (!uboForm?.nom.trim() || !tiersId) {
+      notify(t('Aucune fiche tiers rattachée à votre compte.'))
+      return
+    }
+    setUboEnCours(true)
+    try {
+      await submitUbo(tiersId, {
+        nom: uboForm.nom.trim(),
+        nationalite: uboForm.nationalite.trim(),
+        pourcentage: Number(uboForm.pourcentage) || 0,
+        dateNaissance: uboForm.dateNaissance || null,
+        typeEntite: 'physique',
+      })
+      setUbos(await loadUbos(tiersId).catch(() => ubos))
+      setUboForm(null)
+      notify(t('Bénéficiaire enregistré.'))
+    } catch (e) {
+      notify(`${t('Enregistrement impossible :')} ${e.message}`)
+    } finally {
+      setUboEnCours(false)
+    }
+  }
 
   const next = async () => {
     if (step < STEPS.length - 1) {
@@ -240,6 +364,25 @@ export default function Onboarding({ notify }) {
     setSubmitting(true)
     try {
       await submitOnboarding(form)
+
+      // Les gérants sont enregistrés à la soumission, dans l'ordre des cartes.
+      // Échec non bloquant : la fiche entreprise est déjà passée, et perdre la
+      // soumission entière pour un gérant refusé serait disproportionné — la
+      // conformité verra le dossier et pourra réclamer.
+      if (tiersId) {
+        try {
+          for (const id of gerantsRetires) await deleteGerant(id).catch(() => null)
+          setGerantsRetires([])
+          const aEnregistrer = gerants.filter((g) => g.nom.trim())
+          for (let i = 0; i < aEnregistrer.length; i += 1) {
+            await saveGerant(tiersId, aEnregistrer[i], i)
+          }
+          setGerants(await loadGerants(tiersId).catch(() => gerants))
+        } catch (e) {
+          notify(`${t('Dossier soumis, mais les gérants n’ont pas pu être enregistrés :')} ${e.message}`)
+        }
+      }
+
       setSubmitted(true)
       notify(t('Votre dossier a été soumis à la conformité 🎉'))
     } catch (e) {
@@ -425,6 +568,23 @@ export default function Onboarding({ notify }) {
                 <label>{t('Adresse du siège')}</label>
                 <input value={form.adresse} onChange={set('adresse')} placeholder={t('Avenue, quartier…')} />
               </div>
+              {/* Le nombre de gérants est saisi ici et commande le nombre de
+                  cartes de l'étape suivante. Il reste corrigeable là-bas :
+                  découvrir un gérant de plus en cours de saisie ne doit pas
+                  obliger à revenir sur ses pas. */}
+              <div className="field">
+                <label>{t('Nombre de gérants')}</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={maxGerants}
+                  value={gerants.length}
+                  onChange={(e) => reglerNombreGerants(e.target.value)}
+                />
+                <span className="field__hint">
+                  {t('Autant de fiches à renseigner à l’étape suivante.')} {t('Maximum')} {maxGerants}.
+                </span>
+              </div>
               <div className="field">
                 <label>{t('Code SWIFT / BIC')}</label>
                 <input value={form.swift} onChange={set('swift')} placeholder="Ex. AFLDCMCX" />
@@ -450,47 +610,203 @@ export default function Onboarding({ notify }) {
             </div>
           )}
 
-          {/* Étape 2 — Représentant */}
+          {/* Étape 2 — Direction : autant de cartes que de gérants annoncés */}
           {step === 2 && (
-            <div className="form-grid">
-              <div className="field">
-                <label>{t('Nom complet')} <span className="req">*</span></label>
-                <input value={form.repNom} onChange={set('repNom')} placeholder={t('Prénom et nom')} />
-              </div>
-              <div className="field">
-                <label>{t('Fonction')} <span className="req">*</span></label>
-                <input value={form.repFonction} onChange={set('repFonction')} placeholder={t('Ex. Directeur Général')} />
-              </div>
-              <div className="field">
-                <label>{t('Email')} <span className="req">*</span></label>
-                <input type="email" value={form.repEmail} onChange={set('repEmail')} placeholder="nom@entreprise.com" />
-              </div>
-              <div className="field">
-                <label>{t('Téléphone')}</label>
-                <input
-                  type="tel"
-                  value={form.repTelephone}
-                  onChange={set('repTelephone')}
-                  onBlur={touch('repTelephone')}
-                  placeholder="+237 6 00 00 00 00"
-                  aria-invalid={!!phoneError('repTelephone')}
-                />
-                <span className={`field__hint ${phoneError('repTelephone') ? 'field__hint--error' : ''}`}>
-                  {phoneError('repTelephone') || t(PHONE_HINT)}
-                </span>
-              </div>
-              <div className="field field--full">
-                <label>{t('Type de pièce d’identité')}</label>
-                <select value={form.repPiece} onChange={set('repPiece')}>
-                  <option>CNI</option><option>{t('Passeport')}</option><option>{t('Carte de séjour')}</option>
-                </select>
-                <span className="field__hint">{t('La pièce sera à déposer à l’étape suivante.')}</span>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {gerants.map((g, i) => (
+                <div key={i} className="card card--pad">
+                  <div className="section-head" style={{ marginBottom: 12 }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: 15, color: 'var(--ink)' }}>
+                        {t('Gérant')} {i + 1}
+                        {g.representant && (
+                          <span className="badge badge--brand" style={{ marginLeft: 8 }}>
+                            {t('Représentant légal')}
+                          </span>
+                        )}
+                      </h3>
+                    </div>
+                    {gerants.length > 1 && (
+                      <button className="btn btn--ghost btn--sm" onClick={() => retirerGerant(i)}>
+                        <Icon name="trash" size={15} /> {t('Retirer')}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="form-grid">
+                    <div className="field">
+                      <label>{t('Nom complet')} <span className="req">*</span></label>
+                      <input
+                        value={g.nom}
+                        onChange={(e) => majGerant(i, 'nom', e.target.value)}
+                        placeholder={t('Prénom et nom')}
+                      />
+                    </div>
+                    <div className="field">
+                      <label>{t('Fonction')} <span className="req">*</span></label>
+                      <input
+                        value={g.fonction}
+                        onChange={(e) => majGerant(i, 'fonction', e.target.value)}
+                        placeholder={t('Ex. Directeur Général')}
+                      />
+                    </div>
+                    <div className="field">
+                      <label>{t('Email')} <span className="req">*</span></label>
+                      <input
+                        type="email"
+                        value={g.email}
+                        onChange={(e) => majGerant(i, 'email', e.target.value)}
+                        placeholder="nom@entreprise.com"
+                      />
+                    </div>
+                    <div className="field">
+                      <label>{t('Téléphone')}</label>
+                      <input
+                        type="tel"
+                        value={g.telephone}
+                        onChange={(e) => majGerant(i, 'telephone', e.target.value)}
+                        placeholder="+237 6 00 00 00 00"
+                        aria-invalid={!!validatePhone(g.telephone)}
+                      />
+                      <span className={`field__hint ${validatePhone(g.telephone) ? 'field__hint--error' : ''}`}>
+                        {validatePhone(g.telephone) || t(PHONE_HINT)}
+                      </span>
+                    </div>
+                    <div className="field">
+                      <label>{t('Nationalité')}</label>
+                      <input
+                        value={g.nationalite}
+                        onChange={(e) => majGerant(i, 'nationalite', e.target.value)}
+                        placeholder={t('Ex. Camerounaise')}
+                      />
+                    </div>
+                    <div className="field">
+                      <label>{t('Date de naissance')}</label>
+                      <input
+                        type="date"
+                        value={g.dateNaissance}
+                        onChange={(e) => majGerant(i, 'dateNaissance', e.target.value)}
+                      />
+                      <span className="field__hint">
+                        {t('Le contrôle de sanctions sur un nom seul produit trop de correspondances.')}
+                      </span>
+                    </div>
+                    <div className="field">
+                      <label>{t('Type de pièce d’identité')}</label>
+                      <select
+                        value={g.typePiece}
+                        onChange={(e) => majGerant(i, 'typePiece', Number(e.target.value))}
+                      >
+                        <option value={0}>CNI</option>
+                        <option value={1}>{t('Passeport')}</option>
+                        <option value={2}>{t('Titre de séjour')}</option>
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label>{t('Numéro de pièce')}</label>
+                      <input
+                        value={g.numeroPiece}
+                        onChange={(e) => majGerant(i, 'numeroPiece', e.target.value)}
+                      />
+                    </div>
+                    <div className="field field--full">
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                        <input
+                          type="radio"
+                          name="representant-legal"
+                          checked={g.representant}
+                          onChange={() => designerRepresentant(i)}
+                        />
+                        {t('C’est cette personne qui engage la société')}
+                      </label>
+                      <span className="field__hint">
+                        {t('Un seul représentant légal : le désigner ici retire la désignation des autres.')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {gerants.length < maxGerants && (
+                <button className="btn btn--soft btn--sm" onClick={ajouterGerant} style={{ alignSelf: 'flex-start' }}>
+                  <Icon name="plus" size={15} /> {t('Ajouter un gérant')}
+                </button>
+              )}
+              <span className="field__hint">
+                {gerants.length} / {maxGerants} {t('gérants — le maximum est fixé par votre type de partenaire.')}
+              </span>
             </div>
           )}
 
-          {/* Étape 3 — Documents */}
+          {/* Étape 3 — Bénéficiaires effectifs */}
           {step === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <span className="field__hint">
+                {t('Déclarez toute personne détenant, directement ou indirectement, au moins 25 % du capital ou des droits de vote, ou exerçant un contrôle effectif sur votre entité. Vous pourrez y revenir depuis « Mes bénéficiaires ».')}
+              </span>
+
+              {ubos.map((u) => (
+                <div key={u.afb_uboid} className="card" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px' }}>
+                  <span className="doc-name__icon"><Icon name="user" size={18} /></span>
+                  <div style={{ flex: 1 }}>
+                    <strong style={{ color: 'var(--ink)', fontSize: 14, display: 'block' }}>
+                      {u.afb_nomouraisonsociale || '—'}
+                    </strong>
+                    <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
+                      {u.afb_pourcentagededetentiondirecte ?? 0} % · {u.afb_nationalite || '—'}
+                    </span>
+                  </div>
+                  <span className="badge badge--success"><Icon name="check" size={13} /> {t('Déclaré')}</span>
+                </div>
+              ))}
+
+              {!uboForm && (
+                <button className="btn btn--soft btn--sm" onClick={() => setUboForm({ nom: '', nationalite: '', pourcentage: '', dateNaissance: '' })} style={{ alignSelf: 'flex-start' }}>
+                  <Icon name="plus" size={15} /> {t('Ajouter un bénéficiaire')}
+                </button>
+              )}
+
+              {uboForm && (
+                <div className="card card--pad">
+                  <div className="form-grid">
+                    <div className="field">
+                      <label>{t('Nom complet')} <span className="req">*</span></label>
+                      <input value={uboForm.nom} onChange={(e) => setUboForm({ ...uboForm, nom: e.target.value })} placeholder={t('Prénom et nom')} />
+                    </div>
+                    <div className="field">
+                      <label>{t('Pourcentage de détention')} <span className="req">*</span></label>
+                      <input type="number" min="0" max="100" value={uboForm.pourcentage} onChange={(e) => setUboForm({ ...uboForm, pourcentage: e.target.value })} placeholder="25" />
+                    </div>
+                    <div className="field">
+                      <label>{t('Nationalité')}</label>
+                      <input value={uboForm.nationalite} onChange={(e) => setUboForm({ ...uboForm, nationalite: e.target.value })} placeholder={t('Ex. Camerounaise')} />
+                    </div>
+                    <div className="field">
+                      <label>{t('Date de naissance')}</label>
+                      <input type="date" value={uboForm.dateNaissance} onChange={(e) => setUboForm({ ...uboForm, dateNaissance: e.target.value })} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                    <button className="btn btn--primary btn--sm" onClick={enregistrerUbo} disabled={uboEnCours || !uboForm.nom.trim() || !uboForm.pourcentage}>
+                      <Icon name="check" size={15} /> {uboEnCours ? t('Enregistrement…') : t('Enregistrer')}
+                    </button>
+                    <button className="btn btn--ghost btn--sm" onClick={() => setUboForm(null)} disabled={uboEnCours}>
+                      {t('Annuler')}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {ubos.length === 0 && !uboForm && (
+                <span className="field__hint">
+                  {t('Aucun bénéficiaire déclaré. Si personne n’atteint 25 %, passez cette étape — la conformité vous le demandera si nécessaire.')}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Étape 4 — Documents */}
+          {step === 4 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {!tiersId && (
                 <div className="field__hint" style={{ marginBottom: 4 }}>
@@ -549,8 +865,8 @@ export default function Onboarding({ notify }) {
             </div>
           )}
 
-          {/* Étape 4 — Validation */}
-          {step === 4 && (
+          {/* Étape 5 — Validation */}
+          {step === 5 && (
             <div>
               <dl className="recap">
                 <div className="recap__row"><dt>{t('Type de profil')}</dt><dd>{form.profil === 'kys' ? t('KYS — Fournisseur') : form.profil === 'kyp' ? t('KYP — Partenaire') : '—'}</dd></div>
@@ -562,7 +878,18 @@ export default function Onboarding({ notify }) {
                 <div className="recap__row"><dt>{t('Ville')}</dt><dd>{form.ville || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Code SWIFT / BIC')}</dt><dd>{form.swift || '—'}</dd></div>
                 <div className="recap__row"><dt>{t('Email')}</dt><dd>{form.email || '—'}</dd></div>
-                <div className="recap__row"><dt>{t('Représentant')}</dt><dd>{form.repNom || '—'}</dd></div>
+                <div className="recap__row">
+                  <dt>{t('Représentant légal')}</dt>
+                  <dd>{gerants.find((g) => g.representant)?.nom || '—'}</dd>
+                </div>
+                <div className="recap__row">
+                  <dt>{t('Gérants déclarés')}</dt>
+                  <dd>{gerants.filter((g) => g.nom.trim()).length}</dd>
+                </div>
+                <div className="recap__row">
+                  <dt>{t('Bénéficiaires effectifs')}</dt>
+                  <dd>{ubos.length}</dd>
+                </div>
                 <div className="recap__row"><dt>{t('Documents déposés')}</dt><dd>{Object.keys(docs).length} / {piecesRequises.length}</dd></div>
               </dl>
               <div className="consent">

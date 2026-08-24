@@ -47,6 +47,9 @@ const esc = (s) => String(s).replace(/'/g, "''") // échappe les apostrophes ODa
 // afb_nomdutiers). Ce n'est PAS un lookup sur le Contact.
 let _tiers = null
 
+/** Plafond retenu quand le type de partenaire ne le précise pas. */
+export const MAX_GERANTS_DEFAUT = 5
+
 // Mappe un enregistrement afb_tiers réel → view-model stable du portail
 function mapTiers(t, b2c) {
   if (!t) return null
@@ -73,6 +76,9 @@ function mapTiers(t, b2c) {
     afb_nom: t.afb_nomdupartenaire || '—',
     afb_type: CODE_PAR_TYPE[type] ?? 'KYP',
     afb_entity_type: type, // 'partenaire' | 'fournisseur' | 'correspondant' | 'intragroupe'
+    // Plafond de gérants, réglé par type de partenaire. Absent — type illisible
+    // faute de permission, ou colonne non renseignée — on retombe sur 5.
+    afb_max_gerants: t.afb_typejuridique?.afb_nombremaximumdegerants || MAX_GERANTS_DEFAUT,
     afb_statut: fmt(t, 'afb_statutdutiers'),
     afb_niveau_risque: fmt(t, 'afb_niveauderisque'),
     // Champs bruts conservés pour la mise à jour (onboarding)
@@ -97,9 +103,11 @@ const TIERS_SELECT =
 // Expansion du type de partenaire : c'est sa famille d'institution qui donne le
 // type d'entite. Necessite la permission de table afb_partnertype (Global, R) ;
 // sans elle l'expansion revient vide et mapTiers bascule sur le repli.
-const TIERS_EXPAND = '&$expand=afb_typejuridique($select=afb_familledinstitution)'
+const TIERS_EXPAND =
+  '&$expand=afb_typejuridique($select=afb_familledinstitution,afb_nombremaximumdegerants)'
 // Meme expansion, imbriquee dans un $expand parent (syntaxe OData : point-virgule).
-const TIERS_EXPAND_IMBRIQUE = ';$expand=afb_typejuridique($select=afb_familledinstitution)'
+const TIERS_EXPAND_IMBRIQUE =
+  ';$expand=afb_typejuridique($select=afb_familledinstitution,afb_nombremaximumdegerants)'
 
 /** Entreprise retenue lorsque l'utilisateur en gère plusieurs. */
 const CLE_TIERS_CHOISI = 'afb_tiers_choisi'
@@ -379,6 +387,90 @@ export async function submitOnboarding(form) {
 
 // -------- Bénéficiaires effectifs (UBO) du tiers -------------
 // L'UBO utilise les vrais noms de colonnes (page construite sur le schéma réel).
+/* ---------------------------------------------------------------------------
+ *  Gérants et dirigeants (table « Employé »)
+ * ------------------------------------------------------------------------- */
+
+/** Un enregistrement Dataverse → la forme manipulée par le formulaire. */
+function mapGerant(g) {
+  return {
+    id: g.afb_employe1id,
+    nom: g.afb_nomcomplet || '',
+    fonction: g.afb_fonction || '',
+    email: g.afb_adresseemail || '',
+    telephone: g.afb_numerodetelephone || '',
+    typePiece: g.afb_typedepiecedidentite ?? CHOICES.gerantPiece.CNI,
+    numeroPiece: g.afb_numerodepiecedidentite || '',
+    nationalite: g.afb_nationalite || '',
+    dateNaissance: g.afb_datedenaissance ? String(g.afb_datedenaissance).slice(0, 10) : '',
+    representant: g.afb_representantlegal === CHOICES.gerantRepresentant.Oui,
+    rang: g.afb_rang ?? 0,
+  }
+}
+
+export async function loadGerants(tiersId) {
+  if (!dv.enabled) return []
+  const rows = await dv
+    .list(
+      SETS.gerant,
+      `?$filter=_afb_tiers_value eq ${tiersId}` +
+        `&$select=afb_employe1id,afb_nomcomplet,afb_fonction,afb_adresseemail,` +
+        `afb_numerodetelephone,afb_typedepiecedidentite,afb_numerodepiecedidentite,` +
+        `afb_nationalite,afb_datedenaissance,afb_representantlegal,afb_rang` +
+        `&$orderby=afb_rang asc`
+    )
+    .catch(() => [])
+  return rows.map(mapGerant)
+}
+
+/**
+ * Enregistre un gérant.
+ *
+ * Deux voies d'écriture, essayées dans cet ordre : le deep-insert dans la
+ * collection de navigation du tiers — celui qui contourne l'erreur
+ * d'association du Web API (90040106) sur les documents — puis, s'il échoue,
+ * la création directe avec le lookup en `@odata.bind`. Le nom exact de la
+ * relation dépend de la façon dont Maker l'a nommée ; plutôt que de le
+ * supposer, on tente les deux.
+ */
+export async function saveGerant(tiersId, g, rang = 0) {
+  if (!dv.enabled) return null
+  const payload = {
+    afb_nomcomplet: g.nom?.trim() || '',
+    afb_fonction: g.fonction?.trim() || '',
+    afb_adresseemail: g.email?.trim() || '',
+    afb_representantlegal: g.representant
+      ? CHOICES.gerantRepresentant.Oui
+      : CHOICES.gerantRepresentant.Non,
+    afb_rang: rang,
+  }
+  if (g.telephone?.trim()) payload.afb_numerodetelephone = g.telephone.trim()
+  if (g.numeroPiece?.trim()) payload.afb_numerodepiecedidentite = g.numeroPiece.trim()
+  if (g.nationalite?.trim()) payload.afb_nationalite = g.nationalite.trim()
+  if (g.dateNaissance) payload.afb_datedenaissance = g.dateNaissance
+  if (g.typePiece !== undefined && g.typePiece !== null) {
+    payload.afb_typedepiecedidentite = Number(g.typePiece)
+  }
+
+  // Mise à jour d'un gérant déjà enregistré.
+  if (g.id) return dv.update(SETS.gerant, g.id, payload)
+
+  try {
+    return await dv.createIn(SETS.tiers, tiersId, 'afb_employe1_Tiers_afb_tiers', payload)
+  } catch {
+    return dv.create(SETS.gerant, {
+      ...payload,
+      [`afb_Tiers@odata.bind`]: `/${SETS.tiers}(${tiersId})`,
+    })
+  }
+}
+
+/** Retire un gérant supprimé du formulaire. */
+export async function deleteGerant(id) {
+  if (!dv.enabled) return null
+  return dv.remove(SETS.gerant, id)
+}
+
 export async function loadUbos(tiersId) {
   if (!dv.enabled) return [...MOCK_UBOS]
   return await dv.list(

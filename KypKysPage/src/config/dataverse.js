@@ -30,6 +30,10 @@ export const SETS = {
   ubo: 'afb_ubos',
   dossier: 'afb_dossierkypkyses',
   demande: 'afb_demandederevues',
+  // « Employé » côté Dataverse — ce sont les gérants et dirigeants du tiers.
+  // Le suffixe « 1 » du nom logique vient de Maker : le nom afb_employe était
+  // déjà pris. Rien à en déduire, mais il ne se change plus.
+  gerant: 'afb_employe1s',
   decision: 'afb_decisions',
   resultatScreening: 'afb_resultatscreenings',
   evaluation: 'afb_evaluationpartenaires',
@@ -93,6 +97,11 @@ export const CHOICES = {
   documentSource: { Tiers: 747010000, DCONF: 747010001, Systeme: 747010002 },
   // afb_document.afb_authentifie (0 = Oui, 1 = Non)
   documentAuthentifie: { Oui: 0, Non: 1 },
+  // afb_employe1 — attention, « Représentant légal » est un choix Oui/Non, pas
+  // un booléen : 0 vaut Oui.
+  gerantRepresentant: { Oui: 0, Non: 1 },
+  gerantPiece: { CNI: 0, Passeport: 1, TitreDeSejour: 2 },
+  gerantPpe: { Non: 0, AutoDeclaree: 1, Detectee: 747010001 },
   // afb_ubo.afb_statutdevalidation
   uboStatut: { Valide: 0, EnCours: 1, NonVerifie: 2, Rejete: 747010001 },
   // afb_ubo.afb_statutppe

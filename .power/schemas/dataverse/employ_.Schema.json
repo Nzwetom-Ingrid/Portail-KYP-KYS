@@ -1,133 +1,218 @@
 {
-  "name": "afb_partnertype",
-  "title": "PARTNER TYPES",
+  "name": "afb_employe1",
+  "title": "Employé",
   "schema": {
     "type": "array",
     "items": {
       "type": "object",
       "x-ms-dataverse-entity": true,
-      "x-ms-dataverse-entityset": "afb_partnertypes",
-      "x-ms-dataverse-primary-id": "afb_partnertypeid",
-      "x-ms-dataverse-primary-name": "afb_codeinstitution",
+      "x-ms-dataverse-entityset": "afb_employe1s",
+      "x-ms-dataverse-primary-id": "afb_employe1id",
+      "x-ms-dataverse-primary-name": "afb_nomcomplet",
       "properties": {
-        "afb_codeinstitution": {
+        "afb_adresseemail": {
           "type": "string",
-          "title": "Code",
-          "x-ms-dataverse-attribute": "afb_codeinstitution",
+          "title": "E-mail",
+          "x-ms-dataverse-attribute": "afb_adresseemail",
           "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "afb_codeinstitution",
-          "x-ms-dataverse-primary-name": true,
-          "required": true,
-          "maxLength": 850
-        },
-        "afb_descriptiondelinstitution": {
-          "type": "string",
-          "title": "Description",
-          "x-ms-dataverse-attribute": "afb_descriptiondelinstitution",
-          "x-ms-dataverse-type": "MemoType",
-          "x-ms-schema-name": "afb_descriptiondelinstitution",
-          "maxLength": 2000
-        },
-        "afb_familledinstitution": {
-          "type": "string",
-          "title": "Famille",
-          "x-ms-dataverse-attribute": "afb_familledinstitution",
-          "x-ms-dataverse-type": "PicklistType",
-          "x-ms-schema-name": "afb_familledinstitution",
-          "required": true,
-          "enum": [
-            "Banque correspondante",
-            "EMF",
-            "Entreprise individuelle",
-            "Société commerciale",
-            "Personne physique ",
-            "Établissement public ",
-            "Coopérative / GIC ",
-            "Profession libérale "
-          ],
-          "x-ms-enum-values": [
-            747010000,
-            747010001,
-            747010002,
-            747010003,
-            747010004,
-            747010005,
-            747010006,
-            747010007
-          ],
-          "Color": [
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-          ],
-          "x-ms-optionsetmetadataid": "ca0ed3f7-6654-f111-bec6-6045bd6c319a",
-          "x-ms-isGlobal": false,
-          "x-ms-optionsetdisplayname": "Famille",
-          "x-ms-optionSetType": "Picklist"
-        },
-        "afb_familledinstitutionname": {
-          "type": "string",
-          "title": "afb_familledinstitutionname",
-          "x-ms-dataverse-attribute": "afb_familledinstitutionname",
-          "x-ms-dataverse-type": "VirtualType",
-          "x-ms-schema-name": "afb_familledinstitutionName",
-          "x-ms-read-only": true
-        },
-        "afb_libelleanglais": {
-          "type": "string",
-          "title": "Libellé EN",
-          "x-ms-dataverse-attribute": "afb_libelleanglais",
-          "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "afb_libelleanglais",
-          "required": true,
+          "x-ms-schema-name": "afb_adresseemail",
           "maxLength": 100
         },
-        "afb_libellefrancais": {
+        "afb_datedenaissance": {
           "type": "string",
-          "title": "Libellé FR",
-          "x-ms-dataverse-attribute": "afb_libellefrancais",
-          "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "afb_libellefrancais",
-          "required": true,
-          "maxLength": 100
+          "title": "Date de naissance",
+          "x-ms-dataverse-attribute": "afb_datedenaissance",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "afb_datedenaissance"
         },
-        "afb_nombremaximumdegerants": {
+        "afb_employe1id": {
           "type": "string",
-          "title": "Nombre maximum de gérants",
-          "x-ms-dataverse-attribute": "afb_nombremaximumdegerants",
-          "x-ms-dataverse-type": "IntegerType",
-          "x-ms-schema-name": "afb_Nombremaximumdegerants"
-        },
-        "afb_partnertypeid": {
-          "type": "string",
-          "title": "PARTNER TYPE",
-          "x-ms-dataverse-attribute": "afb_partnertypeid",
+          "title": "Employé",
+          "x-ms-dataverse-attribute": "afb_employe1id",
           "x-ms-dataverse-type": "UniqueidentifierType",
-          "x-ms-schema-name": "afb_partnertypeId",
+          "x-ms-schema-name": "afb_employe1Id",
           "x-ms-dataverse-primary-id": true,
           "required": true,
           "x-ms-keyType": "primary"
         },
-        "afb_sectionguideafb": {
+        "afb_fonction": {
           "type": "string",
-          "title": "Section Guide AFB",
-          "x-ms-dataverse-attribute": "afb_sectionguideafb",
+          "title": "Fonction",
+          "x-ms-dataverse-attribute": "afb_fonction",
           "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "afb_sectionguideafb",
+          "x-ms-schema-name": "afb_fonction",
           "maxLength": 100
         },
-        "afb_seuilubopardefaut": {
+        "afb_nationalite": {
           "type": "string",
-          "title": "Seuil UBO défaut (%)",
-          "x-ms-dataverse-attribute": "afb_seuilubopardefaut",
+          "title": "Nationalité",
+          "x-ms-dataverse-attribute": "afb_nationalite",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_nationalite",
+          "maxLength": 100
+        },
+        "afb_nomcomplet": {
+          "type": "string",
+          "title": "Nom complet",
+          "x-ms-dataverse-attribute": "afb_nomcomplet",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_nomcomplet",
+          "x-ms-dataverse-primary-name": true,
+          "maxLength": 850
+        },
+        "afb_numerodepiecedidentite": {
+          "type": "string",
+          "title": "Numéro de pièce",
+          "x-ms-dataverse-attribute": "afb_numerodepiecedidentite",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_numerodepiecedidentite",
+          "maxLength": 100
+        },
+        "afb_numerodetelephone": {
+          "type": "string",
+          "title": "Téléphone",
+          "x-ms-dataverse-attribute": "afb_numerodetelephone",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_numerodetelephone",
+          "maxLength": 100
+        },
+        "afb_piecedidentite": {
+          "type": "string",
+          "title": "Pièce d'identité",
+          "x-ms-dataverse-attribute": "afb_piecedidentite",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "afb_Piecedidentite"
+        },
+        "afb_piecedidentitename": {
+          "type": "string",
+          "title": "afb_piecedidentitename",
+          "x-ms-dataverse-attribute": "afb_piecedidentitename",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_PiecedidentiteName",
+          "x-ms-read-only": true,
+          "maxLength": 850
+        },
+        "afb_rang": {
+          "type": "string",
+          "title": "Rang",
+          "x-ms-dataverse-attribute": "afb_rang",
           "x-ms-dataverse-type": "IntegerType",
-          "x-ms-schema-name": "afb_seuilubopardefaut",
-          "required": true
+          "x-ms-schema-name": "afb_rang"
+        },
+        "afb_representantlegal": {
+          "type": "string",
+          "title": "Représentant légal",
+          "x-ms-dataverse-attribute": "afb_representantlegal",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "afb_representantlegal",
+          "enum": [
+            "Oui",
+            "Non"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "5fb570c0-909f-f111-b8dd-6045bd6e0be2",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Représentant légal",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "afb_representantlegalname": {
+          "type": "string",
+          "title": "afb_representantlegalname",
+          "x-ms-dataverse-attribute": "afb_representantlegalname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "afb_representantlegalName",
+          "x-ms-read-only": true
+        },
+        "afb_statutppe": {
+          "type": "string",
+          "title": "Statut PPE",
+          "x-ms-dataverse-attribute": "afb_statutppe",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "afb_StatutPPE",
+          "enum": [
+            "Non",
+            "Auto-déclarée ",
+            "Détectée"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1,
+            747010001
+          ],
+          "Color": [
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "533a3452-929f-f111-b8dd-6045bd6e0be2",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Statut PPE",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "afb_statutppename": {
+          "type": "string",
+          "title": "afb_statutppename",
+          "x-ms-dataverse-attribute": "afb_statutppename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "afb_statutppeName",
+          "x-ms-read-only": true
+        },
+        "afb_tiers": {
+          "type": "string",
+          "title": "Tiers",
+          "x-ms-dataverse-attribute": "afb_tiers",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "afb_Tiers"
+        },
+        "afb_tiersname": {
+          "type": "string",
+          "title": "afb_tiersname",
+          "x-ms-dataverse-attribute": "afb_tiersname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "afb_TiersName",
+          "x-ms-read-only": true,
+          "maxLength": 850
+        },
+        "afb_typedepiecedidentite": {
+          "type": "string",
+          "title": "Type de pièce d'identité",
+          "x-ms-dataverse-attribute": "afb_typedepiecedidentite",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "afb_Typedepiecedidentite",
+          "enum": [
+            "Passeport",
+            "CNI ",
+            "Titre de séjour"
+          ],
+          "x-ms-enum-values": [
+            1,
+            0,
+            2
+          ],
+          "Color": [
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "9b483cc5-919f-f111-b8dd-6045bd6e0be2",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Type de pièce d'identité",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "afb_typedepiecedidentitename": {
+          "type": "string",
+          "title": "afb_typedepiecedidentitename",
+          "x-ms-dataverse-attribute": "afb_typedepiecedidentitename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "afb_typedepiecedidentiteName",
+          "x-ms-read-only": true
         },
         "createdby": {
           "type": "string",
@@ -356,7 +441,7 @@
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "b5d8b14b-8c50-f111-a824-6045bd6e761c",
+          "x-ms-optionsetmetadataid": "f33af003-5751-f111-a824-e4fb1efad4e4",
           "x-ms-isGlobal": false,
           "x-ms-optionsetdisplayname": "Statut",
           "x-ms-optionSetType": "State"
@@ -387,7 +472,7 @@
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "c3d8b14b-8c50-f111-a824-6045bd6e761c",
+          "x-ms-optionsetmetadataid": "fd3af003-5751-f111-a824-e4fb1efad4e4",
           "x-ms-isGlobal": false,
           "x-ms-optionsetdisplayname": "Raison du statut",
           "x-ms-optionSetType": "Status"
@@ -424,12 +509,7 @@
         }
       },
       "required": [
-        "afb_codeinstitution",
-        "afb_familledinstitution",
-        "afb_libelleanglais",
-        "afb_libellefrancais",
-        "afb_partnertypeid",
-        "afb_seuilubopardefaut",
+        "afb_employe1id",
         "createdbyyominame",
         "createdonbehalfbyyominame",
         "modifiedbyyominame",

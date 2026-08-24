@@ -30,6 +30,7 @@ export interface Afb_partnertypesBase {
   afb_familledinstitution: Afb_partnertypesafb_familledinstitution;
   afb_libelleanglais: string;
   afb_libellefrancais: string;
+  afb_nombremaximumdegerants?: number;
   afb_partnertypeid: string;
   afb_sectionguideafb?: string;
   afb_seuilubopardefaut: number;

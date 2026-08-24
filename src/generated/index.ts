@@ -12,6 +12,7 @@ export * as Afb_documentdeconformitesModel from './models/Afb_documentdeconformi
 export * as Afb_documentsModel from './models/Afb_documentsModel';
 export * as Afb_documentversionsModel from './models/Afb_documentversionsModel';
 export * as Afb_dossierkypkysesModel from './models/Afb_dossierkypkysesModel';
+export * as Afb_employe1sModel from './models/Afb_employe1sModel';
 export * as Afb_evaluationpartenairesModel from './models/Afb_evaluationpartenairesModel';
 export * as Afb_grilleevaluationsModel from './models/Afb_grilleevaluationsModel';
 export * as Afb_journalauditsModel from './models/Afb_journalauditsModel';
@@ -45,6 +46,7 @@ export * from './services/Afb_documentdeconformitesService';
 export * from './services/Afb_documentsService';
 export * from './services/Afb_documentversionsService';
 export * from './services/Afb_dossierkypkysesService';
+export * from './services/Afb_employe1sService';
 export * from './services/Afb_evaluationpartenairesService';
 export * from './services/Afb_grilleevaluationsService';
 export * from './services/Afb_journalauditsService';

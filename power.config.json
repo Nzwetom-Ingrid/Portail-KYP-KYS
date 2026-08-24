@@ -138,6 +138,10 @@
         "demandederevue": {
           "entitySetName": "afb_demandederevues",
           "logicalName": "afb_demandederevue"
+        },
+        "employ_": {
+          "entitySetName": "afb_employe1s",
+          "logicalName": "afb_employe1"
         }
       },
       "environmentVariableName": ""
