@@ -147,6 +147,17 @@ lecteur non technique.
 
 ### Corrigé
 
+- **L’onboarding et « Mes documents » ne disaient pas la même chose.** L’étape
+  des pièces s’appuyait sur un état local, gardé dans le navigateur : une pièce
+  déposée depuis « Mes documents » n’y apparaissait pas, et une pièce supprimée
+  ailleurs y restait marquée « Ajouté ». Deux écrans, deux vérités. Les deux
+  lisent désormais Dataverse.
+- **Aucune action sur une pièce déjà déposée à l’onboarding.** Elle affichait
+  « Ajouté » et rien d’autre — impossible de la consulter, de la remplacer ou de
+  la retirer sans passer par un autre écran. Les trois actions sont là, avec le
+  statut réel de la pièce. Une pièce déjà validée ne se supprime pas : elle se
+  remplace, ce qui laisse une trace et relance la revue.
+
 - **L’onboarding montrait quatre pièces, quel que soit le partenaire.** RCCM,
   statuts, attestation fiscale, pièce d’identité — une liste écrite en dur. Une
   banque correspondante en attend dix, dont le questionnaire Wolfsberg et le

@@ -13,6 +13,9 @@ import {
   deleteGerant,
   loadUbos,
   submitUbo,
+  loadDocuments,
+  deleteDocument,
+  getDocumentFile,
   MAX_GERANTS_DEFAUT,
 } from '../services/portal'
 import { parseRequiredDocs, entityTypeFromRef } from '../config/requiredDocs'
@@ -28,7 +31,7 @@ import {
   validatePhone,
 } from '../utils/validation'
 
-// Persistance locale : la progression de l'onboarding (formulaire, étape, docs,
+// Persistance locale : la progression de l'onboarding (formulaire, étape,
 // soumission) est sauvegardée dans le navigateur pour survivre à une navigation
 // ou un rechargement. Une fois soumis, l'état « soumis » reste.
 const STORAGE_KEY = 'afb_onboarding_v1'
@@ -84,6 +87,23 @@ function acceptPourPiece(cle) {
   return CLES_IDENTITE.some((k) => c.includes(k)) ? ACCEPT_IDENTITY : ACCEPT_DOCUMENT
 }
 
+/** Décode une pièce jointe renvoyée en base64 par Dataverse. */
+function b64ToBlob(b64, mime) {
+  const bin = atob(b64)
+  const arr = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i += 1) arr[i] = bin.charCodeAt(i)
+  return new Blob([arr], { type: mime || 'application/octet-stream' })
+}
+
+/** Statut d'une pièce, tel que le tiers doit le lire. */
+const STATUT_PIECE = {
+  Valide: { label: 'Validé', cls: 'badge--success' },
+  EnRevue: { label: 'En revue', cls: 'badge--info' },
+  Expire: { label: 'Expiré', cls: 'badge--danger' },
+  Rejete: { label: 'Refusé', cls: 'badge--danger' },
+  Remplace: { label: 'Remplacé', cls: 'badge--muted' },
+}
+
 /** Un gérant vierge. Le premier ajouté est le représentant légal par défaut. */
 function gerantVide(premier = false) {
   return {
@@ -124,17 +144,16 @@ export default function Onboarding({ notify }) {
     repPiece: 'CNI',
     consent: false,
   })
-  const [docs, setDocs] = useState(_saved?.docs ?? {})
   const [tiersId, setTiersId] = useState(null)
 
   // Sauvegarde à chaque changement → survit à la navigation / au rechargement.
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ form, step, docs, submitted }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ form, step, submitted }))
     } catch {
       /* quota / mode privé : on ignore */
     }
-  }, [form, step, docs, submitted])
+  }, [form, step, submitted])
   const [categories, setCategories] = useState([])
   const [uploadingDoc, setUploadingDoc] = useState(null)
   // La fiche tiers est créée par AFB à l'initiation : on pré-remplit ce qu'on connaît
@@ -151,6 +170,34 @@ export default function Onboarding({ notify }) {
    * vient désormais du dossier, comme dans « Mes documents ».
    */
   const [piecesRequises, setPiecesRequises] = useState([])
+
+  /**
+   * Pièces réellement déposées, indexées par clé de checklist.
+   *
+   * L'écran s'appuyait sur un état local persisté dans le navigateur : une pièce
+   * déposée depuis « Mes documents » n'y apparaissait pas, et une pièce déposée
+   * ici restait marquée « Ajouté » même après suppression ailleurs. Deux écrans,
+   * deux vérités. La source est désormais Dataverse, des deux côtés.
+   */
+  const [piecesDeposees, setPiecesDeposees] = useState({})
+  const [pieceEnCours, setPieceEnCours] = useState(null)
+
+  const rafraichirPieces = async (id) => {
+    if (!id) return
+    const docs = await loadDocuments(id).catch(() => [])
+    const parCle = {}
+    for (const d of docs) {
+      const cle = d.afb_typedocument
+      // On garde la plus récente par clé : un remplacement laisse l'ancienne
+      // version en base, marquée « Remplacé ».
+      if (!cle) continue
+      const actuelle = parCle[cle]
+      if (!actuelle || new Date(d.createdon || 0) > new Date(actuelle.createdon || 0)) {
+        parCle[cle] = d
+      }
+    }
+    setPiecesDeposees(parCle)
+  }
 
   /**
    * Gérants du tiers.
@@ -236,6 +283,7 @@ export default function Onboarding({ notify }) {
           const [dejaLa, uboRows] = await Promise.all([
             loadGerants(t.afb_tiersid).catch(() => []),
             loadUbos(t.afb_tiersid).catch(() => []),
+            rafraichirPieces(t.afb_tiersid),
           ])
           if (!cancelled) {
             // Une reprise d'onboarding ne doit pas redemander ce qui est déjà saisi.
@@ -300,7 +348,7 @@ export default function Onboarding({ notify }) {
       // rattachement et la checklist de « Mes documents » restait à zéro alors
       // que le partenaire venait de tout déposer.
       await uploadDocument(tiersId, file, { categoryId, docType: doc.key })
-      setDocs((p) => ({ ...p, [doc.key]: file.name }))
+      await rafraichirPieces(tiersId)
       notify(`${file.name} téléversé.`)
     } catch (e) {
       notify(`Téléversement impossible : ${e.message}`)
@@ -347,6 +395,34 @@ export default function Onboarding({ notify }) {
   }
 
   const [submitting, setSubmitting] = useState(false)
+
+  const voirPiece = async (d) => {
+    try {
+      const fichier = await getDocumentFile(d.afb_documentid)
+      if (fichier.url) {
+        window.open(fichier.url, '_blank', 'noopener')
+        return
+      }
+      const url = URL.createObjectURL(b64ToBlob(fichier.base64, fichier.mimetype))
+      window.open(url, '_blank', 'noopener')
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
+    } catch (e) {
+      notify(`${t('Aperçu impossible :')} ${e.message}`)
+    }
+  }
+
+  const supprimerPiece = async (d) => {
+    setPieceEnCours(d.afb_typedocument)
+    try {
+      await deleteDocument(d.afb_documentid)
+      await rafraichirPieces(tiersId)
+      notify(t('Pièce supprimée.'))
+    } catch (e) {
+      notify(`${t('Suppression impossible :')} ${e.message}`)
+    } finally {
+      setPieceEnCours(null)
+    }
+  }
 
   const next = async () => {
     if (step < STEPS.length - 1) {
@@ -828,6 +904,12 @@ export default function Onboarding({ notify }) {
               )}
               {piecesRequises.map((piece) => {
                 const d = { ...piece, accept: acceptPourPiece(piece.key) }
+                const deposee = piecesDeposees[d.key]
+                const statut = deposee ? STATUT_PIECE[deposee.afb_statutvalidite] : null
+                // Une pièce déjà validée par la conformité ne se retire pas : on
+                // la remplace, ce qui laisse une trace et relance la revue. La
+                // retirer effacerait le document sur lequel la décision a été prise.
+                const retirable = deposee && deposee.afb_statutvalidite !== 'Valide'
                 return (
                 <div
                   key={d.key}
@@ -843,11 +925,53 @@ export default function Onboarding({ notify }) {
                       )}
                     </strong>
                     <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
-                      {docs[d.key] ? docs[d.key] : acceptLabel(d.accept)}
+                      {deposee ? deposee.afb_nomfichier : acceptLabel(d.accept)}
                     </span>
                   </div>
-                  {docs[d.key] ? (
-                    <span className="badge badge--success"><Icon name="check" size={13} /> {t('Ajouté')}</span>
+                  {deposee ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                      {statut && <span className={`badge ${statut.cls}`}>{t(statut.label)}</span>}
+
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        type="button"
+                        title={t('Consulter')}
+                        onClick={() => voirPiece(deposee)}
+                      >
+                        <Icon name="eye" size={15} />
+                      </button>
+
+                      <label
+                        className="btn btn--ghost btn--sm"
+                        title={t('Remplacer')}
+                        style={{ cursor: uploadingDoc ? 'not-allowed' : 'pointer' }}
+                      >
+                        <Icon name="upload" size={15} />
+                        <input
+                          type="file"
+                          hidden
+                          accept={acceptAttr(d.accept)}
+                          disabled={!tiersId || uploadingDoc !== null}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            e.target.value = ''
+                            handleDocFile(d, file)
+                          }}
+                        />
+                      </label>
+
+                      {retirable && (
+                        <button
+                          className="btn btn--ghost btn--sm"
+                          type="button"
+                          title={t('Supprimer')}
+                          disabled={pieceEnCours === d.key}
+                          onClick={() => supprimerPiece(deposee)}
+                        >
+                          <Icon name="trash" size={15} />
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <label
                       className="btn btn--soft btn--sm"
@@ -898,7 +1022,7 @@ export default function Onboarding({ notify }) {
                   <dt>{t('Bénéficiaires effectifs')}</dt>
                   <dd>{ubos.length + nouveauxUbos.filter((u) => u.nom.trim()).length}</dd>
                 </div>
-                <div className="recap__row"><dt>{t('Documents déposés')}</dt><dd>{Object.keys(docs).length} / {piecesRequises.length}</dd></div>
+                <div className="recap__row"><dt>{t('Documents déposés')}</dt><dd>{Object.keys(piecesDeposees).length} / {piecesRequises.length}</dd></div>
               </dl>
               <div className="consent">
                 <input id="consent" type="checkbox" checked={form.consent} onChange={set('consent')} />
