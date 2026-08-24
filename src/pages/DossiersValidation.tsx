@@ -34,11 +34,15 @@ import { evaluerCompletude, motifDeBlocage } from '@/lib/dossiers/completude';
 import {
   compterOuvertes,
   construireDemandes,
+  construireDemandesTable,
+  DEMANDE_DV,
   estPieceJustificative,
+  fusionnerDemandes,
   marqueurReponse,
   STATUT_DEMANDE,
   type Demande,
   type DocumentBrut,
+  type LigneDemande,
 } from '@/lib/demandes/demandes';
 import { useTableFilters } from '@/lib/tables/useTableFilters';
 import { SelectionBar } from '@/components/common/SelectionBar';
@@ -54,7 +58,7 @@ import { FormDialog, FormSection, FieldRow } from '@/components/common/FormDialo
 import { ConfirmActionDialog } from '@/components/common/ConfirmActionDialog';
 import { useNotifications } from '@/components/common/NotificationProvider';
 import { type Dossier } from '@/lib/mockData';
-import { decisions, dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes, journalAudit, documents, documentCategories } from '@/lib/dataverse/entityHooks';
+import { decisions, dossiersKypKys, tiers as tiersHooks, partnerTypes, utilisateursInternes, journalAudit, documents, documentCategories, demandesDeRevue } from '@/lib/dataverse/entityHooks';
 import { useRoleStore } from '@/store/roleStore';
 import { assignQuestionnairesForTiers } from '@/lib/dataverse/assignQuestionnaires';
 import { useT } from '@/i18n/i18n';
@@ -1094,7 +1098,17 @@ function DossierDrawer({
   const { notifySuccess, notifyError, notifyInfo } = useNotifications();
   const updateDoc = documents.useUpdate();
   const createDoc = documents.useCreate();
+  const createDemande = demandesDeRevue.useCreate();
+  const majDemande = demandesDeRevue.useUpdate();
   const { data: docCategories } = documentCategories.useList({ top: 50 });
+  const { data: rawDemandes } = demandesDeRevue.useList(
+    {
+      filter: dossier?.tiersId ? `_afb_tiers_value eq ${dossier.tiersId}` : undefined,
+      top: 200,
+      orderBy: ['afb_datedemission desc'],
+    },
+    { enabled: !!dossier?.tiersId },
+  );
   // Documents réellement déposés par le partenaire (via le portail), filtrés sur son tiers.
   const tiersId = dossier?.tiersId;
   const { data: rawDocs } = documents.useList(
@@ -1126,7 +1140,12 @@ function DossierDrawer({
   // Les demandes du partenaire ne sont pas des pièces justificatives : elles
   // ont leur propre rubrique, où la conformité peut répondre. Les afficher ici
   // revenait à proposer « Valider » ou « Rejeter » sur un message.
-  const demandes = construireDemandes((rawDocs ?? []) as unknown as DocumentBrut[]);
+  const demandes = fusionnerDemandes(
+    construireDemandesTable((rawDemandes ?? []) as unknown as LigneDemande[]),
+    // Les demandes émises avant l'existence de la table dédiée vivent encore
+    // dans afb_document. Elles ne sont pas migrées, mais restent traitables.
+    construireDemandes((rawDocs ?? []) as unknown as DocumentBrut[]),
+  );
   const demandesOuvertes = compterOuvertes(demandes);
 
   const partnerDocs = ((rawDocs ?? []) as unknown as Array<Record<string, unknown>>)
@@ -1167,6 +1186,42 @@ function DossierDrawer({
    * demande passe du même coup à « traitée » : répondre, c'est traiter.
    */
   const repondreDemande = async (d: Demande, texte: string) => {
+    // Une réponse s'écrit là où vit la demande : dans la table dédiée pour les
+    // nouvelles, dans afb_document pour celles d'avant — un enregistrement de
+    // la table dédiée ne peut pas pointer vers un document, et l'inverse non plus.
+    if (d.source === 'table') {
+      try {
+        await createDemande.mutateAsync({
+          afb_objetdelademande: `Réponse — ${d.libelle}`,
+          afb_typededemande: DEMANDE_DV.type.autre,
+          afb_statut: DEMANDE_DV.statut.traitee,
+          afb_emisepar: DEMANDE_DV.emisePar.banque,
+          afb_messagedelademande: texte,
+          afb_datedemission: new Date().toISOString(),
+          'afb_Demandeparente@odata.bind': `/afb_demandederevues(${d.id})`,
+          ...(tiersId ? { 'afb_Tiers@odata.bind': `/afb_tierses(${tiersId})` } : {}),
+        } as unknown as Parameters<typeof createDemande.mutateAsync>[0]);
+
+        if (!d.traitee) {
+          await majDemande.mutateAsync({
+            id: d.id,
+            changes: {
+              afb_statut: DEMANDE_DV.statut.traitee,
+              afb_datedetraitement: new Date().toISOString(),
+            } as unknown as Parameters<typeof majDemande.mutateAsync>[0]['changes'],
+          });
+        }
+        notifySuccess(t('Réponse envoyée'), {
+          description: t('Le partenaire la verra dans son espace, sous sa demande.'),
+        });
+      } catch (e) {
+        notifyError(t('Réponse impossible'), {
+          description: e instanceof Error ? e.message : t('Erreur Dataverse.'),
+        });
+      }
+      return;
+    }
+
     const categorieId = (docCategories ?? [])[0]?.afb_documentcategoryid as string | undefined;
     if (!categorieId || !tiersId) {
       notifyError(t('Réponse impossible'), {
@@ -1208,6 +1263,23 @@ function DossierDrawer({
 
   /** Clôt une demande sans y répondre — elle n'appelait pas de mot. */
   const cloreDemande = async (d: Demande) => {
+    if (d.source === 'table') {
+      try {
+        await majDemande.mutateAsync({
+          id: d.id,
+          changes: {
+            afb_statut: DEMANDE_DV.statut.traitee,
+            afb_datedetraitement: new Date().toISOString(),
+          } as unknown as Parameters<typeof majDemande.mutateAsync>[0]['changes'],
+        });
+        notifySuccess(t('Demande classée'), { description: t(d.libelle) });
+      } catch (e) {
+        notifyError(t('Classement impossible'), {
+          description: e instanceof Error ? e.message : t('Erreur Dataverse.'),
+        });
+      }
+      return;
+    }
     try {
       await updateDoc.mutateAsync({
         id: d.id,
@@ -1605,7 +1677,12 @@ function DossierDrawer({
                 demandes={demandes}
                 onRepondre={repondreDemande}
                 onClore={cloreDemande}
-                enCours={createDoc.isPending || updateDoc.isPending}
+                enCours={
+                  createDoc.isPending ||
+                  updateDoc.isPending ||
+                  createDemande.isPending ||
+                  majDemande.isPending
+                }
                 frDate={fd}
               />
             </DrawerSection>

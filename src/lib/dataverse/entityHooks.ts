@@ -17,6 +17,7 @@
 import { createEntityHooks } from './createEntityHooks';
 
 import { ContactsService } from '@/generated/services/ContactsService';
+import { Afb_demandederevuesService } from '@/generated/services/Afb_demandederevuesService';
 
 import { Afb_critereevaluationsService } from '@/generated/services/Afb_critereevaluationsService';
 import { Afb_decisionsService } from '@/generated/services/Afb_decisionsService';
@@ -73,6 +74,9 @@ export const resultatsScreening = createEntityHooks('afb_resultatscreening', Afb
 // partenaires (colonnes adx_identity_*). La console support en a besoin —
 // afb_tiersexterneb2c n'est qu'un miroir du flux d'invitation.
 export const contacts = createEntityHooks('contact', ContactsService);
+// Demandes du partenaire — table dédiée depuis août 2026. Celles émises avant
+// restent dans afb_document et sont relues à part (cf. lib/demandes).
+export const demandesDeRevue = createEntityHooks('afb_demandederevue', Afb_demandederevuesService);
 export const tiers = createEntityHooks('afb_tiers', Afb_tiersesService);
 export const tiersExterneB2c = createEntityHooks('afb_tiersexterneb2c', Afb_tiersexterneb2csService);
 export const ubo = createEntityHooks('afb_ubo', Afb_ubosService);
@@ -81,6 +85,7 @@ export const utilisateursInternes = createEntityHooks('afb_utilisateurinterne', 
 /** Registre complet, pratique pour itérer ou accéder dynamiquement. */
 export const dataverse = {
   contacts,
+  demandesDeRevue,
   critereEvaluation,
   evaluationsPartenaire,
   grilleEvaluation,

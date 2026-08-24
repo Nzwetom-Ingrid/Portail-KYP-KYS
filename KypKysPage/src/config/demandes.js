@@ -15,6 +15,44 @@ export const TYPE_DEMANDE = {
   document: 'demande-document',
 }
 
+/**
+ * Table `afb_demandederevue` — le vrai stockage depuis août 2026.
+ *
+ * Les demandes vivaient dans `afb_document` avec un marqueur de type, faute de
+ * table dédiée. Celles déjà déposées y restent : elles sont relues telles
+ * quelles et fusionnées avec les nouvelles, plutôt que migrées. Une reprise de
+ * données pour une poignée d'enregistrements ferait courir plus de risques
+ * qu'elle n'en éviterait.
+ */
+export const RELATION_TIERS_DEMANDE = 'afb_demandederevue_Tiers_afb_tiers'
+
+/** Valeurs de choix de la table. Elles démarrent à 747010000, pas à 0. */
+export const DEMANDE = {
+  type: { revue: 747010000, document: 747010001, autre: 747010002 },
+  statut: { ouverte: 747010000, enCours: 747010001, traitee: 747010002, classee: 747010003 },
+  emisePar: { partenaire: 747010000, banque: 747010001 },
+}
+
+const LIBELLE_PAR_TYPE = {
+  [DEMANDE.type.revue]: 'Demande de revue du dossier',
+  [DEMANDE.type.document]: 'Demande de document à la banque',
+  [DEMANDE.type.autre]: 'Demande',
+}
+
+/** Une ligne de `afb_demandederevue` → même forme que les demandes héritées. */
+export function mapDemande(d, reponses = []) {
+  return {
+    id: d.afb_demandederevueid,
+    type: String(d.afb_typededemande ?? ''),
+    libelle: LIBELLE_PAR_TYPE[d.afb_typededemande] || 'Demande',
+    message: d.afb_messagedelademande || '',
+    date: d.afb_datedemission || d.createdon || null,
+    traitee:
+      d.afb_statut === DEMANDE.statut.traitee || d.afb_statut === DEMANDE.statut.classee,
+    reponses,
+  }
+}
+
 /** Une réponse porte `reponse-demande:<identifiant de la demande>`. */
 export const PREFIXE_REPONSE = 'reponse-demande:'
 

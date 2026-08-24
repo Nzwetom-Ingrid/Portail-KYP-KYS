@@ -18,7 +18,13 @@
 import { dv, getCurrentUser, getCurrentUserEmail } from './dataverse'
 import { SETS, LOGICAL, CHOICES } from '../config/dataverse'
 import { entityTypeFromFamille, entityTypeFromRef, CODE_PAR_TYPE } from '../config/entityType'
-import { construireDemandes, estPieceJustificative } from '../config/demandes'
+import {
+  construireDemandes,
+  estPieceJustificative,
+  mapDemande,
+  DEMANDE,
+  RELATION_TIERS_DEMANDE,
+} from '../config/demandes'
 import {
   MOCK_TIERS,
   MOCK_DOSSIER,
@@ -562,18 +568,59 @@ export async function loadReceivedDocuments(tiersId) {
  * Le partenaire écrivait jusqu'ici sans retour possible : sa demande partait
  * dans le dossier et rien ne lui revenait. Il voit désormais le fil complet.
  */
+/**
+ * Demandes du tiers et réponses de la conformité.
+ *
+ * Deux sources, fusionnées : la table `afb_demandederevue` pour les nouvelles,
+ * et `afb_document` pour celles émises avant qu'elle n'existe. Ces dernières
+ * ne sont pas migrées — une reprise de données pour une poignée
+ * d'enregistrements ferait courir plus de risques qu'elle n'en éviterait — mais
+ * elles restent lisibles, ce qui est le seul point qui compte pour le tiers.
+ */
 export async function loadDemandes(tiersId) {
   if (!dv.enabled) return []
-  const rows = await dv
-    .list(
-      SETS.document,
-      `?$filter=_afb_tiers_value eq ${tiersId}` +
-        `&$select=afb_documentid,afb_typededocument,afb_motifderejet,afb_statutdevalidite,` +
-        `afb_datedeteleversement,createdon` +
-        `&$orderby=afb_datedeteleversement desc`
-    )
-    .catch(() => [])
-  return construireDemandes(rows)
+
+  const [lignes, anciens] = await Promise.all([
+    dv
+      .list(
+        SETS.demande,
+        `?$filter=_afb_tiers_value eq ${tiersId}` +
+          `&$select=afb_demandederevueid,afb_objetdelademande,afb_messagedelademande,` +
+          `afb_typededemande,afb_statut,afb_emisepar,afb_datedemission,createdon,_afb_demandeparente_value` +
+          `&$orderby=afb_datedemission desc`
+      )
+      .catch(() => []),
+    dv
+      .list(
+        SETS.document,
+        `?$filter=_afb_tiers_value eq ${tiersId}` +
+          `&$select=afb_documentid,afb_typededocument,afb_motifderejet,afb_statutdevalidite,` +
+          `afb_datedeteleversement,createdon` +
+          `&$orderby=afb_datedeteleversement desc`
+      )
+      .catch(() => []),
+  ])
+
+  // Une réponse est une ligne dont « Demande parente » est renseignée.
+  const reponsesParDemande = new Map()
+  for (const l of lignes) {
+    const parent = l._afb_demandeparente_value
+    if (!parent) continue
+    const r = {
+      id: l.afb_demandederevueid,
+      texte: l.afb_messagedelademande || '',
+      date: l.afb_datedemission || l.createdon || null,
+    }
+    const liste = reponsesParDemande.get(parent)
+    if (liste) liste.push(r)
+    else reponsesParDemande.set(parent, [r])
+  }
+
+  const nouvelles = lignes
+    .filter((l) => !l._afb_demandeparente_value)
+    .map((l) => mapDemande(l, reponsesParDemande.get(l.afb_demandederevueid) || []))
+
+  return [...nouvelles, ...construireDemandes(anciens)]
 }
 
 export async function loadDocumentCategories() {
@@ -821,24 +868,29 @@ export async function requestDocumentFromBank(tiersId, { docName, message }) {
  * et n'apparaît pas encore dans l'application interne — cet affichage reste à
  * construire (chantier « demande de revue de bout en bout »).
  */
+/**
+ * Émet une demande de revue.
+ *
+ * Elle était jusqu'ici rangée dans `afb_document` avec un marqueur de type et
+ * une URL `request://` : une demande n'est pas un document, et elle
+ * apparaissait parmi les pièces justificatives, avec des boutons Valider et
+ * Rejeter qui n'avaient aucun sens pour un message. Elle a désormais sa table.
+ *
+ * Deep-insert dans la collection de navigation du tiers, comme pour les
+ * documents : c'est ce qui contourne l'erreur d'association du Web API (90040106).
+ */
 export async function requestReview(tiersId, { message } = {}) {
   if (!dv.enabled) return null
-  const cats = await loadDocumentCategories()
-  const categoryId = cats[0]?.id
-  if (!categoryId) throw new Error('Aucune catégorie de document disponible.')
-  const payload = {
-    afb_nomdufichier: 'Demande de revue du dossier',
-    afb_typededocument: 'demande-revue',
-    afb_statutdevalidite: CHOICES.documentStatut.EnAttente,
-    afb_sourcedudepot: CHOICES.documentSource.Tiers,
-    afb_authentifie: CHOICES.documentAuthentifie.Non,
-    afb_datedeteleversement: new Date().toISOString(),
-    afb_anneededepot: new Date().getFullYear(),
-    afb_urlsharepoint: 'request://revue',
-    afb_motifderejet: message || '',
-    [`afb_categorie@odata.bind`]: `/${SETS.documentCategory}(${categoryId})`,
-  }
-  await dv.createIn(SETS.tiers, tiersId, 'afb_document_tiers_afb_tiers', payload)
+  await dv.createIn(SETS.tiers, tiersId, RELATION_TIERS_DEMANDE, {
+    afb_objetdelademande: 'Demande de revue du dossier',
+    afb_typededemande: DEMANDE.type.revue,
+    afb_statut: DEMANDE.statut.ouverte,
+    afb_emisepar: DEMANDE.emisePar.partenaire,
+    afb_messagedelademande: message || '',
+    // Horodatage métier, distinct de createdon : c'est celui que le tiers voit
+    // et celui sur lequel le délai de traitement se mesure.
+    afb_datedemission: new Date().toISOString(),
+  })
 }
 
 // Réponses (enfants) attachées à un document reçu donné.

@@ -71,6 +71,14 @@ export interface Reponse {
 }
 
 export interface Demande {
+  /**
+   * D'où vient l'enregistrement.
+   *
+   * `document` : émise avant l'existence de la table dédiée, et rangée dans
+   * `afb_document` avec un marqueur de type. Ces demandes ne sont pas migrées,
+   * mais restent lisibles — et il faut savoir leur répondre au bon endroit.
+   */
+  source: 'document' | 'table';
   id: string;
   type: string;
   libelle: string;
@@ -178,6 +186,7 @@ export function construireDemandes(docs: DocumentBrut[]): Demande[] {
       const id = d.afb_documentid as string;
       const type = d.afb_typededocument as string;
       return {
+        source: 'document' as const,
         id,
         type,
         libelle: LIBELLE_DEMANDE[type],
@@ -190,6 +199,88 @@ export function construireDemandes(docs: DocumentBrut[]): Demande[] {
       };
     })
     .sort((a, b) => comparerDates(a.date, b.date, -1));
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Table dédiée `afb_demandederevue`                                          */
+/* -------------------------------------------------------------------------- */
+
+/** Valeurs de choix de la table. Elles démarrent à 747010000, pas à 0. */
+export const DEMANDE_DV = {
+  type: { revue: 747010000, document: 747010001, autre: 747010002 },
+  statut: { ouverte: 747010000, enCours: 747010001, traitee: 747010002, classee: 747010003 },
+  emisePar: { partenaire: 747010000, banque: 747010001 },
+} as const;
+
+const LIBELLE_PAR_TYPE: Record<number, string> = {
+  [DEMANDE_DV.type.revue]: 'Demande de revue du dossier',
+  [DEMANDE_DV.type.document]: 'Demande de document à la banque',
+  [DEMANDE_DV.type.autre]: 'Demande',
+};
+
+/** Sous-ensemble d'`afb_demandederevue` utile ici. */
+export interface LigneDemande {
+  afb_demandederevueid?: string;
+  afb_objetdelademande?: string;
+  afb_messagedelademande?: string;
+  afb_typededemande?: number;
+  afb_statut?: number;
+  afb_emisepar?: number;
+  afb_datedemission?: string;
+  createdon?: string;
+  _afb_demandeparente_value?: string;
+  afb_auteurinternename?: string;
+}
+
+/**
+ * Reconstitue les fils depuis la table dédiée.
+ *
+ * Une réponse est une ligne dont « Demande parente » est renseignée : même
+ * principe que côté documents, mais porté cette fois par un vrai lookup plutôt
+ * que par une convention de nommage.
+ */
+export function construireDemandesTable(lignes: LigneDemande[]): Demande[] {
+  const reponsesParDemande = new Map<string, Reponse[]>();
+
+  for (const l of lignes) {
+    const parent = l._afb_demandeparente_value;
+    if (!parent || !l.afb_demandederevueid) continue;
+    const reponse: Reponse = {
+      id: l.afb_demandederevueid,
+      texte: l.afb_messagedelademande ?? '',
+      date: l.afb_datedemission || l.createdon || undefined,
+      auteur: l.afb_auteurinternename,
+    };
+    const liste = reponsesParDemande.get(parent);
+    if (liste) liste.push(reponse);
+    else reponsesParDemande.set(parent, [reponse]);
+  }
+
+  return lignes
+    .filter((l) => l.afb_demandederevueid && !l._afb_demandeparente_value)
+    .map((l) => {
+      const id = l.afb_demandederevueid as string;
+      const type = l.afb_typededemande ?? DEMANDE_DV.type.autre;
+      return {
+        source: 'table' as const,
+        id,
+        type: String(type),
+        libelle: LIBELLE_PAR_TYPE[type] ?? 'Demande',
+        message: l.afb_messagedelademande ?? '',
+        date: l.afb_datedemission || l.createdon || undefined,
+        traitee:
+          l.afb_statut === DEMANDE_DV.statut.traitee || l.afb_statut === DEMANDE_DV.statut.classee,
+        reponses: (reponsesParDemande.get(id) ?? []).sort((a, b) =>
+          comparerDates(a.date, b.date, 1),
+        ),
+      };
+    })
+    .sort((a, b) => comparerDates(a.date, b.date, -1));
+}
+
+/** Fusionne les deux sources, la plus récente demande en tête. */
+export function fusionnerDemandes(a: Demande[], b: Demande[]): Demande[] {
+  return [...a, ...b].sort((x, y) => comparerDates(x.date, y.date, -1));
 }
 
 /** Combien de demandes attendent encore une réponse. */

@@ -29,6 +29,7 @@ export const SETS = {
   tiersExterneB2C: 'afb_tiersexterneb2cs', // identité externe (lien e-mail B2C → tiers)
   ubo: 'afb_ubos',
   dossier: 'afb_dossierkypkyses',
+  demande: 'afb_demandederevues',
   decision: 'afb_decisions',
   resultatScreening: 'afb_resultatscreenings',
   evaluation: 'afb_evaluationpartenaires',

@@ -116,6 +116,15 @@ lecteur non technique.
 
 ### Modifié
 
+- **Les demandes ont enfin leur table.** Elles vivaient dans `afb_document` avec
+  un marqueur de type et une URL `request://`, faute de mieux. La table
+  `afb_demandederevue` les accueille désormais, avec un vrai lookup pour le fil
+  des réponses au lieu d’une convention de nommage. Les demandes émises avant
+  ne sont pas migrées : elles restent lues depuis `afb_document` et fusionnées
+  aux nouvelles. Une reprise de données pour une poignée d’enregistrements
+  ferait courir plus de risques qu’elle n’en éviterait — et le back-office sait
+  répondre dans l’une comme dans l’autre.
+
 - Recherche élargie à toutes les colonnes affichées sur les cinq écrans du
   portail, désormais insensible aux accents et acceptant plusieurs termes.
 - « N° RCCM / Certificate of incorporation » devient « Numéro de registre de
