@@ -138,6 +138,22 @@ function estRefus(e) {
 }
 
 /**
+ * Requête que Dataverse n'a pas su exécuter — 400, souvent accompagné du code
+ * 0x80040216.
+ *
+ * Ce n'est pas un refus d'accès mais un échec de construction. Une autorisation
+ * de table en « Accès parent » fait réécrire la requête en FetchXML pour y
+ * greffer la traversée de la relation, et certaines constructions OData ne
+ * survivent pas à cette traduction — au premier rang desquelles les expansions.
+ * Réessayer sans expansion est donc la bonne réaction, au même titre que pour
+ * un refus de permission. Le défaut n'apparaît qu'une fois les autorisations
+ * correctement cloisonnées : en « Accès global », aucune réécriture n'a lieu.
+ */
+function estRequeteInvalide(e) {
+  return /→ 400\b/.test(String(e?.message || ''))
+}
+
+/**
  * Liste avec repli sans expansion.
  *
  * Une expansion `$expand` porte sur une AUTRE table, et Dataverse refuse la
@@ -157,9 +173,43 @@ async function listeAvecRepli(set, construire) {
   try {
     return await dv.list(set, construire(true))
   } catch (e) {
-    if (!estRefus(e)) throw e
+    if (!estRefus(e) && !estRequeteInvalide(e)) throw e
     return dv.list(set, construire(false))
   }
+}
+
+/**
+ * Exécute la première variante de requête qui aboutit.
+ *
+ * Une table cloisonnée en « Accès parent » amène Power Pages à réécrire la
+ * requête en FetchXML pour y greffer la traversée de la relation vers le tiers.
+ * Certaines constructions OData ne survivent pas à cette traduction, et l'échec
+ * se présente en 400 (code Dataverse 0x80040216) : ce n'est pas un refus
+ * d'accès, c'est une requête que le serveur n'a pas su bâtir.
+ *
+ * Trois constructions sont en cause, par ordre de suspicion décroissante :
+ * l'expansion vers une autre table, le filtre sur la colonne de lookup — celle
+ * que Power Pages utilise elle-même pour appliquer le cloisonnement, d'où une
+ * collision probable — et les opérateurs autres que l'égalité.
+ *
+ * On tente donc les variantes de la plus riche à la plus pauvre, et le tri final
+ * s'applique CÔTÉ CLIENT dans tous les cas : c'est ce qui rend l'ensemble sûr,
+ * quelle que soit celle qui passe. Le volume est celui d'un seul tiers.
+ *
+ * @param variantes chaînes d'options OData, essayées dans l'ordre.
+ * @param trier appliqué au résultat, systématiquement.
+ */
+async function premiereQuiPasse(set, variantes, trier = (r) => r) {
+  let derniere = null
+  for (const options of variantes) {
+    try {
+      return trier(await dv.list(set, options))
+    } catch (e) {
+      if (!estRefus(e) && !estRequeteInvalide(e)) throw e
+      derniere = e
+    }
+  }
+  throw derniere ?? new Error('Aucune variante de requête exécutable.')
 }
 
 /**
@@ -438,16 +488,16 @@ function mapGerant(g) {
 
 export async function loadGerants(tiersId) {
   if (!dv.enabled) return []
-  const rows = await dv
-    .list(
-      SETS.gerant,
-      `?$filter=_afb_tiers_value eq ${tiersId}` +
-        `&$select=afb_employe1id,afb_nomcomplet,afb_fonction,afb_adresseemail,` +
-        `afb_numerodetelephone,afb_typedepiecedidentite,afb_numerodepiecedidentite,` +
-        `afb_nationalite,afb_datedenaissance,afb_representantlegal,afb_rang` +
-        `&$orderby=afb_rang asc`
-    )
-    .catch(() => [])
+  const champs =
+    `&$select=afb_employe1id,afb_nomcomplet,afb_fonction,afb_adresseemail,` +
+    `afb_numerodetelephone,afb_typedepiecedidentite,afb_numerodepiecedidentite,` +
+    `afb_nationalite,afb_datedenaissance,afb_representantlegal,afb_rang,_afb_tiers_value` +
+    `&$orderby=afb_rang asc`
+  const rows = await premiereQuiPasse(
+    SETS.gerant,
+    [`?$filter=_afb_tiers_value eq ${tiersId}${champs}`, `?${champs.slice(1)}`],
+    (r) => r.filter((g) => g._afb_tiers_value === tiersId),
+  ).catch(() => [])
   return rows.map(mapGerant)
 }
 
@@ -651,16 +701,22 @@ export async function loadDocuments(tiersId) {
   // repart en 400, code Dataverse 0x80040216. En « Accès global », aucune
   // réécriture n'avait lieu et le filtre passait — d'où un défaut qui n'apparaît
   // qu'au moment où l'on cloisonne correctement les permissions.
-  const rows = await listeAvecRepli(
+  const champs =
+    `&$select=afb_documentid,afb_nomdufichier,afb_typededocument,afb_statutdevalidite,` +
+    `afb_datedexpiration,afb_datedeteleversement,afb_sourcedudepot,createdon,_afb_tiers_value` +
+    `&$orderby=afb_datedeteleversement desc`
+  const rows = await premiereQuiPasse(
     SETS.document,
-    (avecCategorie) =>
-      `?$filter=_afb_tiers_value eq ${tiersId}` +
-      `&$select=afb_documentid,afb_nomdufichier,afb_typededocument,afb_statutdevalidite,` +
-      `afb_datedexpiration,afb_datedeteleversement,afb_sourcedudepot,createdon` +
-      (avecCategorie ? `&$expand=afb_categorie($select=afb_libelle)` : '') +
-      `&$orderby=afb_datedeteleversement desc`
+    [
+      `?$filter=_afb_tiers_value eq ${tiersId}${champs}&$expand=afb_categorie($select=afb_libelle)`,
+      `?$filter=_afb_tiers_value eq ${tiersId}${champs}`,
+      `?${champs.slice(1)}`,
+    ],
+    (r) =>
+      r
+        .filter((d) => d._afb_tiers_value === tiersId)
+        .filter((d) => d.afb_sourcedudepot !== CHOICES.documentSource.DCONF),
   )
-    .then((r) => r.filter((d) => d.afb_sourcedudepot !== CHOICES.documentSource.DCONF))
   // Exclut tout ce qui n'est pas une pièce déposée : demandes du tiers,
   // réponses de la banque à ces demandes, compléments rattachés à un document
   // reçu. Le prédicat est partagé avec le back-office (config/demandes.js) —
@@ -671,14 +727,21 @@ export async function loadDocuments(tiersId) {
 // « Documents reçus » = documents partagés par la banque (DCONF/DMG) vers ce tiers.
 export async function loadReceivedDocuments(tiersId) {
   if (!dv.enabled) return []
-  const rows = await listeAvecRepli(
+  const champs =
+    `&$select=afb_documentid,afb_nomdufichier,afb_typededocument,afb_statutdevalidite,` +
+    `afb_datedexpiration,afb_datedeteleversement,afb_sourcedudepot,createdon,_afb_tiers_value` +
+    `&$orderby=afb_datedeteleversement desc`
+  const rows = await premiereQuiPasse(
     SETS.document,
-    (avecCategorie) =>
-      `?$filter=_afb_tiers_value eq ${tiersId} and afb_sourcedudepot eq ${CHOICES.documentSource.DCONF}` +
-      `&$select=afb_documentid,afb_nomdufichier,afb_typededocument,afb_statutdevalidite,` +
-      `afb_datedexpiration,afb_datedeteleversement,createdon` +
-      (avecCategorie ? `&$expand=afb_categorie($select=afb_libelle)` : '') +
-      `&$orderby=afb_datedeteleversement desc`
+    [
+      `?$filter=_afb_tiers_value eq ${tiersId} and afb_sourcedudepot eq ${CHOICES.documentSource.DCONF}${champs}&$expand=afb_categorie($select=afb_libelle)`,
+      `?$filter=_afb_tiers_value eq ${tiersId}${champs}`,
+      `?${champs.slice(1)}`,
+    ],
+    (r) =>
+      r
+        .filter((d) => d._afb_tiers_value === tiersId)
+        .filter((d) => d.afb_sourcedudepot === CHOICES.documentSource.DCONF),
   )
   return rows.map(mapDocument)
 }
@@ -703,24 +766,29 @@ export async function loadDemandes(tiersId) {
   if (!dv.enabled) return []
 
   const [lignes, anciens] = await Promise.all([
-    dv
-      .list(
+    (async () => {
+      const champs =
+        `&$select=afb_demandederevueid,afb_objetdelademande,afb_messagedelademande,` +
+        `afb_typededemande,afb_statut,afb_emisepar,afb_datedemission,createdon,` +
+        `_afb_demandeparente_value,_afb_tiers_value` +
+        `&$orderby=afb_datedemission desc`
+      return premiereQuiPasse(
         SETS.demande,
-        `?$filter=_afb_tiers_value eq ${tiersId}` +
-          `&$select=afb_demandederevueid,afb_objetdelademande,afb_messagedelademande,` +
-          `afb_typededemande,afb_statut,afb_emisepar,afb_datedemission,createdon,_afb_demandeparente_value` +
-          `&$orderby=afb_datedemission desc`
-      )
-      .catch(() => []),
-    dv
-      .list(
+        [`?$filter=_afb_tiers_value eq ${tiersId}${champs}`, `?${champs.slice(1)}`],
+        (r) => r.filter((d) => d._afb_tiers_value === tiersId),
+      ).catch(() => [])
+    })(),
+    (async () => {
+      const champs =
+        `&$select=afb_documentid,afb_typededocument,afb_motifderejet,afb_statutdevalidite,` +
+        `afb_datedeteleversement,createdon,_afb_tiers_value` +
+        `&$orderby=afb_datedeteleversement desc`
+      return premiereQuiPasse(
         SETS.document,
-        `?$filter=_afb_tiers_value eq ${tiersId}` +
-          `&$select=afb_documentid,afb_typededocument,afb_motifderejet,afb_statutdevalidite,` +
-          `afb_datedeteleversement,createdon` +
-          `&$orderby=afb_datedeteleversement desc`
-      )
-      .catch(() => []),
+        [`?$filter=_afb_tiers_value eq ${tiersId}${champs}`, `?${champs.slice(1)}`],
+        (r) => r.filter((d) => d._afb_tiers_value === tiersId),
+      ).catch(() => [])
+    })(),
   ])
 
   // Une réponse est une ligne dont « Demande parente » est renseignée.
