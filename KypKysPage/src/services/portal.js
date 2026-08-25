@@ -642,15 +642,25 @@ export async function loadDocuments(tiersId) {
   if (!dv.enabled) return [...MOCK_DOCUMENTS]
   // « Mes documents » = ce que le tiers a déposé. On EXCLUT les documents partagés
   // par la banque (afb_sourcedudepot = 747010001), qui vivent dans « Documents reçus ».
+  // Le tri des documents partagés par la banque se fait CÔTÉ CLIENT, pas dans
+  // le filtre OData.
+  //
+  // Une autorisation de table en « Accès parent » amène Power Pages à réécrire
+  // la requête en FetchXML pour y greffer la traversée de la relation. L'opérateur
+  // `ne` sur une colonne de choix ne survit pas à cette traduction : la requête
+  // repart en 400, code Dataverse 0x80040216. En « Accès global », aucune
+  // réécriture n'avait lieu et le filtre passait — d'où un défaut qui n'apparaît
+  // qu'au moment où l'on cloisonne correctement les permissions.
   const rows = await listeAvecRepli(
     SETS.document,
     (avecCategorie) =>
-      `?$filter=_afb_tiers_value eq ${tiersId} and afb_sourcedudepot ne ${CHOICES.documentSource.DCONF}` +
+      `?$filter=_afb_tiers_value eq ${tiersId}` +
       `&$select=afb_documentid,afb_nomdufichier,afb_typededocument,afb_statutdevalidite,` +
-      `afb_datedexpiration,afb_datedeteleversement,createdon` +
+      `afb_datedexpiration,afb_datedeteleversement,afb_sourcedudepot,createdon` +
       (avecCategorie ? `&$expand=afb_categorie($select=afb_libelle)` : '') +
       `&$orderby=afb_datedeteleversement desc`
   )
+    .then((r) => r.filter((d) => d.afb_sourcedudepot !== CHOICES.documentSource.DCONF))
   // Exclut tout ce qui n'est pas une pièce déposée : demandes du tiers,
   // réponses de la banque à ces demandes, compléments rattachés à un document
   // reçu. Le prédicat est partagé avec le back-office (config/demandes.js) —
