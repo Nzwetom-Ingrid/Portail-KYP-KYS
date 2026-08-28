@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import Icon from '../components/Icon'
 import { useT } from '../i18n/i18n'
 import { useRafraichissementAuto } from '../hooks/useRafraichissementAuto'
-import { getCurrentTiers, loadUbos, submitUbo } from '../services/portal'
+import {
+  getCurrentTiers,
+  loadUbos,
+  submitUbo,
+  updateUbo,
+  deleteUbo,
+  UBO_VALIDE,
+} from '../services/portal'
 import { COUNTRIES } from '../config/countries'
 import { filterBySearch } from '../utils/search'
 
@@ -39,6 +46,8 @@ function adapt(u) {
     morale: u.afb_typedentite === 0,
     nationalite: u.afb_nationalite || '—',
     naissance: frDate(u.afb_datedenaissance),
+    // Conservée au format ISO : le champ date du formulaire ne comprend que lui.
+    naissanceIso: u.afb_datedenaissance ? String(u.afb_datedenaissance).slice(0, 10) : '',
     part: u.afb_pourcentagededetentiondirecte ?? 0,
     ppe: (u.afb_statutppe ?? 0) !== 0,
     status: u.afb_statutdevalidation ?? 1,
@@ -54,6 +63,42 @@ export default function UBO({ notify, search = '' }) {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
+  /**
+   * Déclaration en cours de correction, ou null pour une nouvelle.
+   *
+   * Le partenaire déclarait sans pouvoir se relire : une erreur de saisie
+   * restait dans le dossier jusqu'à ce que la conformité la relève.
+   */
+  const [enEdition, setEnEdition] = useState(null)
+
+  /** Ouvre le formulaire pré-rempli sur une déclaration existante. */
+  const modifier = (u) => {
+    setEnEdition(u.id)
+    setForm({
+      nom: u.nom,
+      typeEntite: u.morale ? 'morale' : 'physique',
+      nationalite: u.nationalite === '—' ? '' : u.nationalite,
+      dateNaissance: u.naissanceIso || '',
+      pourcentage: String(u.part ?? ''),
+      ppe: !!u.ppe,
+    })
+    setShowForm(true)
+  }
+
+  const supprimer = async (u) => {
+    // Une déclaration validée atteste de ce que la conformité a examiné.
+    if (u.status === UBO_VALIDE) return
+    setSaving(true)
+    try {
+      await deleteUbo(u.id)
+      setUbos((list) => list.filter((x) => x.id !== u.id))
+      notify(t('Bénéficiaire retiré.'))
+    } catch (err) {
+      notify(`${t('Suppression impossible :')} ${err.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   // Chargement initial : tiers courant + ses bénéficiaires
   // Rafraîchissement automatique : l'écran se remet à jour au retour sur
@@ -120,9 +165,18 @@ export default function UBO({ notify, search = '' }) {
     if (!canSubmit || !tiers?.afb_tiersid) return
     setSaving(true)
     try {
-      const rec = await submitUbo(tiers.afb_tiersid, form)
-      setUbos((list) => [adapt(rec), ...list])
-      notify('Bénéficiaire effectif ajouté — en attente de validation.')
+      if (enEdition) {
+        await updateUbo(enEdition, form)
+        // Relecture plutôt que recomposition locale : la mise à jour remet le
+        // statut « en cours de vérification », et l'écran doit le montrer.
+        setUbos((await loadUbos(tiers.afb_tiersid)).map(adapt))
+        notify(t('Déclaration corrigée — elle repasse en vérification.'))
+      } else {
+        const rec = await submitUbo(tiers.afb_tiersid, form)
+        setUbos((list) => [adapt(rec), ...list])
+        notify(t('Bénéficiaire effectif ajouté — en attente de validation.'))
+      }
+      setEnEdition(null)
       resetForm()
       setShowForm(false)
     } catch (err) {
@@ -226,7 +280,7 @@ export default function UBO({ notify, search = '' }) {
             <button
               className="btn btn--ghost"
               type="button"
-              onClick={() => { resetForm(); setShowForm(false) }}
+              onClick={() => { resetForm(); setEnEdition(null); setShowForm(false) }}
             >
               {t('Annuler')}
             </button>
@@ -281,11 +335,12 @@ export default function UBO({ notify, search = '' }) {
                 <th style={{ width: '14%' }}>{t('Détention')}</th>
                 <th style={{ width: '12%' }}>{t('PPE')}</th>
                 <th style={{ width: '16%' }}>{t('Validation')}</th>
+                <th style={{ width: '10%' }}>{t('Actions')}</th>
               </tr>
             </thead>
             <tbody>
               {shownUbos.length === 0 && (
-                <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '18px' }}>{t('Aucun bénéficiaire ne correspond à la recherche.')}</td></tr>
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--muted)', padding: '18px' }}>{t('Aucun bénéficiaire ne correspond à la recherche.')}</td></tr>
               )}
               {shownUbos.map((u) => {
                 const st = STATUS[u.status] || STATUS[1]
@@ -310,6 +365,32 @@ export default function UBO({ notify, search = '' }) {
                         : <span className="badge">{t('Non')}</span>}
                     </td>
                     <td><span className={`badge ${st.cls}`}><span className="dot-i" /> {t(st.label)}</span></td>
+                    <td>
+                      <div className="doc-actions">
+                        {u.status === UBO_VALIDE ? (
+                          <span
+                            title={t('Déclaration validée par la conformité — non modifiable')}
+                            style={{ display: 'inline-flex', padding: 6, opacity: 0.45, cursor: 'not-allowed' }}
+                          >
+                            <Icon name="lock" size={16} />
+                          </span>
+                        ) : (
+                          <>
+                            <button title={t('Modifier')} disabled={saving} onClick={() => modifier(u)}>
+                              <Icon name="edit" size={17} />
+                            </button>
+                            <button
+                              className="danger"
+                              title={t('Retirer')}
+                              disabled={saving}
+                              onClick={() => supprimer(u)}
+                            >
+                              <Icon name="trash" size={17} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 )
               })}

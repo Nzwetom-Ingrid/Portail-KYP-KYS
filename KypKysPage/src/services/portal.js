@@ -550,6 +550,47 @@ export async function loadUbos(tiersId) {
   )
 }
 
+/** Valeur de `afb_statutdevalidation` : la conformité a tranché. */
+export const UBO_VALIDE = 0
+
+/**
+ * Champs modifiables d'un bénéficiaire, dans la forme attendue par Dataverse.
+ * Partagé entre la création et la mise à jour : les deux écrivent la même chose.
+ */
+function champsUbo(form) {
+  return {
+    afb_nomouraisonsociale: form.nom,
+    afb_pourcentagededetentiondirecte: Number(form.pourcentage) || 0,
+    afb_typedentite:
+      form.typeEntite === 'morale' ? CHOICES.uboTypeEntite.Morale : CHOICES.uboTypeEntite.Physique,
+    afb_statutppe: form.ppe ? CHOICES.uboPpe.AutoDeclaree : CHOICES.uboPpe.Non,
+    ...(form.nationalite ? { afb_nationalite: form.nationalite } : {}),
+    ...(form.dateNaissance ? { afb_datedenaissance: form.dateNaissance } : {}),
+  }
+}
+
+/**
+ * Corrige une déclaration.
+ *
+ * Le partenaire déclarait sans pouvoir se relire : une erreur de saisie — un
+ * pourcentage, une date de naissance — restait dans le dossier jusqu'à ce que la
+ * conformité la relève. La correction repasse le bénéficiaire « en cours de
+ * vérification » : ce que la banque avait examiné n'est plus ce qui est déclaré.
+ */
+export async function updateUbo(uboId, form) {
+  if (!dv.enabled) return null
+  return dv.update(SETS.ubo, uboId, {
+    ...champsUbo(form),
+    afb_statutdevalidation: CHOICES.uboStatut.EnCours,
+  })
+}
+
+/** Retire une déclaration. Refusé côté écran sur un bénéficiaire déjà validé. */
+export async function deleteUbo(uboId) {
+  if (!dv.enabled) return null
+  return dv.remove(SETS.ubo, uboId)
+}
+
 export async function submitUbo(tiersId, form) {
   if (!dv.enabled) {
     return {

@@ -40,6 +40,15 @@ lecteur non technique.
 
 ### Ajouté
 
+- **Une déclaration de bénéficiaire effectif se corrige.** Le partenaire
+  déclarait sans pouvoir se relire : une erreur de saisie — un pourcentage, une
+  date de naissance — restait dans le dossier jusqu’à ce que la conformité la
+  relève. « Mes bénéficiaires » propose désormais Modifier et Retirer sur chaque
+  ligne. La correction remet la déclaration en vérification : ce que la banque
+  avait examiné n’est plus ce qui est déclaré.
+  Une déclaration déjà validée porte le cadenas, comme une pièce validée — elle
+  atteste de ce que la conformité a examiné.
+
 - **Un dossier incomplet ne peut plus être soumis par le partenaire.** Le
   récapitulatif énumère les pièces obligatoires manquantes et propose de
   revenir les déposer ; la soumission reste bloquée tant qu’il en manque une.
