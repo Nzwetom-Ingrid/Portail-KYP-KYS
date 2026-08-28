@@ -676,6 +676,41 @@ const DOC_STATUT_FROM_INT = {
   747010003: 'Remplace', // supplantée par une version plus récente
 }
 
+/**
+ * Indique, pour chaque document, si un fichier lui est réellement attaché.
+ *
+ * Un enregistrement de document et son fichier sont deux choses distinctes :
+ * la ligne est créée d'abord, le binaire attaché ensuite, et rien ne garantit
+ * que la seconde étape ait abouti. Certaines pièces anciennes portent encore
+ * l'URL `pending://` écrite au dépôt — le flux SharePoint n'a jamais pris le
+ * relais — et n'ont aucune pièce jointe : proposer « Consulter » dessus ne mène
+ * qu'à une erreur.
+ *
+ * Une seule requête pour toute la liste. Si elle échoue, on ne dégrade rien :
+ * on suppose le fichier disponible plutôt que de masquer des actions qui
+ * marchent peut-être.
+ */
+async function marquerDisponibilite(rows) {
+  const ids = rows.map((d) => d.afb_documentid).filter(Boolean)
+  if (!ids.length) return rows
+
+  const filtre = ids.map((id) => `_objectid_value eq ${id}`).join(' or ')
+  const annotations = await dv
+    .list(SETS.annotation, `?$filter=(${filtre})&$select=_objectid_value&$top=500`)
+    .catch(() => null)
+
+  if (!annotations) return rows.map((d) => ({ ...d, afb_fichier_dispo: true }))
+
+  const avecPieceJointe = new Set(annotations.map((a) => a._objectid_value))
+  return rows.map((d) => ({
+    ...d,
+    // Un lien SharePoint réel vaut aussi fichier disponible ; « pending:// » et
+    // « request:// » sont des marqueurs internes, pas des adresses.
+    afb_fichier_dispo:
+      avecPieceJointe.has(d.afb_documentid) || /^https?:\/\//.test(String(d.afb_urlsharepoint || '')),
+  }))
+}
+
 function mapDocument(d) {
   return {
     afb_documentid: d.afb_documentid,
@@ -685,6 +720,9 @@ function mapDocument(d) {
     afb_statutvalidite: DOC_STATUT_FROM_INT[d.afb_statutdevalidite] ?? 'EnRevue',
     afb_date_expiration: d.afb_datedexpiration || null,
     createdon: d.afb_datedeteleversement || d.createdon || null,
+    // Vrai par défaut : seules les listes qui ont interrogé les pièces jointes
+    // renseignent ce drapeau.
+    afb_fichier_dispo: d.afb_fichier_dispo !== false,
   }
 }
 
@@ -721,7 +759,7 @@ export async function loadDocuments(tiersId) {
   // réponses de la banque à ces demandes, compléments rattachés à un document
   // reçu. Le prédicat est partagé avec le back-office (config/demandes.js) —
   // il avait déjà fallu le corriger deux fois à deux endroits.
-  return rows.filter(estPieceJustificative).map(mapDocument)
+  return (await marquerDisponibilite(rows.filter(estPieceJustificative))).map(mapDocument)
 }
 
 // « Documents reçus » = documents partagés par la banque (DCONF/DMG) vers ce tiers.

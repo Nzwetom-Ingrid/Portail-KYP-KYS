@@ -77,6 +77,9 @@ function adapt(d) {
     date: frDate(d.createdon),
     expiry: frDate(expRaw),
     expired,
+    // Un enregistrement de document et son fichier sont deux choses distinctes :
+    // certaines pièces anciennes n'ont jamais reçu le leur.
+    fichierDispo: d.afb_fichier_dispo !== false,
   }
 }
 
@@ -614,9 +617,36 @@ export default function Documents({ notify, search = '' }) {
                           </button>
                         ) : (
                           <>
-                            <button title={t('Voir')} onClick={() => view(d)}><Icon name="eye" size={17} /></button>
-                            <button title={t('Télécharger')} onClick={() => download(d)}><Icon name="download" size={17} /></button>
-                            {d.status === 'Valide' ? (
+                            {/* Une pièce dont le fichier n'a jamais été attaché ne se
+                                consulte pas : proposer le bouton mènerait à une erreur
+                                technique là où l'utilisateur attend un document. */}
+                            <button
+                              title={d.fichierDispo ? t('Voir') : t('Aucun fichier attaché à cette pièce')}
+                              disabled={!d.fichierDispo}
+                              style={d.fichierDispo ? undefined : { opacity: 0.35, cursor: 'not-allowed' }}
+                              onClick={() => d.fichierDispo && view(d)}
+                            >
+                              <Icon name="eye" size={17} />
+                            </button>
+                            <button
+                              title={d.fichierDispo ? t('Télécharger') : t('Aucun fichier attaché à cette pièce')}
+                              disabled={!d.fichierDispo}
+                              style={d.fichierDispo ? undefined : { opacity: 0.35, cursor: 'not-allowed' }}
+                              onClick={() => d.fichierDispo && download(d)}
+                            >
+                              <Icon name="download" size={17} />
+                            </button>
+                            {d.status === 'Remplace' ? (
+                              /* Une version remplacée est une trace : elle atteste de ce
+                                 que la conformité a examiné. La supprimer effacerait le
+                                 document sur lequel une décision a pu être prise. */
+                              <span
+                                title={t('Version archivée — conservée comme trace, non supprimable')}
+                                style={{ display: 'inline-flex', padding: 6, opacity: 0.45, cursor: 'not-allowed' }}
+                              >
+                                <Icon name="lock" size={16} />
+                              </span>
+                            ) : d.status === 'Valide' ? (
                               <span
                                 title={t('Document validé par la conformité — non supprimable')}
                                 style={{ display: 'inline-flex', padding: 6, opacity: 0.45, cursor: 'not-allowed' }}
