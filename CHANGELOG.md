@@ -167,7 +167,7 @@ lecteur non technique.
   enregistrement de document et son fichier sont deux choses distinctes : la
   ligne est créée d’abord, le binaire attaché ensuite, et rien ne garantissait
   que la seconde étape ait abouti. Certaines pièces portent encore l’URL
-   écrite au dépôt, sans pièce jointe — les deux boutons menaient
+  `pending://` écrite au dépôt, sans pièce jointe — les deux boutons menaient
   alors à une erreur technique. Ils sont désormais désactivés, avec la raison en
   infobulle.
 - **Une version remplacée ne peut plus être supprimée par le partenaire.** Elle
